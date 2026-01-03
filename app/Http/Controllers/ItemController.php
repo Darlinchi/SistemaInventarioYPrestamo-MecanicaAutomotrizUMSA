@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Item;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ItemController extends Controller
 {
@@ -12,7 +13,15 @@ class ItemController extends Controller
      */
     public function index()
     {
-        //
+        // Traemos los detalles tecnicos
+        // Esto evitara hacer muchas consultas a la BD (Problema N+1)
+        $items = Item::with('equipment')->get();
+        //$items = Item::with(['equipment', 'accessories'])->get();
+    
+        // Renderizamos la vista ubicada en resources/js/Pages/Inventory/Index.vue
+        return Inertia::render('inventory/Index', [
+            'items' => $items
+        ]);
     }
 
     /**

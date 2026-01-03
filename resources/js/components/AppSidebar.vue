@@ -18,20 +18,22 @@ import AppLogo from './AppLogo.vue';
 
 import { usePage } from '@inertiajs/vue3'; 
 import { computed } from 'vue';
-import { Users, LayoutGrid, Package, BookOpen, Folder } from 'lucide-vue-next';
+// Aqui estan los iconos utilizados
+import { Users, Package, BookOpen, Folder, LayoutDashboard, ClipboardList, Settings, FileText } from 'lucide-vue-next';
 const page = usePage();
 
 const mainNavItems = computed(() => {
     const items: NavItem[] = [
         {
-            title: 'Inicio',
+            title: 'Panel Principal',
             href: dashboard(),
-            icon: LayoutGrid,
+            icon: LayoutDashboard,
         },
     ];
 
     const userRoles = (page.props.auth as any)?.user?.roles || [];
 
+    // Se agrego gestionar personal solo para los que son administradores
     if (userRoles.includes('admin')) {
         items.push({
             title: 'Gestionar Personal',
@@ -40,10 +42,29 @@ const mainNavItems = computed(() => {
         });
     }
 
+    // Se agrego inventario para ambos
     items.push({
         title: 'Inventario',
         href: '/inventario',
         icon: Package,
+    });
+
+    items.push({
+        title: 'Préstamos',
+        href: '/prestamos',
+        icon: ClipboardList,
+    });
+
+    items.push({
+        title: 'Mantenimiento',
+        href: '/mantenimiento',
+        icon: Settings,
+    });
+
+    items.push({
+        title: 'Reportes',
+        href: '/reportes',
+        icon: FileText,
     });
 
     return items;

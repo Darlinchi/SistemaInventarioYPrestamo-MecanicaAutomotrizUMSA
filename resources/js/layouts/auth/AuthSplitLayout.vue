@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { home } from '@/routes';
+import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 
 const page = usePage();
@@ -29,11 +30,7 @@ defineProps<{
                 <div class="flex flex-col items-center space-y-4 text-center w-full">
                     <!-- En qui esta el titulo del sistema y el logo de la carrera -->
                     <span class="text-2xl uppercase tracking-wider">{{ name }}</span>
-                    <img 
-                        src="/images/logo-carrera.png" 
-                        alt="Logo Carrera de Mecánica" 
-                        class="h-100 w-auto object-contain"
-                    />
+                    <AppLogoIcon class="mr-2 size-8 fill-current text-white"/>
                 </div>
             </Link>
             <div v-if="quote" class="flex flex-col items-center relative z-20 mt-auto">

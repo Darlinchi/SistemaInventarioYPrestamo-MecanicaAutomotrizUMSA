@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
+use App\Http\Controllers\ItemController;
 
 // 1. RUTA PÚBLICA: Página de bienvenida
 Route::get('/', function () {
@@ -28,11 +29,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // ADMIN Y ENCARGADO: Inventario
-    Route::middleware(['role:admin|encargado'])->group(function () {
-        Route::get('/inventario', function () {
-            return Inertia::render('inventory/Index');
-        })->name('items.index');
-    });
+    Route::middleware(['auth', 'role:admin|encargado'])->group(function () {
+    // Cambiamos la función por [ItemController::class, 'index']
+    Route::get('/inventario', [ItemController::class, 'index'])->name('items.index');
+});
 });
 
 // 3. ARCHIVOS DE CONFIGURACIÓN ADICIONALES
