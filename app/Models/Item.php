@@ -19,6 +19,18 @@ class Item extends Model
         return $this->hasOne(Equipment::class, 'id');
     }
 
+    // Relación "A traves de": Acceder a accesorios desde el item pasando por Equipo
+    public function accessories() {
+        return $this->hasManyThrough(
+            Accessory::class,
+            Equipment::class,
+            'id',           // Clave foránea en tabla equipment que apunta a items
+            'equipment_id', // Clave foránea en tabla accessories que apunta a equipment
+            'id',           // Clave local en tabla items
+            'id'            // Clave local en tabla equipment
+        );
+    }
+
     // Relación N:M con Préstamos (La tabla pivote que llamamos item_loan)
     public function loans(): BelongsToMany
     {

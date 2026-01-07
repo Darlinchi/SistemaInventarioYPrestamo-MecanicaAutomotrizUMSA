@@ -16,7 +16,7 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import AppLogo from './AppLogo.vue';
 
-import { usePage } from '@inertiajs/vue3'; 
+import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 // Aqui estan los iconos utilizados
 import { Users, Package, BookOpen, Folder, LayoutDashboard, ClipboardList, Settings, FileText } from 'lucide-vue-next';
@@ -37,36 +37,37 @@ const mainNavItems = computed(() => {
     if (userRoles.includes('admin')) {
         items.push({
             title: 'Gestionar Personal',
-            href: '/usuarios',
+            href: '/dashboard/usuarios',
             icon: Users,
         });
     }
 
     // Se agrego inventario para ambos
-    items.push({
-        title: 'Inventario',
-        href: '/inventario',
-        icon: Package,
-    });
+    if (userRoles.includes('encargado')) {
+            items.push({
+            title: 'Inventario',
+            href: '/dashboard/inventario',
+            icon: Package,
+        });
 
-    items.push({
-        title: 'Préstamos',
-        href: '/prestamos',
-        icon: ClipboardList,
-    });
+        items.push({
+            title: 'Préstamos',
+            href: '/prestamos',
+            icon: ClipboardList,
+        });
 
-    items.push({
-        title: 'Mantenimiento',
-        href: '/mantenimiento',
-        icon: Settings,
-    });
+        items.push({
+            title: 'Mantenimiento',
+            href: '/mantenimiento',
+            icon: Settings,
+        });
 
-    items.push({
-        title: 'Reportes',
-        href: '/reportes',
-        icon: FileText,
-    });
-
+        items.push({
+            title: 'Reportes',
+            href: '/reportes',
+            icon: FileText,
+        });
+    }
     return items;
 });
 

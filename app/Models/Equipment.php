@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Equipment extends Model
 {
@@ -13,7 +15,7 @@ class Equipment extends Model
     public $incrementing = false; // El ID no aumenta solo, lo hereda.
 
     // Definicion de los campos que se pueden llenar masivamente
-    protected $fillable = ['id', 'marca', 'modelo', 'nro_serie', 'observacion', 'color', 'fecha_adquisicion', 'rubro', 'ubicacion'];
+    protected $fillable = ['id', 'codigo_qr', 'marca', 'modelo', 'nro_serie', 'observacion', 'color', 'fecha_adquisicion', 'rubro', 'ubicacion'];
 
     // Relación inversa: El equipo pertenece a un Item
     public function item(): BelongsTo
@@ -21,9 +23,11 @@ class Equipment extends Model
         // belongsTo conecta al hijo con el padre.
         return $this->belongsTo(Item::class, 'id');
     }
-    public function accessorys()
+
+    // Relación directa: Un equipo tiene muchos accesorios
+    public function accessories(): HasMany
     {
-        return $this->hasMany(Accessory::class, 'equipment_id');
+        return $this->hasMany(Accessory::class, 'equipment_id', 'id');
     }
 
     public function maintenances()

@@ -13,14 +13,13 @@ class ItemController extends Controller
      */
     public function index()
     {
-        // Traemos los detalles tecnicos
-        // Esto evitara hacer muchas consultas a la BD (Problema N+1)
-        $items = Item::with('equipment')->get();
-        //$items = Item::with(['equipment', 'accessories'])->get();
-    
-        // Renderizamos la vista ubicada en resources/js/Pages/Inventory/Index.vue
+        // Cargamos todos los items con su equipo y accesorios en una sola consulta
+        // Evita el problema N+1
+        $items = Item::with(['equipment.accessories'])->get();
+
+        // Renderizamos la vista ubicada en resources/js/Pages/inventory/Index.vue
         return Inertia::render('inventory/Index', [
-            'items' => $items
+            'items' => $items,
         ]);
     }
 
@@ -29,7 +28,7 @@ class ItemController extends Controller
      */
     public function create()
     {
-        //
+        // Aquí iría la lógica para crear un item
     }
 
     /**
@@ -37,7 +36,45 @@ class ItemController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'nombre_item' => 'required|string|max:100',
+            'tipo' => 'required|in:equipo,herramienta',
+            'accesorios' => 'array', // Lista de nombres de accesorios
+            'serie' => 'nullable|unique:equipment,serie',
+        ]);
+
+        // Usamos una transacción para que si algo falla, no se guarde nada a medias
+        return \DB::transaction(function () use ($request) {
+            // 1. Crear el Item
+            $item = Item::create([
+                'nombre_item' => $request->nombre_item,
+                'descripcion_item' => $request->descripcion_item,
+                'estado' => 'Disponible',
+            ]);
+
+            // 2. Si es equipo, crear info técnica y accesorios
+            if ($request->tipo === 'equipo') {
+                $equipment = $item->equipment()->create([
+                    'id' => $item->id,
+                    'marca' => $request->marca,
+                    'modelo' => $request->modelo,
+                    'serie' => $request->serie,
+                    'ubicacion' => $request->ubicacion,
+                    'rubro' => $request->rubro,
+                ]);
+
+                // 3. Guardar accesorios si existen
+                foreach ($request->accesorios as $nombre) {
+                    if (!empty($nombre)) {
+                        $equipment->accessories()->create([
+                            'nombre_accesorio' => $nombre,
+                            'estado_accesorio' => 'Bueno'
+                        ]);
+                    }
+                }
+            }
+            return redirect()->back();
+        });
     }
 
     /**
@@ -45,7 +82,7 @@ class ItemController extends Controller
      */
     public function show(Item $item)
     {
-        //
+        // Aquí iría la lógica para mostrar un item
     }
 
     /**
@@ -53,7 +90,7 @@ class ItemController extends Controller
      */
     public function edit(Item $item)
     {
-        //
+        // Aquí iría la lógica para editar un item
     }
 
     /**
@@ -61,7 +98,7 @@ class ItemController extends Controller
      */
     public function update(Request $request, Item $item)
     {
-        //
+        // Aquí iría la lógica para actualizar un item
     }
 
     /**
@@ -69,6 +106,6 @@ class ItemController extends Controller
      */
     public function destroy(Item $item)
     {
-        //
+        // Aquí iría la lógica para eliminar un item
     }
 }

@@ -20,6 +20,11 @@ return new class extends Migration
                 ->onUpdate('cascade');
             
             $table->string('nombre_accesorio', 100);
+            $table->enum('estado_accesorio', [
+                'Bueno', 
+                'Dañado', 
+                'Perdido'
+            ])->default('Bueno');
             $table->timestamps();
         });
     }

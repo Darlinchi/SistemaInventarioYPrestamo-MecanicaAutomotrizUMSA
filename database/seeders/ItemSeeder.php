@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Seeder;
 use App\Models\Item;
 use App\Models\Equipment;
+use App\Models\Accessory;
 
 class ItemSeeder extends Seeder
 {
@@ -31,7 +32,7 @@ class ItemSeeder extends Seeder
             'descripcion_item' => 'Motor de práctica para medición y pruebas mecánicas.',
         ]);
 
-        Equipment::create([
+        $motorEquipment = Equipment::create([
             'id'                 => $motor->id,
             'codigo_qr'          => 'QR-MOTOR-2JZ-001',
             'ubicacion'          => 'Taller Mecánico - Zona Motores',
@@ -44,6 +45,28 @@ class ItemSeeder extends Seeder
             'observacion_equipo' => 'Motor en perfecto estado para prácticas.',
         ]);
 
+
+        // ------ ACCESORIOS PARA EL MOTOR ------
+        Accessory::insert([
+            [
+                'equipment_id'       => $motorEquipment->id,
+                'nombre_accesorio'   => 'Arnés de sensores completo',
+                'estado_accesorio'   => 'Bueno',
+                'created_at'         => now(),
+            ],
+            [
+                'equipment_id'       => $motorEquipment->id,
+                'nombre_accesorio'   => 'ECU original Toyota',
+                'estado_accesorio'   => 'Dañado',
+                'created_at'         => now(),
+            ],
+            [
+                'equipment_id'       => $motorEquipment->id,
+                'nombre_accesorio'   => 'Radiador de pruebas',
+                'estado_accesorio'   => 'Bueno',
+                'created_at'         => now(),
+            ],
+        ]);
 
         /*
         |--------------------------------------------------------------------------
@@ -72,7 +95,7 @@ class ItemSeeder extends Seeder
             'descripcion_item' => 'Escáner profesional multimarca para diagnóstico electrónico.',
         ]);
 
-        Equipment::create([
+        $scannerEquipment = Equipment::create([
             'id'                 => $scanner->id,
             'codigo_qr'          => 'QR-SCAN-X431-002',
             'ubicacion'          => 'Laboratorio Electrónica Automotriz',
@@ -85,5 +108,32 @@ class ItemSeeder extends Seeder
             'observacion_equipo' => 'Equipo en uso frecuente, revisar batería periódicamente.',
         ]);
 
+        // ------ ACCESORIOS PARA EL ESCÁNER ------
+        Accessory::insert([
+            [
+                'equipment_id'       => $scannerEquipment->id,
+                'nombre_accesorio'   => 'Cable OBDII principal',
+                'estado_accesorio'   => 'Bueno',
+                'created_at'         => now(),
+            ],
+            [
+                'equipment_id'       => $scannerEquipment->id,
+                'nombre_accesorio'   => 'Adaptadores OBD1',
+                'estado_accesorio'   => 'Perdido',
+                'created_at'         => now(),
+            ],
+            [
+                'equipment_id'       => $scannerEquipment->id,
+                'nombre_accesorio'   => 'Cargador original',
+                'estado_accesorio'   => 'Bueno',
+                'created_at'         => now(),
+            ],
+            [
+                'equipment_id'       => $scannerEquipment->id,
+                'nombre_accesorio'   => 'Maletín rígido',
+                'estado_accesorio'   => 'Dañado',
+                'created_at'         => now(),
+            ],
+        ]);
     }
 }

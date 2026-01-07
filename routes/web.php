@@ -5,7 +5,7 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\ItemController;
 
-// 1. RUTA PÚBLICA: Página de bienvenida
+// ruta publica: pagina de bienvenida
 Route::get('/', function () {
     // return redirect()->route('login');
     return Inertia::render('Welcome', [
@@ -13,28 +13,27 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-// 2. RUTAS PROTEGIDAS (Solo usuarios logueados)
-Route::middleware(['auth', 'verified'])->group(function () {
-    
-    // Dashboard: Común para todos
-    Route::get('dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+// rutas protegidas
+Route::middleware(['auth', 'verified'])
+    ->prefix('dashboard')
+    ->group(function () {
 
-    // SOLO ADMIN: Gestión de Personal
+    // Dashboard principal
+    Route::get('/', fn() => Inertia::render('Dashboard'))->name('dashboard');
+
+    // SOLO ADMIN
     Route::middleware(['role:admin'])->group(function () {
-        Route::get('/usuarios', function () {
-            return Inertia::render('users/Index'); 
-        })->name('users.index');
+        Route::get('/usuarios', fn() => Inertia::render('users/Index'))->name('users.index');
     });
 
-    // ADMIN Y ENCARGADO: Inventario
-    Route::middleware(['auth', 'role:admin|encargado'])->group(function () {
-    // Cambiamos la función por [ItemController::class, 'index']
-    Route::get('/inventario', [ItemController::class, 'index'])->name('items.index');
-});
+    // ADMIN y ENCARGADO
+    Route::middleware(['role:admin|encargado'])->group(function () {
+        Route::get('/inventario', [ItemController::class, 'index'])->name('item.index');
+        // En routes/web.php
+        Route::post('/items', [ItemController::class, 'store'])->name('items.store');
+    });
 });
 
-// 3. ARCHIVOS DE CONFIGURACIÓN ADICIONALES
+// ARCHIVOS DE CONFIGURACIÓN ADICIONALES
 require __DIR__.'/settings.php';
 //require __DIR__.'/auth.php'; // Es vital que esté esta línea para que funcione el login
