@@ -20,6 +20,9 @@ import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 // Aqui estan los iconos utilizados
 import { Users, Package, BookOpen, Folder, LayoutDashboard, ClipboardList, Settings, FileText } from 'lucide-vue-next';
+
+import itemsRoutes from '@/routes/items'; // Usamos un nombre diferente para no confundir con variables
+
 const page = usePage();
 
 const mainNavItems = computed(() => {
@@ -46,7 +49,7 @@ const mainNavItems = computed(() => {
     if (userRoles.includes('encargado')) {
             items.push({
             title: 'Inventario',
-            href: '/dashboard/inventario',
+            href: itemsRoutes.index.url(), // Esto generará '/dashboard/items',D
             icon: Package,
         });
 

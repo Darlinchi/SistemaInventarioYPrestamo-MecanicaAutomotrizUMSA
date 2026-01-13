@@ -28,9 +28,9 @@ Route::middleware(['auth', 'verified'])
 
     // ADMIN y ENCARGADO
     Route::middleware(['role:admin|encargado'])->group(function () {
-        Route::get('/inventario', [ItemController::class, 'index'])->name('item.index');
-        // En routes/web.php
-        Route::post('/items', [ItemController::class, 'store'])->name('items.store');
+        // Esta línea genera automáticamente: index, create, store, show, edit, update, destroy
+        Route::resource('items', ItemController::class);
+
     });
 });
 

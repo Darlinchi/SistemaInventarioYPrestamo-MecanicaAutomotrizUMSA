@@ -6,10 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Accessory extends Model
 {
-    //
     protected $fillable = ['equipment_id', 'nombre_accesorio', 'estado_accesorio'];
 
-    // Un equipo tiene muchos accesorios directamente
+    // Un equipo tiene uno o muchos accesorios
     public function accessories() {
         return $this->hasMany(Accessory::class, 'equipment_id', 'id');
     }

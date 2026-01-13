@@ -50,8 +50,13 @@ class HandleInertiaRequests extends Middleware
                     'name'     => $request->user()->name,
                     'username' => $request->user()->username,
                     // Esta es la parte clave: enviamos los nombres de los roles a Vue
-                    'roles'    => $request->user()->getRoleNames(), 
+                    'roles'    => $request->user()->getRoleNames(),
                 ] : null,
+            ],
+            // AGREGA ESTA SECCIÓN AQUÍ:
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error'   => fn () => $request->session()->get('error'),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

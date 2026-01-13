@@ -1,12 +1,43 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
-import { Package, Wrench, SquarePen, Ban, Search, List, Plus, XIcon} from 'lucide-vue-next';
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Button } from '@/components/ui/button';
+import { Package, Wrench, SquarePen, Ban, Search, List, Image, Plus, CircleCheck, XIcon } from 'lucide-vue-next';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import items from '@/routes/items';
+import { router } from '@inertiajs/vue3';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Inventario',
+        href: items.index.url(), // Usa la función de tu archivo de rutas
+    },
+];
 
 // PARA AGREGAR HERRAMIENTAAS Y EQUIPOS
+const page = usePage();
+const showSuccess = ref(false);
+const successMessage = ref('');
 
-// Tabla de equipos y herramientas
+// Funci0n para el mensaje flash
+const handleFlash = () => {
+    const msg = (page.props as any).flash?.success;
+    if (msg) {
+        successMessage.value = msg;
+        showSuccess.value = true;
+        setTimeout(() => {
+            showSuccess.value = false;
+        }, 5000);
+    }
+};
+
+// Vigila los cambios en las props
+watch(() => (page.props as any).flash?.success, () => {
+    handleFlash();
+}, { immediate: true });
+
+// TABLA DE EQUIPOS Y HERRAMIENTAS
 const props = defineProps<{
     items: Array<{
         id: number;
@@ -25,6 +56,7 @@ const statusColor = (status: string) => {
         case 'prestado': return 'bg-orange-100 text-orange-800 border-orange-200';
         case 'mantenimiento': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
         case 'dañado': return 'bg-red-100 text-red-800 border-red-200';
+        case 'baja': return 'bg-neutral-200 text-neutral-600 border-neutral-300';
         default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
 };
@@ -41,16 +73,23 @@ const activeTab = ref<'equipos' | 'herramientas'>('equipos');
 const countEquipos = computed(() => props.items.filter(item => item.equipment !== null).length);
 const countHerramientas = computed(() => props.items.filter(item => item.equipment === null).length);
 
+// Para Fecha
+const formatDate = (date: string) => {
+    if (!date) return '-';
+    return new Date(date).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+};
+
 // Buscador y filtro por estado
 // El estado para el texto de búsqueda
 const searchQuery = ref('');
-
 // Variables para los filtros seleccionados
 const selectedStatus = ref('');
-
 // Listas para llenar los selectores (esto podría venir de la BD también)
 const estados = ['Disponible', 'Prestado', 'Mantenimiento', 'Dañado'];
-
 // Estado para el Popover de accesorios
 const openAccessoryId = ref<number | null>(null);
 
@@ -82,7 +121,7 @@ const filteredItems = computed(() => {
         });
     }
 
-    // Filtro por Estado (si se selecciono uno)
+    // Filtro por Estado
     if (selectedStatus.value !== '') {
         filtered = filtered.filter(item => item.estado === selectedStatus.value);
     }
@@ -90,7 +129,7 @@ const filteredItems = computed(() => {
     return filtered;
 });
 
-// Cerrar el popover si se hace clic fuera del contenedor
+// Cierra el popover si se hace clic fuera del contenedor
 const closePopovers = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
     if (!target.closest('.relative.inline-block')) {
@@ -102,16 +141,58 @@ const closePopovers = (e: MouseEvent) => {
 onMounted(() => window.addEventListener('click', closePopovers));
 onUnmounted(() => window.removeEventListener('click', closePopovers));
 
+// Da de baja
+const darDeBaja = (id: number) => {
+    const itemActual = props.items.find(i => i.id === id);
+
+    if (itemActual && confirm(`¿Confirmar baja de: ${itemActual.nombre_item}?`)) {
+        router.post(items.update.url(id), {
+            _method: 'put',
+            estado: 'Baja',
+            nombre_item: itemActual.nombre_item,
+            es_equipo: itemActual.equipment !== null,
+        });
+    }
+};
 </script>
 
 <template>
     <Head title="Inventario" />
-    <AppLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
+            <transition
+                enter-active-class="transform ease-out duration-300 transition"
+                enter-from-class="translate-y-[-20px] opacity-0"
+                enter-to-class="translate-y-0 opacity-100"
+                leave-active-class="transition ease-in duration-500"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+            >
+                <div v-if="showSuccess" class="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-r-xl shadow-sm flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="shrink-0">
+                            <CircleCheck class="h-5 w-5 stroke-green-500"/>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-bold text-green-800">{{ successMessage }}</p>
+                        </div>
+                    </div>
+
+                    <button @click="showSuccess = false" class="text-green-500 hover:text-green-700 transition">
+                        <XIcon class="h-5 w-5 stroke-green-500"/>
+                    </button>
+                </div>
+            </transition>
             <div class="flex justify-between items-center mb-6">
                 <div>
                     <h1 class="text-3xl font-black tracking-tighter uppercase text-black">Gestión de Inventario</h1>
                     <p class="text-sm text-neutral-500">Administre equipos y herramientas del taller</p>
+
+                </div>
+                <div class="flex justify-end mt-4" >
+                    <Link :href="items.create.url()" class="bg-black text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-neutral-800 transition shadow-lg">
+                        <Plus class="w-5 h-5"/> Nuevo Item
+                    </Link>
                 </div>
             </div>
             <!--las pestañas  de equipos y herramientas-->
@@ -136,6 +217,13 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                         placeholder="Buscar..."
                         class="block w-full pl-10 pr-3 py-2 bg-neutral-100 border border-neutral-500 rounded-xl leading-5 text-sm placeholder-neutral-600 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition duration-150 ease-in-out"
                     />
+                    <Button
+                        v-if="searchQuery"
+                        @click="searchQuery = ''"
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-black"
+                    >
+                        <XIcon class="w-4 h-4"/>
+                    </Button>
                 </div>
 
                 <select v-model="selectedStatus" class="bg-neutral-100 border border-neutral-500 rounded-xl text-sm py-2 px-4 focus:ring-2 focus:ring-black cursor-pointer text-neutral-600 min-w-[180px]">
@@ -170,7 +258,20 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                             <tr v-for="item in filteredItems" :key="item.id" class="hover:bg-neutral-50 transition-colors group">
                                 <td v-if="activeTab === 'equipos'" class="p-4 font-mono text-blue-600">{{ item.equipment?.codigo_qr }}</td>
                                 <td class="p-4 font-bold text-black">{{ item.nombre_item }}</td>
-                                <td class="p-4 text-neutral-400 italic text-xs">{{ item.foto || 'Sin foto' }}</td>
+                                <td class="p-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="h-12 w-12 shrink-0">
+                                            <img v-if="item.foto"
+                                                :src="'/storage/' + item.foto"
+                                                class="h-12 w-12 rounded-lg object-cover border border-neutral-200 shadow-sm transition-transform duration-300 group-hover:scale-110"
+                                                alt="Foto"
+                                            />
+                                            <div v-else class="h-12 w-12 rounded-lg bg-neutral-100 flex items-center justify-center border border-neutral-200 text-neutral-400">
+                                                <Image class="w-6 h-6" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
                                 <td class="p-4 text-neutral-500 max-w-xs truncate">{{ item.descripcion_item }}</td>
                                 <td class="p-4">
                                     <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border', statusColor(item.estado)]">
@@ -214,11 +315,19 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                                 <td v-if="activeTab === 'equipos'" class="p-4">{{ item.equipment?.modelo }}</td>
                                 <td v-if="activeTab === 'equipos'" class="p-4 font-mono">{{ item.equipment?.serie }}</td>
                                 <td v-if="activeTab === 'equipos'" class="p-4">{{ item.equipment?.rubro }}</td>
-                                <td v-if="activeTab === 'equipos'" class="p-4">{{ item.equipment?.fecha_adquisicion }}</td>
+                                <td v-if="activeTab === 'equipos'" class="p-4">{{ formatDate(item.equipment?.fecha_adquisicion) }}</td>
                                 <td v-if="activeTab === 'equipos'" class="p-4 italic text-neutral-400 max-w-xs truncate">{{ item.equipment?.observacion_equipo }}</td>
                                 <td class="p-4 text-right space-x-3 sticky right-0 bg-white group-hover:bg-neutral-50 border-l border-neutral-100">
-                                    <button class="p-2 bg-white border border-neutral-200 rounded-lg hover:bg-red-50 group shadow-sm transition text-red-500"><SquarePen class="w-4 h-4 stroke-black"/></button>
-                                    <button class="p-2 bg-white border border-neutral-200 rounded-lg hover:bg-red-50 group shadow-sm transition text-red-500"><Ban class="w-4 h-4 stroke-red-500"/></button>
+                                    <Link :href="items.edit.url(item.id)">
+                                        <Button class="p-2 bg-white border border-neutral-200 rounded-lg hover:bg-red-50 group shadow-sm transition text-blue-500"><SquarePen class="w-4.5 h-4.5 stroke-blue-500"/></Button>
+                                    </Link>
+                                    <Button
+                                        @click="darDeBaja(item.id)"
+                                        class="p-2 bg-white border border-neutral-200 rounded-lg hover:bg-red-50 group shadow-sm transition text-red-500"
+                                        title="Dar de baja"
+                                    >
+                                        <Ban class="w-4.5 h-4.5 stroke-red-500"/>
+                                    </Button>
                                 </td>
                             </tr>
                         </tbody>
