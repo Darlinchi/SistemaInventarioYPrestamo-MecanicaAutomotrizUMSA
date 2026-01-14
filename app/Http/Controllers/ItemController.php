@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect; // Para el redireccionamiento
 use Illuminate\Support\Facades\Storage;  // Para las fotos
 use Inertia\Inertia;                     // Para renderizar las vistas
+
 class ItemController extends Controller
 {
     /**
@@ -15,7 +16,7 @@ class ItemController extends Controller
      */
     public function index()
     {
-        // Se cargan todos los items qur sean equipos con sus accesorios en una sola consulta
+        // Se cargan todos los items ques sean equipos con sus accesorios en una sola consulta
         $items = Item::with(['equipment.accessories'])->get();
 
         // Renderiza la vista

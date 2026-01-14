@@ -15,12 +15,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// PARA AGREGAR HERRAMIENTAAS Y EQUIPOS
+// PARA AGREGAR HERRAMIENTAS Y EQUIPOS
 const page = usePage();
 const showSuccess = ref(false);
 const successMessage = ref('');
 
-// Funci0n para el mensaje flash
+// Funcion para el mensaje flash
 const handleFlash = () => {
     const msg = (page.props as any).flash?.success;
     if (msg) {

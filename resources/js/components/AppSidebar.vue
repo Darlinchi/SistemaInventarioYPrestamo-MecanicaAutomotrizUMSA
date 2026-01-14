@@ -19,9 +19,13 @@ import AppLogo from './AppLogo.vue';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 // Aqui estan los iconos utilizados
-import { Users, Package, BookOpen, Folder, LayoutDashboard, ClipboardList, Settings, FileText } from 'lucide-vue-next';
-
-import itemsRoutes from '@/routes/items'; // Usamos un nombre diferente para no confundir con variables
+import { Users, Package, BookOpen, Folder, LayoutDashboard, ClipboardList, Settings, FileText, UsersIcon } from 'lucide-vue-next';
+// Rutas del inventario
+import itemsRoutes from '@/routes/items';
+// Rutas de los prestamistas
+import borrowersRoutes from '@/routes/borrowers';
+// Rutas de los prestamos
+import loansRoutes from '@/routes/loans';
 
 const page = usePage();
 
@@ -47,15 +51,15 @@ const mainNavItems = computed(() => {
 
     // Se agrego inventario para ambos
     if (userRoles.includes('encargado')) {
-            items.push({
+        items.push({
             title: 'Inventario',
-            href: itemsRoutes.index.url(), // Esto generará '/dashboard/items',D
+            href: itemsRoutes.index.url(),
             icon: Package,
         });
 
         items.push({
             title: 'Préstamos',
-            href: '/prestamos',
+            href: loansRoutes.index.url(),
             icon: ClipboardList,
         });
 
@@ -63,6 +67,12 @@ const mainNavItems = computed(() => {
             title: 'Mantenimiento',
             href: '/mantenimiento',
             icon: Settings,
+        });
+
+        items.push({
+            title: 'Usuarios',
+            href: borrowersRoutes.index.url(),
+            icon: UsersIcon,
         });
 
         items.push({

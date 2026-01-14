@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Borrower;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect; // Para el redireccionamiento
+use Inertia\Inertia;                     // Para renderizar las vistas
 
 class BorrowerController extends Controller
 {
@@ -12,7 +14,16 @@ class BorrowerController extends Controller
      */
     public function index()
     {
-        //
+        // CARGA AMBAS: Así traes la información de asistente y de docente si existen
+        $borrowers = Borrower::with([
+            'teacher.subjects',
+            'assistant.subjects'
+        ])->get();
+
+        // Renderiza la vista
+        return Inertia::render('borrower/Index', [
+            'borrowers' => $borrowers,
+        ]);
     }
 
     /**

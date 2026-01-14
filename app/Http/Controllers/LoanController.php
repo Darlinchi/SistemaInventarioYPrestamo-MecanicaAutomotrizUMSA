@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Loan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect; // Para el redireccionamiento
+use Inertia\Inertia;                     // Para renderizar las vistas
 
 class LoanController extends Controller
 {
@@ -12,7 +14,12 @@ class LoanController extends Controller
      */
     public function index()
     {
-        //
+        $loans = Loan::all();
+
+        // Renderiza la vista
+        return Inertia::render('loan/Index', [
+            'loans' => $loans,
+        ]);
     }
 
     /**
@@ -20,7 +27,8 @@ class LoanController extends Controller
      */
     public function create()
     {
-        //
+        // Aquí iría la lógica para crear un item
+        return Inertia::render('loan/Create');
     }
 
     /**

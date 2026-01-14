@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\LoanController;
+use App\Http\Controllers\BorrowerController;
 
 // ruta publica: pagina de bienvenida
 Route::get('/', function () {
@@ -29,8 +31,12 @@ Route::middleware(['auth', 'verified'])
     // ADMIN y ENCARGADO
     Route::middleware(['role:admin|encargado'])->group(function () {
         // Esta línea genera automáticamente: index, create, store, show, edit, update, destroy
+        // Rutas del Inventario
         Route::resource('items', ItemController::class);
-
+        // Rutas de prestamos
+        Route::resource('loans', LoanController::class);
+        // Rutas de prestamistas
+        Route::resource('borrowers', BorrowerController::class);
     });
 });
 
