@@ -18,12 +18,12 @@ return new class extends Migration
                 ->constrained('equipment')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
-            
+
             $table->string('nombre_accesorio', 100);
             $table->enum('estado_accesorio', [
-                'Bueno', 
-                'Dañado', 
-                'Perdido'
+                'Bueno',
+                'Dañado',
+                'Extraviado'
             ])->default('Bueno');
             $table->timestamps();
         });

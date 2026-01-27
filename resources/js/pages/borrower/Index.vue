@@ -18,7 +18,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-
 const activeTab = ref<'docentes' | 'auxiliares'>('docentes');
 const openSubjectId = ref<number | null>(null);
 
@@ -43,6 +42,7 @@ const getSubjects = (borrower: any) => {
     if (borrower.assistant) return borrower.assistant.subjects || [];
     return [];
 };
+
 // Cierra el popover si se hace clic fuera del contenedor
 const closePopovers = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -75,7 +75,8 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                     <table class="w-full text-left border-separate border-spacing-0">
                         <thead class="bg-neutral-200 text-xs font-bold uppercase text-neutral-800">
                             <tr>
-                                <th class="p-4 w-20 text-center mx-auto">Índice</th>
+                                <!--<th class="p-4 w-20 text-center mx-auto">Índice</th> -->
+
                                 <th class="p-4 text-center mx-auto">Cédula</th>
                                 <th v-if="activeTab === 'auxiliares'" class="p-4">R.U.</th>
                                 <th class="p-4">Nombre (s)</th>
@@ -85,7 +86,8 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                         </thead>
                         <tbody class="divide-y divide-neutral-100 text-sm">
                             <tr v-for="borrower in filteredUsers" :key="borrower.id" class="hover:bg-neutral-50 transition-colors">
-                                <td class="p-4 text-center mx-auto">{{ borrower.id }}</td>
+                                <!-- <td class="p-4 text-center mx-auto">{{ borrower.id }}</td>-->
+
                                 <td class="p-4 text-center mx-auto">{{ borrower.cedula_identidad }}</td>
                                 <td v-if="activeTab === 'auxiliares'" class="p-4 font-mono text-blue-600">
                                     {{ borrower.assistant?.registro_universitario }}

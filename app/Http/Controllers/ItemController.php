@@ -22,6 +22,7 @@ class ItemController extends Controller
         // Renderiza la vista
         return Inertia::render('inventory/Index', [
             'items' => $items,
+            'estados' => Item::distinct()->pluck('estado'),
         ]);
     }
 
@@ -156,7 +157,10 @@ class ItemController extends Controller
                 if ($item->foto) {
                     Storage::disk('public')->delete($item->foto);
                 }
-                $item->foto = $request->file('foto')->store('items', 'public');
+                $validated['foto'] = $request->file('foto')->store('items', 'public');
+            } else {
+                // Si no se sube foto nueva, mantenemos la que ya tenía el item
+                $validated['foto'] = $item->foto;
             }
 
             // Actualizar Item base

@@ -19,4 +19,11 @@ class Borrower extends Model
     {
         return $this->hasOne(Teacher::class, 'id_teacher');
     }
+
+    // Un prestamista tiene muchos prestamos
+    public function loans(): HasMany
+    {
+        return $this->hasMany(Loan::class, 'id', 'id');
+    }
+
 }

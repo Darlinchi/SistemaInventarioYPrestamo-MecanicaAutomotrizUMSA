@@ -47,6 +47,7 @@ const props = defineProps<{
         estado: string;
         equipment?: any;
     }>;
+    estados: string[];
 }>();
 
 // Colores segun los estados para el item y para accesorios
@@ -88,8 +89,6 @@ const formatDate = (date: string) => {
 const searchQuery = ref('');
 // Variables para los filtros seleccionados
 const selectedStatus = ref('');
-// Listas para llenar los selectores (esto podría venir de la BD también)
-const estados = ['Disponible', 'Prestado', 'Mantenimiento', 'Dañado'];
 // Estado para el Popover de accesorios
 const openAccessoryId = ref<number | null>(null);
 
@@ -217,18 +216,18 @@ const darDeBaja = (id: number) => {
                         placeholder="Buscar..."
                         class="block w-full pl-10 pr-3 py-2 bg-neutral-100 border border-neutral-500 rounded-xl leading-5 text-sm placeholder-neutral-600 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition duration-150 ease-in-out"
                     />
-                    <Button
+                    <button
                         v-if="searchQuery"
                         @click="searchQuery = ''"
                         class="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-black"
                     >
                         <XIcon class="w-4 h-4"/>
-                    </Button>
+                    </button>
                 </div>
 
                 <select v-model="selectedStatus" class="bg-neutral-100 border border-neutral-500 rounded-xl text-sm py-2 px-4 focus:ring-2 focus:ring-black cursor-pointer text-neutral-600 min-w-[180px]">
                     <option value="">Todos los estados</option>
-                    <option v-for="estado in estados" :key="estado" :value="estado">{{ estado }}</option>
+                    <option v-for="estado in props.estados" :key="estado" :value="estado">{{ estado }}</option>
                 </select>
             </div>
 

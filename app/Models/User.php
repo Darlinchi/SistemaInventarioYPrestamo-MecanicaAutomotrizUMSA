@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -19,7 +20,7 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    
+
     protected $fillable = [
         'username',
         'email',
@@ -37,6 +38,13 @@ class User extends Authenticatable
         'two_factor_recovery_codes',
         'remember_token',
     ];
+
+    // Relación con los datos adicionales del encargado (Staff)
+    public function staff(): HasOne
+    {
+        // El segundo parámetro es la llave foránea en la tabla 'staff'
+        return $this->hasOne(Staff::class, 'user_id');
+    }
 
     /**
      * Get the attributes that should be cast.

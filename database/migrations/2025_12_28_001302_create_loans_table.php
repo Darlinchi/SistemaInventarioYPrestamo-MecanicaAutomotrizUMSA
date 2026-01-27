@@ -34,7 +34,7 @@ return new class extends Migration
             $table->time('hora_inicio');
             $table->time('hora_fin')->nullable(); // Se llena cuando devuelven el ítem
             $table->text('observacion')->nullable();
-            
+
             // Estado del préstamo (opcional pero muy útil)
             $table->enum('estado_prestamo', ['Activo', 'Devuelto', 'Vencido', 'Parcial'])
                 ->default('Activo');

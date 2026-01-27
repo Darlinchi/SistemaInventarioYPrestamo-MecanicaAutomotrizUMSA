@@ -12,15 +12,15 @@ import { Save, ArrowLeft, Plus, Trash2, Loader2 } from 'lucide-vue-next';
 import items from '@/routes/items';
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 
+// Recibe el item desde el controlador
+const props = defineProps<{ item: any }>();
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Editar Item',
-        href: items.create.url(),
+        href: items.edit.url(props.item.id),
     },
 ];
-
-// Recibe el item desde el controlador
-const props = defineProps<{ item: any }>();
 
 // Estado de la pestaña y previsualización de foto
 const tipoItem = ref(props.item.equipment ? 'equipo' : 'herramienta');

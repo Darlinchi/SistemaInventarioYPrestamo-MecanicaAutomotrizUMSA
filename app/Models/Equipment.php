@@ -27,7 +27,8 @@ class Equipment extends Model
         return $this->hasMany(Accessory::class, 'equipment_id', 'id');
     }
 
-    public function maintenances()
+    // Relacion de equipo con mantenimientos
+    public function maintenances(): HasMany
     {
         return $this->hasMany(Maintenance::class);
     }

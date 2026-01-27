@@ -33,8 +33,11 @@ Route::middleware(['auth', 'verified'])
         // Esta línea genera automáticamente: index, create, store, show, edit, update, destroy
         // Rutas del Inventario
         Route::resource('items', ItemController::class);
+
         // Rutas de prestamos
         Route::resource('loans', LoanController::class);
+        Route::post('loans/{loan}/return', [LoanController::class, 'returnLoan'])->name('loans.return');
+
         // Rutas de prestamistas
         Route::resource('borrowers', BorrowerController::class);
     });
@@ -42,4 +45,4 @@ Route::middleware(['auth', 'verified'])
 
 // ARCHIVOS DE CONFIGURACIÓN ADICIONALES
 require __DIR__.'/settings.php';
-//require __DIR__.'/auth.php'; // Es vital que esté esta línea para que funcione el login
+//require __DIR__.'/auth.php';

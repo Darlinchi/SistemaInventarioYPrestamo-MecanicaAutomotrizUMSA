@@ -119,7 +119,7 @@ class ItemSeeder extends Seeder
             [
                 'equipment_id'       => $scannerEquipment->id,
                 'nombre_accesorio'   => 'Adaptadores OBD1',
-                'estado_accesorio'   => 'Perdido',
+                'estado_accesorio'   => 'Extraviado',
                 'created_at'         => now(),
             ],
             [

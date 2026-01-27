@@ -15,16 +15,17 @@ return new class extends Migration
             $table->id();// Representa tu id_item
             $table->string('nombre_item', 100);
             $table->string('foto', 255)->nullable();
-            
+
             // Usamos el ENUM tal cual lo diseñaste
             $table->enum('estado', [
-                'Disponible', 
-                'Prestado', 
-                'Mantenimiento', 
-                'Dañado', 
+                'Disponible',
+                'Prestado',
+                'Mantenimiento',
+                'Dañado',
+                'Extraviado',
                 'Baja'
             ])->default('Disponible');
-            
+
             $table->text('descripcion_item')->nullable();
             $table->timestamps(); // Esto añade created_at y updated_at automáticamente
         });

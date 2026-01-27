@@ -14,7 +14,7 @@ import { Plus, Trash2, Image as ImageIcon, ArrowLeft, Save, Loader2 } from 'luci
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Crear Item',
+        title: 'Nuevo Item',
         href: items.create.url(),
     },
 ];
@@ -51,7 +51,7 @@ const form = useForm(initialValues);
 const handleFileChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
 
-    // Verificación de seguridad: si no hay archivos, salimos.
+    // Si no hay archivos, salimos.
     if (!target.files || target.files.length === 0) {
         return;
     }
@@ -93,7 +93,7 @@ function submit() {
 </script>
 
 <template>
-    <Head title="Crear Herramienta" />
+    <Head title="Crear Item" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-2xl mx-auto p-4 w-full">
             <div class="mb-4">
