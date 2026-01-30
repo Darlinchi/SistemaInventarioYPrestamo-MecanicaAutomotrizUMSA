@@ -144,7 +144,7 @@ function submit() {
 
                         <div class="grid gap-2">
                             <Label>Materia</Label>
-                            <select v-model="form.subject_id" :disabled="!form.borrower_id" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm disabled:bg-neutral-50">
+                            <select v-model="form.subject_id" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm disabled:bg-neutral-50">
                                 <option value="" disabled>Seleccione la materia</option>
                                 <option v-for="s in filteredSubjects" :key="s.id" :value="s.id">
                                     {{ s.sigla }} - {{ s.nombre_materia }}

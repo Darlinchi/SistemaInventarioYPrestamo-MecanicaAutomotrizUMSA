@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\MaintenanceCompany;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
+use Inertia\Inertia;                     // Para renderizar las vistas
 
 class MaintenanceCompanyController extends Controller
 {
@@ -12,7 +15,12 @@ class MaintenanceCompanyController extends Controller
      */
     public function index()
     {
-        //
+        // Cargamos con TODA su información relacionada para la tabla
+        $maintenanceCompanies = MaintenanceCompany::all();
+
+        return Inertia::render('maintenanceCompany/Index', [
+            'maintenanceCompanies' => $maintenanceCompanies,
+        ]);
     }
 
     /**
@@ -20,7 +28,7 @@ class MaintenanceCompanyController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('maintenanceCompany/Create');
     }
 
     /**
@@ -28,7 +36,32 @@ class MaintenanceCompanyController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validacion de los campos
+        $validated = $request->validate([
+            'nombre_empresa' => 'required|string|max:255',
+            'telefono' => 'nullable|string',
+            'direccion' => 'nullable|string|max:500',
+            'descripcion_empresa' => 'nullable|string',
+        ]);
+
+        try {
+            return DB::transaction(function () use ($request, $validated) {
+                // Crear Empresa
+                MaintenanceCompany::create([
+                    'nombre_empresa' => $validated['nombre_empresa'],
+                    'telefono' => $validated['telefono'],
+                    'direccion' => $validated['direccion'],
+                    'descripcion_empresa' => $validated['descripcion_empresa'],
+                ]);
+
+                // Redireccionar al índice de empresas, no de ítems
+                return Redirect::route('maintenanceCompanies.index')
+                    ->with('success', 'Registro creado exitosamente');
+            });
+        } catch (\Exception $e) {
+            // Muestra el error real si la transaccion falla
+            return back()->withErrors(['error' => 'Error al guardar: ' . $e->getMessage()]);
+        }
     }
 
     /**
@@ -44,7 +77,10 @@ class MaintenanceCompanyController extends Controller
      */
     public function edit(MaintenanceCompany $maintenanceCompany)
     {
-        //
+
+        return Inertia::render('maintenanceCompany/Edit', [
+            'maintenanceCompany' => $maintenanceCompany
+        ]);
     }
 
     /**
@@ -52,7 +88,24 @@ class MaintenanceCompanyController extends Controller
      */
     public function update(Request $request, MaintenanceCompany $maintenanceCompany)
     {
-        //
+        // Aquí iría la lógica para actualizar una empresa
+        $validated = $request->validate([
+            'nombre_empresa' => 'required|string|max:255',
+            'telefono' => 'nullable|string',
+            'direccion' => 'nullable|string|max:500',
+            'descripcion_empresa' => 'nullable|string',
+        ]);
+
+        try {
+            return DB::transaction(function () use ($maintenanceCompany, $validated) {
+                $maintenanceCompany->update($validated);
+
+                return Redirect::route('maintenanceCompanies.index')
+                    ->with('success', 'Registro actualizado exitosamente');
+            });
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'No se pudo actualizar: ' . $e->getMessage()]);
+        }
     }
 
     /**
@@ -60,6 +113,14 @@ class MaintenanceCompanyController extends Controller
      */
     public function destroy(MaintenanceCompany $maintenanceCompany)
     {
-        //
+        // pensar si deberiamos poner el eliminar talvez si
+        try {
+            $maintenanceCompany->delete();
+            return Redirect::route('maintenanceCompanies.index')
+                ->with('success', 'Eliminado correctamente');
+        } catch (\Exception $e) {
+            // Esto te dirá si hay un error de base de datos (como llaves foráneas)
+            return back()->withErrors(['error' => 'No se puede eliminar: ' . $e->getMessage()]);
+        }
     }
 }

@@ -19,13 +19,17 @@ import AppLogo from './AppLogo.vue';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 // Aqui estan los iconos utilizados
-import { Users, Package, BookOpen, Folder, LayoutDashboard, ClipboardList, Settings, FileText, UsersIcon } from 'lucide-vue-next';
+import { Users, Package, Building2, LayoutDashboard, ClipboardList, Settings, FileText, UsersIcon } from 'lucide-vue-next';
 // Rutas del inventario
 import itemsRoutes from '@/routes/items';
 // Rutas de los prestamistas
 import borrowersRoutes from '@/routes/borrowers';
 // Rutas de los prestamos
 import loansRoutes from '@/routes/loans';
+// Rutas de las mantenimiento
+import maintenanceRoutes from '@/routes/maintenance';
+// Rutas de las empresas de mantenimiento
+import maintenanceCompanyRoutes from '@/routes/maintenanceCompanies';
 
 const page = usePage();
 
@@ -65,8 +69,14 @@ const mainNavItems = computed(() => {
 
         items.push({
             title: 'Mantenimiento',
-            href: '/mantenimiento',
+            href: maintenanceRoutes.index.url(),
             icon: Settings,
+        });
+
+        items.push({
+            title: 'Emp. de Mantenimiento',
+            href: maintenanceCompanyRoutes.index.url(),
+            icon: Building2,
         });
 
         items.push({

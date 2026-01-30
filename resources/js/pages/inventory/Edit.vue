@@ -99,7 +99,7 @@ function submit() {
 
                     <div class="grid gap-2">
                         <Label>Nombre</Label>
-                        <Input v-model="form.nombre_item" />
+                        <Input id="nombre_item" v-model="form.nombre_item" />
                         <InputError :message="form.errors.nombre_item" />
                     </div>
 
@@ -148,42 +148,42 @@ function submit() {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid gap-2">
                             <Label>Codigo QR</Label>
-                            <Input v-model="form.codigo_qr" />
+                            <Input id="codigo_qr" v-model="form.codigo_qr" />
                             <InputError :message="form.errors.codigo_qr" />
                         </div>
                         <div class="grid gap-2">
                             <Label>Ubicación en Taller</Label>
-                            <Input v-model="form.ubicacion" />
+                            <Input id="ubicacion" v-model="form.ubicacion" />
                             <InputError :message="form.errors.ubicacion" />
                         </div>
                         <div class="grid gap-2">
                             <Label>Color</Label>
-                            <Input v-model="form.color" />
+                            <Input id="color" v-model="form.color" />
                             <InputError :message="form.errors.color" />
                         </div>
                         <div class="grid gap-2">
                             <Label>Marca</Label>
-                            <Input v-model="form.marca" />
+                            <Input id="marca" v-model="form.marca" />
                             <InputError :message="form.errors.marca" />
                         </div>
                         <div class="grid gap-2">
                             <Label>Modelo</Label>
-                            <Input v-model="form.modelo" />
+                            <Input id="modelo" v-model="form.modelo" />
                             <InputError :message="form.errors.modelo" />
                         </div>
                         <div class="grid gap-2">
                             <Label>Serie</Label>
-                            <Input v-model="form.serie" />
+                            <Input id="serie" v-model="form.serie" />
                             <InputError :message="form.errors.serie" />
                         </div>
                         <div class="grid gap-2">
                             <Label>Rubro</Label>
-                            <Input v-model="form.rubro" />
+                            <Input id="rubro" v-model="form.rubro" />
                             <InputError :message="form.errors.rubro" />
                         </div>
                         <div class="grid gap-2">
                             <Label>Fecha de adquisición</Label>
-                            <Input v-model="form.fecha_adquisicion" />
+                            <Input id="fecha_adquisicion" v-model="form.fecha_adquisicion" />
                             <InputError :message="form.errors.fecha_adquisicion" />
                         </div>
                     </div>
@@ -205,12 +205,13 @@ function submit() {
                     <div v-for="(acc, index) in form.accesorios" :key="index" class="flex flex-col md:flex-row gap-2 mb-4 p-3 border rounded-lg bg-neutral-50 relative">
                         <div class="flex-1">
                             <Label class="text-xs uppercase text-neutral-500">Nombre</Label>
-                            <Input v-model="acc.nombre" placeholder="Ej: Cargador, Estuche..." />
+                            <Input id="acc.nombre" v-model="acc.nombre" placeholder="Ej: Cargador, Estuche..." />
                         </div>
 
                         <div class="w-full md:w-40">
                             <Label class="text-xs uppercase text-neutral-500">Estado</Label>
                             <select
+                                id="acc.estado"
                                 v-model="acc.estado"
                                 class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                             >

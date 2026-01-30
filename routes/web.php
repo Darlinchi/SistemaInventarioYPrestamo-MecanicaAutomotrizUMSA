@@ -6,6 +6,8 @@ use Laravel\Fortify\Features;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\BorrowerController;
+use App\Http\Controllers\MaintenanceCompanyController;
+use App\Http\Controllers\MaintenanceController;
 
 // ruta publica: pagina de bienvenida
 Route::get('/', function () {
@@ -37,6 +39,12 @@ Route::middleware(['auth', 'verified'])
         // Rutas de prestamos
         Route::resource('loans', LoanController::class);
         Route::post('loans/{loan}/return', [LoanController::class, 'returnLoan'])->name('loans.return');
+
+        // Rutas de mantenimientos
+        Route::resource('maintenance', MaintenanceController::class);
+
+        // Rutas de empresas de mantenimiento
+        Route::resource('maintenanceCompanies', MaintenanceCompanyController::class);
 
         // Rutas de prestamistas
         Route::resource('borrowers', BorrowerController::class);
