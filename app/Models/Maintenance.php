@@ -8,13 +8,29 @@ class Maintenance extends Model
 {
     //
 
-    public function equipo()
+    protected $fillable = [
+        'equipment_id',
+        'fecha_mantenimiento',
+        'hora_inicio',
+        'hora_fin',
+        'actividad',
+        'estado_mantenimiento',
+    ];
+    protected $appends = ['estado_texto'];
+
+    public function getEstadoTextoAttribute()
     {
-        return $this->belongsTo(Equipment::class, 'equipment_id');
+        // Si no hay hora_fin, el trabajo sigue en curso
+        return is_null($this->hora_fin) ? 'En Proceso' : 'Completado';
     }
 
-    public function empresa()
+    public function companies()
     {
-        return $this->belongsTo(MaintenanceCompany::class, 'maintenance_company_id');
+        return $this->belongsToMany(MaintenanceCompany::class, 'maintenance_maintenance_company');
+    }
+
+    public function equipment()
+    {
+        return $this->belongsTo(Equipment::class);
     }
 }

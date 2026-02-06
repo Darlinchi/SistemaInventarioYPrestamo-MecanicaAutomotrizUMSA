@@ -41,7 +41,7 @@ Route::middleware(['auth', 'verified'])
         Route::post('loans/{loan}/return', [LoanController::class, 'returnLoan'])->name('loans.return');
 
         // Rutas de mantenimientos
-        Route::resource('maintenance', MaintenanceController::class);
+        Route::resource('maintenances', MaintenanceController::class);
 
         // Rutas de empresas de mantenimiento
         Route::resource('maintenanceCompanies', MaintenanceCompanyController::class);

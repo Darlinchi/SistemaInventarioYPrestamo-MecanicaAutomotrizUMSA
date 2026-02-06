@@ -11,4 +11,9 @@ class MaintenanceCompany extends Model
         'id', 'nombre_empresa', 'telefono',
         'descripcion_empresa', 'direccion'
     ];
+
+    public function maintenances()
+    {
+        return $this->belongsToMany(Maintenance::class, 'maintenance_maintenance_company');
+    }
 }

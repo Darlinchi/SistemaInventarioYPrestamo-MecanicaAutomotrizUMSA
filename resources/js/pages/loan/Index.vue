@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Edit, CheckCircle, Package, XCircle, List, Loader2, Clock, History, Calendar, SquarePen, Eraser } from 'lucide-vue-next';
+import { Plus, Search, Edit, CheckCircle, Package, XCircle, List, Loader2, Clock, History, Calendar, SquarePen, Eraser, ClipboardPen } from 'lucide-vue-next';
 import loanRoutes from '@/routes/loans';
 
 interface Item {
@@ -256,12 +256,12 @@ watch(isReturnModalOpen, (isOpen) => {
                 <button @click="activeTab = 'activos'"
                     :class="['flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all',
                     activeTab === 'activos' ? 'bg-white text-black shadow-sm' : 'text-neutral-500 hover:text-black']">
-                    Préstamos Activos ({{ countActivos }})
+                    <ClipboardPen class="w-4.5 h-4.5 "/>Préstamos Activos ({{ countActivos }})
                 </button>
                 <button @click="activeTab = 'historial'"
                     :class="['flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all',
                     activeTab === 'historial' ? 'bg-white text-black shadow-sm' : 'text-neutral-500 hover:text-black']">
-                    Historial de Devoluciones ({{ countHistorial }})
+                    <History class="w-4.5 h-4.5 "/>Historial de Devoluciones ({{ countHistorial }})
                 </button>
             </div>
 

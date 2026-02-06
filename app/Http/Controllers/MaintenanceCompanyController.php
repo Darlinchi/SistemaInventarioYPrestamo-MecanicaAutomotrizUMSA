@@ -15,7 +15,7 @@ class MaintenanceCompanyController extends Controller
      */
     public function index()
     {
-        // Cargamos con TODA su información relacionada para la tabla
+        // Cargamos con TODA su información
         $maintenanceCompanies = MaintenanceCompany::all();
 
         return Inertia::render('maintenanceCompany/Index', [

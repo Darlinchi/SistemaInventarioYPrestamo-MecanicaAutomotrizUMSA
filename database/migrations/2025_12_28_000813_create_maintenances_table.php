@@ -13,18 +13,19 @@ return new class extends Migration
     {
         Schema::create('maintenances', function (Blueprint $table) {
             $table->id();// id_mantenimiento
-        
+
             // Relación con el Equipo (Equipment)
             $table->foreignId('equipment_id')
                 ->constrained('equipment')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
-            
+
             // Atributos de tiempo y actividad
             $table->date('fecha_mantenimiento');
             $table->time('hora_inicio')->nullable();
             $table->time('hora_fin')->nullable();
             $table->text('actividad');
+            $table->enum('estado_mantenimiento', ['En Proceso', 'Completado'])->default('En Proceso');
             $table->timestamps();
         });
     }

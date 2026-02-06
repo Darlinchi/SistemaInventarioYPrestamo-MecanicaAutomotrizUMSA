@@ -27,7 +27,7 @@ import borrowersRoutes from '@/routes/borrowers';
 // Rutas de los prestamos
 import loansRoutes from '@/routes/loans';
 // Rutas de las mantenimiento
-import maintenanceRoutes from '@/routes/maintenance';
+import maintenancesRoutes from '@/routes/maintenances';
 // Rutas de las empresas de mantenimiento
 import maintenanceCompanyRoutes from '@/routes/maintenanceCompanies';
 
@@ -69,7 +69,7 @@ const mainNavItems = computed(() => {
 
         items.push({
             title: 'Mantenimiento',
-            href: maintenanceRoutes.index.url(),
+            href: maintenancesRoutes.index.url(),
             icon: Settings,
         });
 
