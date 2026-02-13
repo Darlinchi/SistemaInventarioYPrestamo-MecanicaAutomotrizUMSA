@@ -170,3 +170,53 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* Para imprecion */
+@media print {
+    /* 1. Ocultar absolutamente todo el sitio por defecto */
+    body * {
+        visibility: hidden !important;
+    }
+
+    /* 2. Hacer visible solo el contenedor del modal y sus descendientes */
+    /* Nota: Usamos selectores generales para que sirva para cualquier modal futuro */
+    .fixed.inset-0,
+    .relative.bg-white,
+    .relative.bg-white * {
+        visibility: visible !important;
+    }
+
+    /* 3. Ajustar el contenedor para que sea una "hoja" de papel */
+    .relative.bg-white {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        max-height: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        border: none !important;
+    }
+
+    /* 4. Clases de utilidad para control total */
+    .no-print {
+        display: none !important;
+    }
+
+    .print-only {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    /* 5. Asegurar que los colores y bordes de la tabla institucional se vean */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* 6. Configuración de la página A4 */
+    @page {
+        size: auto;
+        margin: 1.5cm;
+    }
+}

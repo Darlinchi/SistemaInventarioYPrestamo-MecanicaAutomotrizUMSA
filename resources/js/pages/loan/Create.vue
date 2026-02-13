@@ -8,7 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { ref, computed, watch } from 'vue';
 import loanRoutes from '@/routes/loans';
-import { ArrowLeft, Save, Loader2, Cog, Package, Search, ClipboardPen, XCircle } from 'lucide-vue-next';
+import { ArrowLeft, Save, Loader2, Cog, Package, Search, ClipboardPen, XCircle, User, Calendar, Clock,
+    ClipboardCheck, BookMarked
+ } from 'lucide-vue-next';
 
 const props = defineProps<{
     borrowers: Array<any>;
@@ -132,7 +134,7 @@ function submit() {
 
                         <!--Logica con el seleccionador -->
                         <div class="grid gap-2">
-                            <Label>Responsable</Label>
+                            <Label><User class="w-4 h-4 text-neutral-700" /> Responsable</Label>
                             <select v-model="form.borrower_id" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm">
                                 <option value="" disabled>Seleccione un docente/auxiliar</option>
                                 <option v-for="b in filteredBorrowers" :key="b.id" :value="b.id">
@@ -143,7 +145,7 @@ function submit() {
                         </div>
 
                         <div class="grid gap-2">
-                            <Label>Materia</Label>
+                            <Label><BookMarked class="w-4 h-4 text-neutral-700" />Materia</Label>
                             <select v-model="form.subject_id" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm disabled:bg-neutral-50">
                                 <option value="" disabled>Seleccione la materia</option>
                                 <option v-for="s in filteredSubjects" :key="s.id" :value="s.id">
@@ -154,12 +156,12 @@ function submit() {
                         </div>
 
                         <div class="grid gap-2">
-                            <Label for="fecha_prestamo">Fecha de Préstamo</Label>
+                            <Label for="fecha_prestamo"><Calendar class="w-4 h-4 text-orange-400" />Fecha de Préstamo</Label>
                             <Input id="fecha_prestamo" v-model="form.fecha_prestamo" type="date":max="today"/>
                             <InputError :message="form.errors.fecha_prestamo" />
                         </div>
                         <div class="grid gap-2">
-                            <Label for="hora_inicio">Hora de Inicio</Label>
+                            <Label for="hora_inicio"><Clock class="w-4 h-4 text-blue-600" />Hora de Inicio</Label>
                             <Input id="hora_inicio" v-model="form.hora_inicio" type="time":max="now"/>
                             <InputError :message="form.errors.hora_inicio" />
                         </div>

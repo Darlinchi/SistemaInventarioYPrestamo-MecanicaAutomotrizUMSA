@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Edit, CheckCircle, Package, XCircle, List, Loader2, Clock, History, Calendar, SquarePen, Eraser, ClipboardPen } from 'lucide-vue-next';
+import { Plus, Search, Edit, CheckCircle, Package, XIcon, List, Loader2, Clock, History, Calendar,
+    User, SquarePen, Eraser, ClipboardPen, BookMarked } from 'lucide-vue-next';
 import loanRoutes from '@/routes/loans';
 
 interface Item {
@@ -322,11 +323,11 @@ watch(isReturnModalOpen, (isOpen) => {
                 </div>
                 <div v-if="activeTab === 'activos'" class="space-y-4">
                     <div v-for="loan in filteredLoans" :key="loan.id"
-                        class="bg-blue-50 border border-blue-100 rounded-2xl p-6 flex justify-between items-start shadow-sm hover:shadow-md transition">
+                        class="group border border-blue-100 bg-blue-50/50 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center transition-all duration-300 shadow-sm hover:shadow-xl hover:border-blue-400 hover:-translate-y-1 mb-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-12 w-full">
                             <div class="col-span-1">
                                 <div class="flex items-center gap-3 mb-2">
-                                    <span class="bg-white px-3 py-1 rounded-full text-[10px] font-bold uppercase border border-blue-200">
+                                    <span class="bg-white px-3 py-1 rounded-full text-[12px] font-bold uppercase border border-blue-200">
                                         Items Prestados
                                     </span>
                                 </div>
@@ -354,9 +355,6 @@ watch(isReturnModalOpen, (isOpen) => {
                                                 <div class="flex flex-col">
                                                     <span class="text-xs font-bold text-neutral-800">{{ item.nombre_item }}</span>
                                                 </div>
-                                                <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-blue-100 text-blue-700 border border-blue-200">
-                                                    {{ item.pivot?.estado_devolucion || 'Prestado' }}
-                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -365,25 +363,37 @@ watch(isReturnModalOpen, (isOpen) => {
 
                             <div>
                                 <div class="mb-4">
-                                    <p class="text-xs text-neutral-400 uppercase font-bold mb-1">Usuario:</p>
+                                    <p class="flex items-center gap-1 text-xs text-neutral-700 uppercase font-bold mb-1">
+                                        <User class="w-4 h-4 text-green-600" />
+                                        <span>Usuario</span>
+                                    </p>
                                     <p class="text-sm font-bold text-neutral-800">{{ loan.borrower.nombresP }} {{ loan.borrower.apellidosP }}</p>
                                     <p class="text-xs text-neutral-500 italic">
                                         {{ loan.borrower.teacher ? 'Docente' : 'Auxiliar' }}
                                     </p>
                                 </div>
                                 <div>
-                                    <p class="text-xs text-neutral-400 uppercase font-bold mb-1">Hora de inicio:</p>
+                                    <p class="flex items-center gap-1 text-xs text-neutral-700 uppercase font-bold mb-1">
+                                        <Clock class="w-4 h-4 text-neutral-800" />
+                                        <span>Hora de inicio</span>
+                                    </p>
                                     <p class="text-sm font-bold text-neutral-800">{{ loan.hora_inicio }}</p>
                                 </div>
                             </div>
 
                             <div>
                                 <div class="mb-4">
-                                    <p class="text-xs text-neutral-400 uppercase font-bold mb-1">Fecha:</p>
+                                    <p class="flex items-center gap-1 text-xs text-neutral-700 uppercase font-bold mb-1">
+                                        <Calendar class="w-4 h-4 text-neutral-800" />
+                                        <span>Fecha</span>
+                                    </p>
                                     <p class="text-sm font-bold text-neutral-800">{{ loan.fecha_prestamo }}</p>
                                 </div>
                                 <div>
-                                    <p class="text-xs text-neutral-400 uppercase font-bold mb-1">Materia:</p>
+                                    <p class="flex items-center gap-1 text-xs text-neutral-700 uppercase font-bold mb-1">
+                                        <BookMarked class="w-4 h-4 text-neutral-800" />
+                                        <span>Materia y Sigla</span>
+                                    </p>
                                     <p class="text-sm font-bold text-neutral-800">{{ loan.subject.nombre_materia }} - {{ loan.subject.sigla }}</p>
                                 </div>
                             </div>
@@ -470,7 +480,7 @@ watch(isReturnModalOpen, (isOpen) => {
                             <p class="text-xs text-neutral-800 font-medium">Verifique los datos y el estado de los equipos recibidos</p>
                         </div>
                         <button @click="isReturnModalOpen = false" class="p-2 hover:bg-neutral-100 rounded-full transition-colors group">
-                            <XCircle class="w-7 h-7 text-neutral-300 group-hover:text-red-500 transition-colors"/>
+                            <XIcon class="w-7 h-7 text-neutral-300 group-hover:text-red-500 transition-colors"/>
                         </button>
                     </div>
 
@@ -478,14 +488,14 @@ watch(isReturnModalOpen, (isOpen) => {
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-neutral-50 rounded-2xl border border-neutral-200">
                             <div class="space-y-1">
-                                <p class="text-[13px] font-black text-neutral-400 uppercase tracking-widest">Responsable</p>
+                                <p class="text-[13px] font-black text-neutral-700 uppercase tracking-widest">Responsable</p>
                                 <p class="text-base font-bold text-neutral-900">{{ selectedLoan?.borrower.nombresP }} {{ selectedLoan?.borrower.apellidosP }}</p>
                                 <span class="inline-block px-2 py-0.5 rounded-md bg-blue-100 text-[13px] font-bold text-blue-700 uppercase tracking-tighter">
                                     {{ selectedLoan?.borrower.teacher ? 'Docente' : 'Auxiliar' }}
                                 </span>
                             </div>
                             <div class="space-y-1">
-                                <p class="text-[13px] font-black text-neutral-400 uppercase tracking-widest">Materia Asignada</p>
+                                <p class="text-[13px] font-black text-neutral-700 uppercase tracking-widest">Materia Asignada</p>
                                 <p class="text-base font-bold text-neutral-900">{{ selectedLoan?.subject.nombre_materia }}</p>
                                 <p class="text-[14px]  text-neutral-500 font-mono">{{ selectedLoan?.subject.sigla }}</p>
                             </div>

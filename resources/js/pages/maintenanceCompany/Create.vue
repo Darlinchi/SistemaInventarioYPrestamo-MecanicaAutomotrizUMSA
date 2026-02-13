@@ -65,17 +65,21 @@ function submit() {
                         <InputError :message="form.errors.nombre_empresa" />
                     </div>
 
-                    <div class="grid gap-2">
-                        <Label for="telefono"><Phone class="w-4 h-4 text-green-500"/> Teléfono de Contacto</Label>
-                        <Input id="telefono" v-model="form.telefono" type="text" placeholder="Ej. 2224455"/>
-                        <InputError :message="form.errors.telefono" />
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                        <div class="grid gap-2">
+                            <Label for="telefono"><Phone class="w-4 h-4 text-green-500"/> Teléfono de Contacto</Label>
+                            <Input id="telefono" v-model="form.telefono" type="text" placeholder="Ej. 2224455"/>
+                            <InputError :message="form.errors.telefono" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label for="direccion"><MapPin class="w-4 h-4 text-red-500"/> Dirección / Ubicación</Label>
+                            <Input id="direccion" v-model="form.direccion" type="text" placeholder="Ej. Av. 6 de Agosto #123"/>
+                            <InputError :message="form.errors.direccion" />
+                        </div>
+
                     </div>
 
-                    <div class="grid gap-2">
-                        <Label for="direccion"><MapPin class="w-4 h-4 text-red-500"/> Dirección / Ubicación</Label>
-                        <Input id="direccion" v-model="form.direccion" type="text" placeholder="Ej. Av. 6 de Agosto #123"/>
-                        <InputError :message="form.errors.direccion" />
-                    </div>
 
                     <div class="grid gap-2">
                         <Label for="descripcion_empresa"><AlignLeft class="w-4 h-4 text-orange-500"/> Descripción de Servicios</Label>

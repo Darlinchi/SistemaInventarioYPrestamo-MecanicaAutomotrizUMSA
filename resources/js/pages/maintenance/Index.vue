@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Plus, Wrench, Building2, Calendar, Clock, Search, Package, Edit, CheckCircle, SquarePen, XCircle, History, Loader2, Eraser, ClipboardCheck, FileClock, FileCheck } from 'lucide-vue-next';
+import { Plus, Wrench, Building2, Calendar, Clock, Search, Package, CheckCircle, SquarePen, XIcon, History,
+    Loader2, Eraser, ClipboardCheck, FileClock, FileCheck } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -271,44 +272,41 @@ const processReturn = () => {
                                         />
                                     </div>
                                     <div class="min-w-0">
-                                        <p class="text-xs text-neutral-400 uppercase font-bold mb-1">Equipo</p>
+                                        <p class="text-xs text-neutral-800 uppercase font-bold mb-1">Equipo</p>
                                         <p class="text-base font-bold text-black truncate">{{ maint.equipment.item.nombre_item }}</p>
                                         <div class="flex items-center gap-2 mt-1">
-                                            <span v-if="maint.equipment.codigo_qr" class="text-[13px] bg-blue-600 text-white px-2 py-0.5 rounded font-mono font-bold uppercase">QR: {{ maint.equipment.codigo_qr }}</span>
+                                            <span v-if="maint.equipment.codigo_qr" class="text-[13px] bg-neutral-100 text-blue-600 px-2 py-0.5 rounded font-mono font-bold uppercase">QR: {{ maint.equipment.codigo_qr }}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="bg-white/50 p-3 rounded-2xl border border-transparent group-hover:border-neutral-100 transition-colors">
-                                <p class="text-xs text-neutral-400 uppercase font-bold mb-1">Empresa Encargada</p>
+                                <p class="flex items-center gap-1 text-xs text-neutral-700 uppercase font-bold mb-1">
+                                    <Building2 class="w-4 h-4 text-green-600"/>
+                                    <span>Empresa Encargada</span>
+                                </p>
                                 <div class="flex items-center gap-2 mt-1">
-                                    <Building2 class="w-4 h-4 text-green-600" />
                                     <p class="text-sm font-extrabold text-neutral-800">{{ maint.companies[0]?.nombre_empresa || 'Empresa No Registrada' }}</p>
                                 </div>
                             </div>
 
                             <div class="flex flex-col gap-2">
-                                <p class="text-xs text-neutral-400 uppercase font-bold mb-1">Fecha y Hora de Inicio</p>
+                                <p class="text-xs text-neutral-700 uppercase font-bold mb-1">Fecha y Hora de Inicio</p>
                                 <div class="flex items-center gap-4">
                                     <span class="flex items-center gap-1.5 text-xs font-bold text-neutral-700">
-                                        <Calendar class="w-4 h-4 text-neutral-400" /> {{ maint.fecha_mantenimiento }}
+                                        <Calendar class="w-4 h-4 text-neutral-800" /> {{ maint.fecha_mantenimiento }}
                                     </span>
                                     <span class="flex items-center gap-1.5 text-xs font-bold text-neutral-700">
-                                        <Clock class="w-4 h-4 text-neutral-400" /> {{ maint.hora_inicio }}
+                                        <Clock class="w-4 h-4 text-neutral-800" /> {{ maint.hora_inicio }}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="flex flex-col gap-2 ml-6">
-                            <Link :href="maintenancesRoutes.edit.url(maint.id)">
-                                <button class="flex items-center gap-2 bg-white border border-neutral-200 px-4 py-2 rounded-lg text-xs font-bold hover:bg-neutral-50 transition shadow-m">
-                                    <Edit class="w-4 h-4" /> Editar
-                                </button>
-                            </Link>
                             <button @click="openReturnModal(maint)" class="flex items-center gap-2 bg-blue-600 border border-neutral-200 px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition text-white shadow-m">
-                                <CheckCircle class="w-4 h-4"/> Finalizar
+                                <CheckCircle class="w-4 h-4"/> Completar
                             </button>
                         </div>
                     </div>
@@ -356,19 +354,19 @@ const processReturn = () => {
                             <h2 class="text-2xl font-black uppercase tracking-tighter text-neutral-900">Finalizar Mantenimiento</h2>
                         </div>
                         <button @click="isReturnModalOpen = false" class="p-2 hover:bg-neutral-100 rounded-full transition-colors group">
-                            <XCircle class="w-7 h-7 text-neutral-300 group-hover:text-red-500"/>
+                            <XIcon class="w-7 h-7 text-neutral-300 group-hover:text-red-500"/>
                         </button>
                     </div>
 
                     <div class="p-8 overflow-y-auto space-y-6 flex-1">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-neutral-50 rounded-2xl border border-neutral-200">
                             <div>
-                                <p class="text-[11px] font-black text-neutral-400 uppercase tracking-widest">Equipo en Reparación</p>
+                                <p class="text-[11px] font-black text-neutral-700 uppercase tracking-widest">Equipo en Reparación</p>
                                 <p class="text-base font-bold">{{ selectedMaint?.equipment.item.nombre_item }}</p>
-                                <p class="text-xs text-neutral-500">Código QR: {{ selectedMaint?.equipment.codigo_qr }}</p>
+                                <p class="text-xs text-blue-500">Código QR: {{ selectedMaint?.equipment.codigo_qr }}</p>
                             </div>
                             <div>
-                                <p class="text-[11px] font-black text-neutral-400 uppercase tracking-widest">Taller Responsable</p>
+                                <p class="text-[11px] font-black text-neutral-700 uppercase tracking-widest">Taller Responsable</p>
                                 <p class="text-base font-bold">{{ selectedMaint?.companies[0]?.nombre_empresa }}</p>
                             </div>
                         </div>

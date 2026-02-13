@@ -5,7 +5,9 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { ref, computed } from 'vue';
 import loans from '@/routes/loans';
-import { ArrowLeft, Loader2, Package, Search, CheckCircle, User, Save, Trash2, Plus } from 'lucide-vue-next';
+import { ArrowLeft, Loader2, Package, Search, CheckCircle, User, Save, Trash2, Plus, Calendar, Clock,
+    ClipboardCheck, BookMarked
+ } from 'lucide-vue-next';
 
 const props = defineProps<{
     loan: any;
@@ -70,27 +72,39 @@ const submit = () => {
                 <div class="lg:col-span-1 space-y-4">
                     <div class="bg-neutral-50 p-6 rounded-2xl border border-neutral-200 space-y-6">
                         <h3 class="font-bold text-lg border-b pb-2 flex items-center">
-                            <User class="w-5 h-5 mr-2 text-blue-500"/> Datos del Préstamo
+                            <ClipboardCheck class="w-5 h-5 mr-2 text-blue-500"/> Datos del Préstamo
                         </h3>
 
                         <div class="space-y-1">
-                            <p class="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Responsable</p>
+                            <p class="flex items-center gap-1 text-[12px] font-black text-neutral-700 uppercase tracking-widest">
+                                <User class="w-4 h-4 text-neutral-700" />
+                                <span>Responsable</span>
+                            </p>
                             <p class="text-sm font-bold text-neutral-800">{{ loan.borrower.nombresP }} {{ loan.borrower.apellidosP }}</p>
                         </div>
 
                         <div class="space-y-1">
-                            <p class="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Materia</p>
+                            <p class="flex items-center gap-1 text-[12px] font-black text-neutral-700 uppercase tracking-widest">
+                                <BookMarked class="w-4 h-4 text-neutral-700" />
+                                <span>Materia</span>
+                            </p>
                             <p class="text-xs font-black text-blue-600">{{ loan.subject.sigla }}</p>
                             <p class="text-sm font-bold text-neutral-800">{{ loan.subject.nombre_materia }}</p>
                         </div>
 
                         <div class="pt-4 border-t border-neutral-200 grid grid-cols-2 gap-4">
                             <div>
-                                <p class="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Fecha</p>
+                                <p class="flex items-center gap-1 text-[12px] font-black text-orange-400 uppercase tracking-widest">
+                                    <Calendar class="w-4 h-4 text-orange-400" />
+                                    <span>Fecha</span>
+                                </p>
                                 <p class="text-xs font-medium">{{ loan.fecha_prestamo }}</p>
                             </div>
                             <div>
-                                <p class="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Hora</p>
+                                <p class="flex items-center gap-1 text-[12px] font-black text-blue-600 uppercase tracking-widest">
+                                    <Clock class="w-4 h-4 text-blue-600" />
+                                    <span>Salida</span>
+                                </p>
                                 <p class="text-xs font-medium">{{ loan.hora_inicio }}</p>
                             </div>
                         </div>

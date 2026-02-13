@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Accessory extends Model
 {
@@ -10,6 +11,6 @@ class Accessory extends Model
 
     public function equipment(): BelongsTo
     {
-        return $this->belongsTo(Equipment::class, 'equipment_id');
+        return $this->belongsTo(Equipment::class, 'equipment_id', 'id');
     }
 }

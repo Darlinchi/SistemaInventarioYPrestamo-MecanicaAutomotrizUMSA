@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Equipment extends Model
 {
+    protected $casts = [
+        'fecha_adquisicion' => 'date',
+    ];
     // No se tiene ID auto-incremental propio, sino el del Item:
     protected $primaryKey = 'id';
     public $incrementing = false; // El ID no aumenta solo, lo hereda.

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Item;
+use App\Models\Equipment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect; // Para el redireccionamiento
@@ -63,14 +64,12 @@ class ItemController extends Controller
         ]);
 
         try {
-            return DB::transaction(function () use ($request, $validated) {
-                // Procesar Foto
-                $fotoPath = null;
-                if ($request->hasFile('foto')) {
-                    $fotoPath = $request->file('foto')->store('items', 'public');
-                }
+            $itemCreated = DB::transaction(function () use ($request, $validated) {
 
-                // Crear Item
+                $fotoPath = $request->hasFile('foto')
+                    ? $request->file('foto')->store('items', 'public')
+                    : null;
+
                 $item = Item::create([
                     'nombre_item' => $validated['nombre_item'],
                     'descripcion_item' => $validated['descripcion_item'],
@@ -78,38 +77,31 @@ class ItemController extends Controller
                     'foto' => $fotoPath,
                 ]);
 
-                // Si es equipo, crear relacion
                 if ($request->es_equipo) {
-                    $equipment = new \App\Models\Equipment([
-                        'id' => $item->id,
-                        'codigo_qr' => $validated['codigo_qr'],
-                        'marca' => $validated['marca'],
-                        'modelo' => $validated['modelo'],
-                        'serie' => $validated['serie'],
-                        'color' => $validated['color'] ?? null,
-                        'ubicacion' => $validated['ubicacion'],
-                        'rubro' => $validated['rubro'] ?? null,
-                        'fecha_adquisicion' => $validated['fecha_adquisicion'] ?? null,
-                        'observacion_equipo' => $validated['observacion_equipo'] ?? null,
-                    ]);
-                    $equipment->save();
+                    $equipment = $item->equipment()->create($request->only([
+                        'codigo_qr', 'marca', 'modelo', 'serie', 'ubicacion',
+                        'color', 'rubro', 'fecha_adquisicion', 'observacion_equipo'
+                    ]));
 
-                    if ($request->has('accesorios') && is_array($request->accesorios)) {
+                    if ($request->has('accesorios')) {
                         foreach ($request->accesorios as $acc) {
                             if (!empty($acc['nombre'])) {
                                 $equipment->accessories()->create([
                                     'nombre_accesorio' => $acc['nombre'],
-                                    'estado_accesorio' => $acc['estado'] ?? 'Bueno', // <--- Ahora toma el valor del Select
+                                    'estado_accesorio' => $acc['estado'] ?? 'Bueno',
                                 ]);
                             }
                         }
                     }
                 }
-                return Redirect::route('items.index')->with('success', 'Registro creado exitosamente');
+
+                return $item;
             });
+            return Redirect::route('items.index')->with('success', "¡{$itemCreated->nombre_item} creado exitosamente!");
+
         } catch (\Exception $e) {
-            // Muestra el error real si la transaccion falla
-            return back()->withErrors(['error' => 'Error al guardar: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'No se pudo crear el registro. Intente de nuevo.'])
+                        ->withInput();
         }
     }
 
@@ -147,13 +139,24 @@ class ItemController extends Controller
             'estado' => 'required|string',
             'foto' => 'nullable|image|max:2048', // Nueva foto es opcional
             'es_equipo' => 'required|boolean',
+            // Campos de Equipo
+            //'codigo_qr' => 'required_if:es_equipo,true|nullable|string'
+            'codigo_qr' => 'sometimes|nullable|string',
+            'marca' => 'sometimes|nullable|string',
+            'modelo' => 'sometimes|nullable|string',
+            'serie' => 'sometimes|nullable|string',
+            'ubicacion' => 'sometimes|nullable|string',
+
+            'color' => 'nullable|string',
+            'rubro' => 'nullable|string',
+            'fecha_adquisicion' => 'nullable|date',
+            'observacion_equipo' => 'nullable|string',
             'accesorios' => 'nullable|array',
         ]);
 
         return DB::transaction(function () use ($request, $item, $validated) {
-            // Actualiza foto si viene una nueva
+            // Manejo de Foto
             if ($request->hasFile('foto')) {
-                // Borrar foto vieja si existe
                 if ($item->foto) {
                     Storage::disk('public')->delete($item->foto);
                 }
@@ -170,25 +173,18 @@ class ItemController extends Controller
             if ($request->es_equipo) {
                 $equipment = $item->equipment()->updateOrCreate(
                     ['id' => $item->id],
-                    [
-                        'codigo_qr' => $request->codigo_qr,
-                        'ubicacion' => $request->ubicacion,
-                        'color' => $request->color,
-                        'marca' => $request->marca,
-                        'modelo' => $request->modelo,
-                        'serie' => $request->serie,
-                        'rubro' => $request->rubro,
-                        'fecha_adquisicion' => $request->fecha_adquisicion,
-                        'observacion_equipo' => $request->observacion_equipo,
-                    ]
+                    $request->only([
+                        'codigo_qr', 'ubicacion', 'color', 'marca',
+                        'modelo', 'serie', 'rubro', 'fecha_adquisicion', 'observacion_equipo'
+                    ])
                 );
 
                 // Sincronizar Accesorios
-                $equipment->accessories()->delete();
                 if ($request->has('accesorios')) {
+                    $item->equipment->accessories()->delete();
                     foreach ($request->accesorios as $acc) {
                         if (!empty($acc['nombre'])) {
-                            $equipment->accessories()->create([
+                            $item->equipment->accessories()->create([
                                 'nombre_accesorio' => $acc['nombre'],
                                 'estado_accesorio' => $acc['estado'] ?? 'Bueno',
                             ]);
