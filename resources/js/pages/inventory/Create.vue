@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { ref } from 'vue';
 import items from '@/routes/items';
 import { Plus, Trash2, Image as ImageIcon, ArrowLeft, Save, Loader2, Wrench, Package, QrCode, Rows3,
-    ImageUp, ListPlus, AlignLeft, Hash, PencilLine, Grid3X3, PaintBucket, BookText, CalendarDays } from 'lucide-vue-next';
+    ImageUp, ListPlus, AlignLeft, Hash, PencilLine, PaintBucket, BookText, CalendarDays } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Nuevo Item', href: items.create.url(), },
@@ -24,24 +24,28 @@ const photoPreview = ref<string | null>(null);
 
 // Formulario con los campos correspondietnes
 const initialValues = {
+    codigo_qr: "",
     nombre_item: "",
+    ubicacion_item: "",
     descripcion_item: "",
-    estado: "Disponible", // Valor por defecto
+    observacion_item: "",
     foto: null as File | null,
 
     // Datos especificos de Equipo en caso de que lo sea
-    es_equipo: false,
-    codigo_qr: "",
-    ubicacion: "",
+    es_equipo: true,
+    estado_equipo: "Disponible", // Valor por defecto o Nuevo pregutar importante
     color: "",
     marca: "",
     modelo: "",
     serie: "",
     rubro: "",
     fecha_adquisicion: "",
-    observacion_equipo: "",
     // Lista de accesorios
     accesorios: [] as Array<{ nombre: string; estado: "Bueno" }>,
+    // Datos especificos de Herramienta en caso de que lo sea
+    es_herramienta: false,
+    estado_herramienta: "Disponible", // Valor por defecto o Nuevo pregutar importante
+    marca_modelo: "",
 }
 const form = useForm(initialValues);
 
@@ -49,16 +53,14 @@ const form = useForm(initialValues);
 const setTipoItem = (tipo: 'herramienta' | 'equipo') => {
     tipoItem.value = tipo;
     form.es_equipo = (tipo === 'equipo');
+    (form as any).es_herramienta = (tipo === 'herramienta');
     if (tipo === 'herramienta') {
-        form.codigo_qr = "";
         form.marca = "";
         form.modelo = "";
         form.serie = "";
-        form.ubicacion = "";
         form.color = "";
         form.rubro = "";
         form.fecha_adquisicion = "";
-        form.observacion_equipo = "";
         form.accesorios = [];
     }
 };
@@ -140,11 +142,18 @@ function submit() {
 
                 <div class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-4">
                     <h3 class="font-bold text-lg border-b pb-2">Información General</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                        <div class="grid gap-2">
+                            <Label><QrCode class="w-5 h-5 text-neutral-900"/> Codigo QR </Label>
+                            <Input id="codigo_qr" v-model="form.codigo_qr" type="text"placeholder="Ej. 1234567"/>
+                            <InputError :message="form.errors.codigo_qr" />
+                        </div>
 
-                    <div class="grid gap-2">
-                        <Label for="nombre_item"><PencilLine class="w-5 h-5 text-neutral-900"/> Nombre del Item</Label>
-                        <Input id="nombre_item" v-model="form.nombre_item" type="text" placeholder="Ej. Éscaner automotriz..." />
-                        <InputError :message="form.errors.nombre_item" />
+                        <div class="grid gap-2">
+                            <Label for="nombre_item"><PencilLine class="w-5 h-5 text-neutral-900"/> Nombre del Item</Label>
+                            <Input id="nombre_item" v-model="form.nombre_item" type="text" placeholder="Ej. Éscaner automotriz..." />
+                            <InputError :message="form.errors.nombre_item" />
+                        </div>
                     </div>
 
                     <div class="grid gap-2">
@@ -169,22 +178,46 @@ function submit() {
                         />
                         <InputError :message="form.errors.foto" />
                     </div>
+                    <div v-if="tipoItem === 'herramienta'" class="grid gap-2">
+                        <Label><Rows3 class="w-4 h-4 text-neutral-900"/> Ubicación en Taller </Label>
+                        <Input id="ubicacion_item" v-model="form.ubicacion_item" type="text" placeholder="Ej. Estante A-1"/>
+                        <InputError :message="form.errors.ubicacion_item" />
+                    </div>
 
-                    <div class="grid gap-2">
-                        <Label for="descripcion"><AlignLeft class="w-5 h-5 text-neutral-900"/> Descripción del Item</Label>
-                        <Textarea id="descripcion_item" v-model="form.descripcion_item" :rows="4" placeholder="Detalles técnicos..." />
-                        <InputError :message="form.errors.descripcion_item" />
+                    <div v-if="tipoItem === 'equipo'" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                        <div class="grid gap-2">
+                            <Label><Rows3 class="w-4 h-4 text-neutral-900"/> Ubicación en Taller </Label>
+                            <Input id="ubicacion_item" v-model="form.ubicacion_item" type="text" placeholder="Ej. Estante A-1"/>
+                            <InputError :message="form.errors.ubicacion_item" />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label><Hash class="w-4 h-4 text-neutral-900"/> Estado del Equipo</Label>
+                            <select v-model="form.estado_equipo" class="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm">
+                                <option value="Disponible">Disponible</option>
+                                <option value="Nuevo">Nuevo</option>
+                            </select>
+                            <InputError :message="form.errors.estado_equipo" />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                        <div class="grid gap-2">
+                            <Label for="descripcion"><AlignLeft class="w-5 h-5 text-neutral-900"/> Descripción del Item</Label>
+                            <Textarea id="descripcion_item" v-model="form.descripcion_item" :rows="4" placeholder="Detalles técnicos..." />
+                            <InputError :message="form.errors.descripcion_item" />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label><AlignLeft class="w-5 h-5 text-neutral-900"/> Observación del Item</Label>
+                            <Textarea id="observacion_item" v-model="form.observacion_item" :rows="4" placeholder="Notas adicionales..." />
+                            <InputError :message="form.errors.observacion_item" />
+                        </div>
                     </div>
                 </div>
 
                 <div v-if="tipoItem === 'equipo'" class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm animate-in fade-in slide-in-from-top-4">
                     <h3 class="font-bold text-lg border-b pb-2 mb-4">Detalles del Equipo</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                        <div class="grid gap-2">
-                            <Label><QrCode class="w-5 h-5 text-neutral-900"/> Codigo QR </Label>
-                            <Input id="codigo_qr" v-model="form.codigo_qr" type="text"placeholder="Ej. 1234567"/>
-                            <InputError :message="form.errors.codigo_qr" />
-                        </div>
+
                         <div class="grid gap-2">
                             <Label><Hash class="w-4 h-4 text-neutral-900"/> Serie</Label>
                             <Input id="serie" v-model="form.serie" type="text" placeholder="Ej. XYZ1234"/>
@@ -201,11 +234,6 @@ function submit() {
                             <InputError :message="form.errors.modelo" />
                         </div>
                         <div class="grid gap-2">
-                            <Label><Rows3 class="w-4 h-4 text-neutral-900"/> Ubicación en Taller </Label>
-                            <Input id="ubicacion" v-model="form.ubicacion" type="text" placeholder="Ej. Estante A-1"/>
-                            <InputError :message="form.errors.ubicacion" />
-                        </div>
-                        <div class="grid gap-2">
                             <Label><BookText class="w-4 h-4 text-neutral-900"/> Rubro</Label>
                             <Input id="rubro" v-model="form.rubro" type="text" placeholder="Ej. Equipos de diagnóstico"/>
                             <InputError :message="form.errors.rubro"/>
@@ -220,11 +248,6 @@ function submit() {
                             <Input id="color" v-model="form.color" type="text" placeholder="Ej. Negro"/>
                             <InputError :message="form.errors.color" />
                         </div>
-                    </div>
-                    <div class="grid gap-2">
-                        <Label><AlignLeft class="w-5 h-5 text-neutral-900"/> Observación</Label>
-                        <Textarea id="observacion_equipo" v-model="form.observacion_equipo" placeholder="Notas adicionales..." />
-                        <InputError :message="form.errors.observacion_equipo" />
                     </div>
                 </div>
 
@@ -254,6 +277,26 @@ function submit() {
                         </Button>
                     </div>
                     <p v-if="form.accesorios.length === 0" class="text-sm text-neutral-400 italic">No se han agregado accesorios.</p>
+                </div>
+
+                <div v-if="tipoItem === 'herramienta'" class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm animate-in fade-in slide-in-from-top-4">
+                    <h3 class="font-bold text-lg border-b pb-2 mb-4">Detalles de la Herramienta</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+
+                        <div class="grid gap-2">
+                            <Label><Hash class="w-4 h-4 text-neutral-900"/> Estado de la Herramienta</Label>
+                            <select v-model="form.estado_herramienta" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm">
+                                <option value="Disponible">Disponible</option>
+                                <option value="Nuevo">Nuevo</option>
+                            </select>
+                            <InputError :message="form.errors.estado_herramienta" />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label><Package class="w-4 h-4 text-neutral-900"/> Marca/Modelo </Label>
+                            <Input id="marca_modelo" v-model="form.marca_modelo" type="text" placeholder="Ej. Launch"/>
+                            <InputError :message="form.errors.marca_modelo" />
+                        </div>
+                    </div>
                 </div>
 
                 <div class="flex gap-4">

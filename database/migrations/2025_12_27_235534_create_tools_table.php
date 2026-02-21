@@ -11,19 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('item_loan', function (Blueprint $table) {
-            $table->foreignId('item_id')->constrained('items')->onDelete('cascade');
-            $table->foreignId('loan_id')->constrained('loans')->onDelete('cascade');
+        Schema::create('tools', function (Blueprint $table) {
+            // El id de esta tabla es al mismo tiempo la llave foránea de la tabla items
+            $table->foreignId('id')
+                ->primary()
+                ->constrained('items')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
 
-            // Atributo adicional para el control de calidad
-            $table->enum('estado_devolucion', [
-                'Prestado',
+            $table->string('marca_modelo', 200)->nullable();
+            $table->enum('estado_herramienta', [
+                'Nuevo',
                 'Disponible',
+                'Prestado',
                 'Dañado',
                 'Extraviado',
                 'Baja'
             ])->default('Disponible');
-            $table->primary(['item_id', 'loan_id']);
             $table->timestamps();
         });
     }
@@ -33,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('item_loan');
+        Schema::dropIfExists('tools');
     }
 };

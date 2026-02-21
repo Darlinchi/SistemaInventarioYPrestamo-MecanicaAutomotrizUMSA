@@ -12,21 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('items', function (Blueprint $table) {
-            $table->id();// Representa tu id_item
+            $table->id();
+            $table->string('codigo_qr', 100)->unique()->nullable();
             $table->string('nombre_item', 100);
             $table->string('foto', 255)->nullable();
-
-            // Usamos el ENUM tal cual lo diseñaste
-            $table->enum('estado', [
-                'Disponible',
-                'Prestado',
-                'Mantenimiento',
-                'Dañado',
-                'Extraviado',
-                'Baja'
-            ])->default('Disponible');
-
+            $table->string('ubicacion_item', 100)->nullable();
             $table->text('descripcion_item')->nullable();
+            $table->text('observacion_item')->nullable();
             $table->timestamps(); // Esto añade created_at y updated_at automáticamente
         });
     }

@@ -45,8 +45,10 @@ const form = useForm({
     borrower_id: '',
     subject_id: '',
     items: [] as number[], // IDs de equipos/herramientas
-    fecha_prestamo: today,
+    fecha_salida: today,
     hora_inicio: now,
+    hora_fin_prevista: '',
+    fecha_retorno_prevista: '',
 });
 
 // Logica de filtrado cruzado para la seleccion de materia y responsable
@@ -84,6 +86,28 @@ watch(() => form.subject_id, (newSubId) => {
     }
 });
 
+watch(() => form.hora_inicio, (newTime) => {
+    if (newTime) {
+        const [h, m] = newTime.split(':');
+        let calculatedHour = (parseInt(h) + 2);
+
+        // Si pasa de 24, vuelve a empezar (ej. 23 + 2 = 01)
+        if (calculatedHour >= 24) calculatedHour -= 24;
+
+        const endHour = String(calculatedHour).padStart(2, '0');
+
+        // Asignamos directamente al form
+        form.hora_fin_prevista = `${endHour}:${m}`;
+        console.log("Hora fin calculada:", form.hora_fin_prevista); // Mira tu consola (F12) para probar
+    }
+}, { immediate: true }); // 'immediate' hace que calcule incluso al cargar la página
+
+watch(() => form.fecha_salida, (newVal) => {
+    if (newVal) {
+        form.fecha_retorno_prevista = newVal;
+    }
+}, { immediate: true });
+
 const resetFilters = () => {
     form.borrower_id = '';
     form.subject_id = '';
@@ -91,18 +115,55 @@ const resetFilters = () => {
 
 // 2. Filtrar ítems por el buscador
 const filteredItems = computed(() => {
-    return props.items.filter(item =>
-        item.nombre_item.toLowerCase().includes(searchTerm.value.toLowerCase())
-    );
+    return props.items.filter(item => {
+        // 1. Obtener el estado real
+        const estado = item.equipment?.estado_equipo || item.tool?.estado_herramienta;
+
+        // 2. Solo permitir 'Disponible' o 'Nuevo'
+        const esValido = estado === 'Disponible' || estado === 'Nuevo';
+
+        // 3. Aplicar filtro de búsqueda por nombre o marca
+        const search = searchTerm.value.toLowerCase();
+        const coincideBusqueda =
+            item.nombre_item.toLowerCase().includes(search) ||
+            (item.equipment?.marca || '').toLowerCase().includes(search) ||
+            (item.tool?.marca_modelo || '').toLowerCase().includes(search);
+
+        return esValido && coincideBusqueda;
+    });
 });
+
+// Función para obtener el estado sin importar el tipo
+const getItemStatus = (item: any) => {
+    if (item.equipment) return item.equipment.estado_equipo;
+    if (item.tool) return item.tool.estado_herramienta;
+    return 'Desconocido';
+};
+// Función para saber si está disponible (Opcional: para bloquear selección)
+const isAvailable = (item: any) => {
+    const status = getItemStatus(item);
+    return status === 'Disponible' || status === 'Nuevo';
+};
 
 const toggleItemSelection = (id: number) => {
     const index = form.items.indexOf(id);
     if (index > -1) form.items.splice(index, 1);
     else form.items.push(id);
 };
-
 function submit() {
+    form.post('/dashboard/loans', { // <--- Ruta manual temporal para probar
+        preserveScroll: true,
+        onSuccess: () => {
+            console.log("¡Éxito!");
+            form.reset();
+        },
+        onError: (errors) => {
+            console.log("Errores de validación:", errors);
+        }
+    });
+}
+
+function submit2() {
     form.post('/dashboard/loans', {
         preserveScroll: true,
         onSuccess: () => form.reset(),
@@ -156,14 +217,24 @@ function submit() {
                         </div>
 
                         <div class="grid gap-2">
-                            <Label for="fecha_prestamo"><Calendar class="w-4 h-4 text-orange-400" />Fecha de Préstamo</Label>
-                            <Input id="fecha_prestamo" v-model="form.fecha_prestamo" type="date":max="today"/>
-                            <InputError :message="form.errors.fecha_prestamo" />
+                            <Label for="fecha_salida"><Calendar class="w-4 h-4 text-orange-400" />Fecha de Préstamo</Label>
+                            <Input id="fecha_salida" v-model="form.fecha_salida" type="date":max="today"/>
+                            <InputError :message="form.errors.fecha_salida" />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="fecha_retorno_prevista"><Calendar class="w-4 h-4 text-orange-400" />Fecha Retorno Prevista</Label>
+                            <Input id="fecha_retorno_prevista" v-model="form.fecha_retorno_prevista" type="date"/>
+                            <InputError :message="form.errors.fecha_retorno_prevista" />
                         </div>
                         <div class="grid gap-2">
                             <Label for="hora_inicio"><Clock class="w-4 h-4 text-blue-600" />Hora de Inicio</Label>
                             <Input id="hora_inicio" v-model="form.hora_inicio" type="time":max="now"/>
                             <InputError :message="form.errors.hora_inicio" />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="hora_fin_prevista"><Clock class="w-4 h-4 text-blue-600" />Hora Fin Prevista</Label>
+                            <Input id="hora_fin_prevista" v-model="form.hora_fin_prevista" type="time"/>
+                            <InputError :message="form.errors.hora_fin_prevista" />
                         </div>
                     </div>
                 </div>
@@ -190,15 +261,24 @@ function submit() {
                                 v-for="item in filteredItems" :key="item.id"
                                 @click="toggleItemSelection(item.id)"
                                 :class="['p-3 border rounded-xl cursor-pointer transition-all flex items-center gap-3',
-                                    form.items.includes(item.id) ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-neutral-200 hover:border-neutral-400']"
+                                    form.items.includes(item.id) ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-neutral-200 hover:border-neutral-400',
+                                    !isAvailable(item) ? 'opacity-50 grayscale cursor-not-allowed' : '']"
                             >
                                 <div class="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center overflow-hidden">
                                     <img v-if="item.foto" :src="'/storage/' + item.foto" class="object-cover w-full h-full" />
                                     <Package v-else class="w-5 h-5 text-neutral-400" />
                                 </div>
-                                <div class="flex-1">
+                                <!--<div class="flex-1">
                                     <p class="text-sm font-bold text-black leading-none">{{ item.nombre_item }}</p>
                                     <p class="text-[10px] text-neutral-500 mt-1 uppercase">{{ item.estado }}</p>
+                                </div>
+                                -->
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold text-black leading-tight">{{ item.nombre_item }}</p>
+                                    <p :class="['text-[10px] font-bold mt-1 uppercase px-2 py-0.5 rounded-full inline-block',
+                                        isAvailable(item) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
+                                        {{ getItemStatus(item) }}
+                                    </p>
                                 </div>
                                 <div v-if="form.items.includes(item.id)" class="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
                                     <Save class="w-3 h-3 text-white" />

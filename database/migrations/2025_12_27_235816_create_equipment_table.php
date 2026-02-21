@@ -20,15 +20,22 @@ return new class extends Migration
                 ->onUpdate('cascade');
 
             // Atributos específicos que nos pediste
-            $table->string('codigo_qr', 100)->unique()->nullable();
-            $table->string('ubicacion', 100)->nullable();
+            $table->enum('estado_equipo', [
+                'Nuevo',
+                'Disponible',
+                'Prestado',
+                'Mantenimiento',
+                'Reparado',
+                'Dañado',
+                'Extraviado',
+                'Baja'
+            ])->default('Disponible');
             $table->string('color', 50)->nullable();
             $table->string('marca', 100)->nullable();
             $table->string('modelo', 100)->nullable();
             $table->string('serie', 100)->unique()->nullable();
             $table->string('rubro', 100)->nullable();
             $table->date('fecha_adquisicion')->nullable();
-            $table->text('observacion_equipo')->nullable();
             $table->timestamps();
         });
     }

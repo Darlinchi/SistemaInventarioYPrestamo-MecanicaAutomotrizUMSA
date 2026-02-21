@@ -17,28 +17,41 @@ interface Accessory {
     estado_accesorio: string;
 }
 interface Equipment {
-    codigo_qr?: string;
-    ubicacion?: string;
+    estado_equipo?: string;
     marca?: string;
     modelo?: string;
     serie?: string;
     rubro?: string;
     fecha_adquisicion?: string;
-    observacion_equipo?: string;
     color?: string;
     accessories?: Accessory[];
+    maintenances?: Maintenance[];
+}
+interface Maintenance {
+    id: number;
+    fecha_mantenimiento: string;
+    actividad: string;
+    estado_mantenimiento: 'En Proceso' | 'Completado';
+}
+interface Tool {
+    estado_herramienta?: string;
+    marca_modelo?: string;
 }
 interface Item {
     id: number;
+    codigo_qr: string;
+    ubicacion_item: string;
     nombre_item: string;
     foto: string;
     descripcion_item: string;
-    estado: string;
+    observacion_item: string;
     equipment?: Equipment | null;
+    tool?: Tool | null;
 }
 const props = defineProps<{
     items: Item[];
-    estados: string[];
+    estados_equipo: string[];
+    estados_herramienta: string[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -71,7 +84,8 @@ const activeTab = ref<'equipos' | 'herramientas'>('equipos');
 // El estado para el texto de búsqueda
 const searchQuery = ref('');
 // Variables para los filtros seleccionados
-const selectedStatus = ref('');
+const selectedStatusEquipo = ref('');
+const selectedStatusHerramienta = ref('');
 // Estado para el Popover de accesorios
 const openAccessoryId = ref<number | null>(null);
 const countEquipos = computed(() => props.items.filter(item => item.equipment !== null).length);
@@ -79,26 +93,24 @@ const countHerramientas = computed(() => props.items.filter(item => item.equipme
 
 // Buscador y filtro por estado
 const filteredItems = computed(() => {
-    // Filtra todo para mejor rendimiento
+    const query = searchQuery.value.toLowerCase().trim();
+
     return props.items.filter(item => {
+        // 1. Filtro de Pestaña (Prioridad alta)
+        const isEquipment = !!item.equipment;
+        if (activeTab.value === 'equipos' && !isEquipment) return false;
+        if (activeTab.value === 'herramientas' && isEquipment) return false;
 
-        // FILTRO 1: Pestaña (Equipos / Herramientas)
-        const isEquipment = item.equipment !== null;
-        const matchesTab = activeTab.value === 'equipos' ? isEquipment : !isEquipment;
-        if (!matchesTab) return false;
+        // 2. Filtros de Estado
+        if (activeTab.value === 'equipos' && selectedStatusEquipo.value && item.equipment?.estado_equipo !== selectedStatusEquipo.value) return false;
+        if (activeTab.value === 'herramientas' && selectedStatusHerramienta.value && item.tool?.estado_herramienta !== selectedStatusHerramienta.value) return false;
 
-        // FILTRO 2: Estado (Select)
-        const matchesStatus = selectedStatus.value === '' || item.estado === selectedStatus.value;
-        if (!matchesStatus) return false;
+        // 3. Búsqueda por texto (Solo si hay query)
+        if (!query) return true;
 
-        // FILTRO 3: Búsqueda (Texto)
-        const query = searchQuery.value.toLowerCase().trim();
-        if (query === '') return true;
-
-        // Buscamos de forma segura usando encadenamiento opcional (?.)
         return (
             item.nombre_item.toLowerCase().includes(query) ||
-            item.equipment?.codigo_qr?.toLowerCase().includes(query) ||
+            item.codigo_qr.toLowerCase().includes(query) ||
             item.equipment?.marca?.toLowerCase().includes(query) ||
             item.equipment?.modelo?.toLowerCase().includes(query)
         );
@@ -107,14 +119,17 @@ const filteredItems = computed(() => {
 
 // FUNCIONES DE UTILIDAD
 // Colores segun los estados para el item y para accesorios
+const statusColor = (status: string | null | undefined) => {
+    // Si no hay status, devolvemos el color gris por defecto de inmediato
+    if (!status) return 'bg-gray-100 text-gray-800 border-gray-200';
 
-const statusColor = (status: string) => {
     switch (status.toLowerCase()) {
-        case 'disponible': return 'bg-green-100 text-green-800 border-green-200';
+        case 'disponible':
+        case 'nuevo': return 'bg-green-100 text-green-800 border-green-200';
         case 'prestado': return 'bg-orange-100 text-orange-800 border-orange-200';
         case 'mantenimiento': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
         case 'dañado': return 'bg-red-100 text-red-800 border-red-200';
-        case 'baja': return 'bg-neutral-200 text-neutral-600 border-neutral-300';
+        case 'baja':  return 'bg-neutral-200 text-neutral-600 border-neutral-300';
         default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
 };
@@ -142,30 +157,51 @@ const closeConfirmBaja = () => {
     isConfirmingBaja.value = false;
     itemToBaja.value = null;
 };
+
 const executeBaja = () => {
     if (!itemToBaja.value) return;
 
     router.put(items.update.url(itemToBaja.value.id), {
         nombre_item: itemToBaja.value.nombre_item,
         descripcion_item: itemToBaja.value.descripcion_item,
-        estado: 'Baja',
+        codigo_qr: itemToBaja.value.codigo_qr,
+        ubicacion_item: itemToBaja.value.ubicacion_item,
+        observacion_item: itemToBaja.value.observacion_item,
         es_equipo: itemToBaja.value.equipment !== null,
         // Datos del equipo con encadenamiento opcional seguro
-        codigo_qr: itemToBaja.value.equipment?.codigo_qr,
+        estado_equipo: 'Baja',
         marca: itemToBaja.value.equipment?.marca,
         modelo: itemToBaja.value.equipment?.modelo,
         serie: itemToBaja.value.equipment?.serie,
-        ubicacion: itemToBaja.value.equipment?.ubicacion,
         color: itemToBaja.value.equipment?.color,
         rubro: itemToBaja.value.equipment?.rubro,
         fecha_adquisicion: itemToBaja.value.equipment?.fecha_adquisicion,
-        observacion_equipo: itemToBaja.value.equipment?.observacion_equipo,
+
+        accesorios: itemToBaja.value.equipment?.accessories?.map(acc => ({
+            nombre: acc.nombre_accesorio,
+            estado: acc.estado_accesorio
+        })) || [],
+
+        // Datos de la herramienta con encadenamiento opcional seguro
+        es_herramienta: itemToBaja.value.tool !== null,
+        estado_herramienta: itemToBaja.value.tool?.estado_herramienta,
+        marca_modelo: itemToBaja.value.tool?.marca_modelo,
     }, {
         preserveScroll: true,
         onSuccess: () => closeConfirmBaja(),
     });
 };
 
+// Si esto ya tiene datos gracias al controlador, el modal mostrará la fecha
+const ultimoMantenimiento = computed(() => {
+    const mantenimientos = itemInformacion.value?.equipment?.maintenances;
+    if (!mantenimientos || mantenimientos.length === 0) return null;
+
+    // Retorna el más reciente
+    return mantenimientos.reduce((prev, current) =>
+        (new Date(prev.fecha_mantenimiento) > new Date(current.fecha_mantenimiento)) ? prev : current
+    );
+});
 // Para visualizar toda la informacion y hacer reporte
 const viewInformacion = ref(false);
 const itemInformacion = ref<Item | null>(null);
@@ -216,7 +252,6 @@ const closePopovers = (e: MouseEvent) => {
 // Activar al entrar y desactivar al salir
 onMounted(() => window.addEventListener('click', closePopovers));
 onUnmounted(() => window.removeEventListener('click', closePopovers));
-
 
 </script>
 
@@ -310,9 +345,14 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                     </button>
                 </div>
 
-                <select v-model="selectedStatus" class="bg-neutral-100 border border-neutral-500 rounded-xl text-sm py-2 px-4 focus:ring-2 focus:ring-black cursor-pointer text-neutral-600 min-w-[180px]">
+                <select v-if="activeTab === 'equipos'" v-model="selectedStatusEquipo" class="bg-neutral-100 border border-neutral-500 rounded-xl text-sm py-2 px-4 focus:ring-2 focus:ring-black cursor-pointer text-neutral-600 min-w-[180px]">
                     <option value="">Todos los estados</option>
-                    <option v-for="estado in props.estados" :key="estado" :value="estado">{{ estado }}</option>
+                    <option v-for="estado_equipo in props.estados_equipo" :key="estado_equipo" :value="estado_equipo">{{ estado_equipo }}</option>
+                </select>
+
+                <select v-if="activeTab === 'herramientas'" v-model="selectedStatusHerramienta" class="bg-neutral-100 border border-neutral-500 rounded-xl text-sm py-2 px-4 focus:ring-2 focus:ring-black cursor-pointer text-neutral-600 min-w-[180px]">
+                    <option value="">Todos los estados</option>
+                    <option v-for="estado_herramienta in props.estados_herramienta" :key="estado_herramienta" :value="estado_herramienta">{{ estado_herramienta }}</option>
                 </select>
             </div>
 
@@ -321,13 +361,13 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                     <table class="w-full text-left min-w-max border-separate border-spacing-0">
                         <thead class="bg-neutral-200 border-b border-neutral-300 text-xs font-bold uppercase tracking-widest text-neutral-800">
                             <tr>
-                                <th v-if="activeTab === 'equipos'" class="p-4">Código QR</th>
+                                <th class="p-4">Código QR</th>
                                 <th class="p-4">Nombre</th>
                                 <th class="p-4">Foto</th>
-                                <th v-if="activeTab === 'herramientas'" class="p-4">Descripción</th>
                                 <th class="p-4">Estado</th>
-                                <th v-if="activeTab === 'equipos'" class="p-4">Ubicación</th>
+                                <th class="p-4">Ubicación</th>
                                 <th v-if="activeTab === 'equipos'" class="p-4">Accesorios</th>
+                                <th v-if="activeTab === 'herramientas'" class="p-4">Descripción</th>
                                 <!--
                                 <th v-if="activeTab === 'equipos'" class="p-4">Color</th>
                                 <th v-if="activeTab === 'equipos'" class="p-4">Marca</th>
@@ -343,7 +383,7 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                         </thead>
                         <tbody class="divide-y divide-neutral-100 text-sm">
                             <tr v-for="item in filteredItems" :key="item.id" class="hover:bg-neutral-50 transition-colors group">
-                                <td v-if="activeTab === 'equipos'" class="p-4 font-mono text-blue-600">{{ item.equipment?.codigo_qr }}</td>
+                                <td class="p-4 font-mono text-blue-600">{{ item.codigo_qr }}</td>
                                 <td class="p-4 font-bold text-black">{{ item.nombre_item }}</td>
                                 <td class="p-4">
                                     <div class="flex items-center gap-3">
@@ -359,13 +399,18 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                                         </div>
                                     </div>
                                 </td>
-                                <td v-if="activeTab === 'herramientas'" class="p-4 text-neutral-500 max-w-xs truncate">{{ item.descripcion_item }}</td>
-                                <td class="p-4">
-                                    <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border', statusColor(item.estado)]">
-                                        {{ item.estado }}
+                                <td v-if="activeTab === 'herramientas'" class="p-4">
+                                    <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border', statusColor(item.tool?.estado_herramienta?? '')]">
+                                        {{ item.tool?.estado_herramienta }}
                                     </span>
                                 </td>
-                                <td v-if="activeTab === 'equipos'" class="p-4 text-neutral-600">{{ item.equipment?.ubicacion }}</td>
+                                <td v-if="activeTab === 'equipos'" class="p-4">
+                                    <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border', statusColor(item.equipment?.estado_equipo)]">
+                                        {{ item.equipment?.estado_equipo }}
+                                    </span>
+                                </td>
+
+                                <td  class="p-4 text-neutral-600">{{ item.ubicacion_item }}</td>
                                 <td v-if="activeTab === 'equipos'" class="p-4 whitespace-nowrap">
                                     <div class="relative inline-block text-left">
                                         <button
@@ -397,6 +442,7 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                                         </div>
                                     </div>
                                 </td>
+                                <td v-if="activeTab === 'herramientas'" class="p-4 text-neutral-500 max-w-xs truncate">{{ item.descripcion_item }}</td>
                                 <!--
                                 <td v-if="activeTab === 'equipos'" class="p-4 text-neutral-600">{{ item.equipment?.color }}</td>
                                 <td v-if="activeTab === 'equipos'" class="p-4 font-semibold">{{ item.equipment?.marca }}</td>
@@ -490,106 +536,142 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                                         {{ itemInformacion?.nombre_item }}
                                     </h2>
                                 </div>
-                                <p class="text-neutral-500 text-sm leading-relaxed ">
-                                    {{ itemInformacion?.descripcion_item }}
-                                </p>
-                                <span :class="['px-3 py-1 rounded-full text-[10px] font-black uppercase border', statusColor(itemInformacion?.estado ?? '')]">
-                                    {{ itemInformacion?.estado }}
-                                </span>
-                                <div class="flex items-center gap-3 mt-2.5">
-                                    <div class="p-2 bg-white rounded-lg shadow-sm border border-neutral-100">
-                                        <QrCode class="w-5 h-5 text-neutral-900" />
+                                <div class="flex flex-wrap items-center gap-2 mb-2">
+                                    <span class="px-2 py-0.5 rounded-md bg-black text-white text-[10px] font-black uppercase tracking-widest">
+                                        {{ itemInformacion?.equipment ? 'Equipo' : 'Herramienta' }}
+                                    </span>
+                                    <span :class="['px-3 py-1 rounded-full text-[10px] font-black uppercase border shadow-sm', statusColor(itemInformacion?.equipment?.estado_equipo || itemInformacion?.tool?.estado_herramienta)]">
+                                        {{ itemInformacion?.equipment?.estado_equipo || itemInformacion?.tool?.estado_herramienta }}
+                                    </span>
+                                </div>
+
+                                <div class="flex items-center gap-4 py-3 border-y border-neutral-100 mt-4">
+                                    <div class="flex items-center gap-2">
+                                        <QrCode class="w-5 h-5 text-blue-600" />
+                                        <div>
+                                            <p class="text-[10px] text-neutral-700 uppercase font-black tracking-widest">Código QR</p>
+                                            <p class="text-sm font-mono font-black text-neutral-800">{{ itemInformacion?.codigo_qr }}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p class="text-[10px] text-neutral-700 uppercase font-black tracking-widest">Código QR</p>
-                                        <p class="text-sm font-mono font-bold text-blue-600">
-                                            {{ itemInformacion?.equipment?.codigo_qr || 'SIN CÓDIGO' }}
-                                        </p>
+                                    <div class="w-px h-8 bg-neutral-100"></div>
+                                    <div class="flex items-center gap-2">
+                                        <Rows3 class="w-5 h-5 text-green-600" />
+                                        <div>
+                                            <p class="text-[10px] text-neutral-700 uppercase font-black tracking-widest">Ubicación</p>
+                                            <p class="text-sm font-black text-neutral-800">{{ itemInformacion?.ubicacion_item }}</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div v-if="itemInformacion?.equipment" class="space-y-4">
-                                <h4 class="text-[14px] font-black text-neutral-700 uppercase tracking-widest border-b border-neutral-100 pb-2">Ficha Técnica</h4>
-                                <div class="grid grid-cols-1 gap-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="p-2 bg-blue-50 rounded-lg"><Hash class="w-4 h-4 text-neutral-900"/></div>
-                                        <div>
-                                            <p class="text-[12px] text-neutral-700 uppercase font-bold">Serie</p>
-                                            <p class="text-sm font-mono font-bold text-neutral-800">{{ itemInformacion.equipment.serie }}</p>
+                            <template v-if="itemInformacion?.equipment">
+                                <div class="space-y-4">
+                                    <h4 class="text-sm font-black text-neutral-900 uppercase tracking-widest flex items-center gap-2">
+                                        <FileText class="w-4 h-4" /> Ficha Técnica del Equipo
+                                    </h4>
+                                    <div class="grid grid-cols-1 gap-2">
+                                        <div class="flex items-center gap-3">
+                                            <div class="p-2 bg-blue-50 rounded-lg"><Hash class="w-4 h-4 text-neutral-900"/></div>
+                                            <div>
+                                                <p class="text-[12px] text-neutral-700 uppercase font-bold">Serie</p>
+                                                <p class="text-sm font-mono font-bold text-neutral-800">{{ itemInformacion.equipment.serie }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <div class="p-2 bg-blue-50 rounded-lg"><Package class="w-4 h-4 text-neutral-900"/></div>
+                                            <div>
+                                                <p class="text-[12px] text-neutral-700 uppercase font-bold">Marca / Modelo</p>
+                                                <p class="text-sm font-bold text-neutral-800">{{ itemInformacion.equipment.marca }} - {{ itemInformacion.equipment.modelo }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <div class="p-2 bg-green-50 rounded-lg"><BookText class="w-4 h-4 text-neutral-900" /></div>
+                                            <div>
+                                                <p class="text-[12px] text-neutral-700 uppercase font-bold">Rubro</p>
+                                                <p class="text-sm font-bold text-neutral-800">{{ itemInformacion.equipment.rubro }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <div class="p-2 bg-green-50 rounded-lg"><CalendarDays class="w-4 h-4 text-neutral-900"/></div>
+                                            <div>
+                                                <p class="text-[12px] text-neutral-700 uppercase font-bold">Fecha de Adquisición</p>
+                                                <p class="text-sm font-bold text-neutral-800">{{ formatDate(itemInformacion.equipment.fecha_adquisicion) }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <div class="p-2 bg-green-50 rounded-lg"><PaintBucket class="w-4 h-4 text-neutral-900" /></div>
+                                            <div>
+                                                <p class="text-[12px] text-neutral-700 uppercase font-bold">Color</p>
+                                                <p class="text-sm font-bold text-neutral-800">{{ itemInformacion?.equipment?.color }}</p>
+                                            </div>
                                         </div>
                                     </div>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <h4 class="text-sm font-black text-neutral-900 uppercase tracking-widest flex items-center gap-2">
+                                        <List class="w-4 h-4" /> Accesorios Incluidos
+                                    </h4>
+                                    <div v-if="itemInformacion.equipment.accessories?.length" class="grid gap-2">
+                                        <div v-for="acc in itemInformacion.equipment.accessories" :key="acc.id"
+                                            class="flex items-center justify-between p-2.5 bg-white border border-neutral-100 rounded-xl shadow-sm">
+                                            <span class="text-xs font-bold text-neutral-700">{{ acc.nombre_accesorio }}</span>
+                                            <span :class="['px-2 py-0.5 rounded-lg text-[9px] font-black uppercase border', statusColorA(acc.estado_accesorio)]">
+                                                {{ acc.estado_accesorio }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div v-else class="p-8 bg-neutral-50 rounded-2xl border-2 border-dashed border-neutral-200 text-center">
+                                        <p class="text-xs text-neutral-400 font-bold uppercase">Sin accesorios registrados</p>
+                                    </div>
+
+                                    <div v-if="ultimoMantenimiento" class="p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-[12px] text-blue-600 uppercase font-bold">Último mantenimiento</span>
+                                            <span class="text-sm font-bold text-neutral-800">{{ formatDate(ultimoMantenimiento.fecha_mantenimiento) }}</span>
+                                        </div>
+                                        <p class="text-xs text-neutral-600 bg-white/50 p-2 rounded-lg border border-blue-100 italic">
+                                            "{{ ultimoMantenimiento.actividad }}"
+                                        </p>
+                                    </div>
+                                    <div v-else class="p-4 border-2 border-dashed border-neutral-100 rounded-2xl text-center">
+                                        <p class="text-xs text-neutral-400 font-bold uppercase">No hay registros previos</p>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template v-else-if="itemInformacion?.tool">
+                                <div class="space-y-4">
+                                    <h4 class="text-sm font-black text-neutral-900 uppercase tracking-widest flex items-center gap-2">
+                                        <Wrench class="w-4 h-4" /> Detalle de Herramienta
+                                    </h4>
                                     <div class="flex items-center gap-3">
                                         <div class="p-2 bg-blue-50 rounded-lg"><Package class="w-4 h-4 text-neutral-900"/></div>
                                         <div>
-                                            <p class="text-[12px] text-neutral-700 uppercase font-bold">Marca / Modelo</p>
-                                            <p class="text-sm font-bold text-neutral-800">{{ itemInformacion.equipment.marca }} - {{ itemInformacion.equipment.modelo }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <div class="p-2 bg-green-50 rounded-lg"><Rows3 class="w-4 h-4 text-neutral-900"/></div>
-                                        <div>
-                                            <p class="text-[12px] text-neutral-700 uppercase font-bold">Ubicación</p>
-                                            <p class="text-sm font-bold text-neutral-800">{{ itemInformacion.equipment.ubicacion }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <div class="p-2 bg-green-50 rounded-lg"><BookText class="w-4 h-4 text-neutral-900" /></div>
-                                        <div>
-                                            <p class="text-[12px] text-neutral-700 uppercase font-bold">Rubro</p>
-                                            <p class="text-sm font-bold text-neutral-800">{{ itemInformacion.equipment.rubro }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <div class="p-2 bg-green-50 rounded-lg"><CalendarDays class="w-4 h-4 text-neutral-900"/></div>
-                                        <div>
-                                            <p class="text-[12px] text-neutral-700 uppercase font-bold">Fecha de Adquisición</p>
-                                            <p class="text-sm font-bold text-neutral-800">{{ formatDate(itemInformacion.equipment.fecha_adquisicion) }}</p>
+                                            <p class="text-[12px] text-neutral-700 uppercase font-bold">Marca / Modelo Específico</p>
+                                            <p class="text-sm font-bold text-neutral-800">{{ itemInformacion.tool.marca_modelo || 'Sin especificar' }}</p>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div class="space-y-4">
-                                <h4 class="text-[14px] font-black text-neutral-700 uppercase tracking-widest border-b border-neutral-100 pb-2 flex items-center gap-2">
-                                    <List class="w-4 h-4 stroke-neutral-800" />
-                                    <span>Accesorios</span>
-                                </h4>
-                                <div v-if="itemInformacion?.equipment?.accessories?.length" class="space-y-3 mt-2">
-                                    <div v-for="acc in itemInformacion.equipment.accessories" :key="acc.id" class="flex items-center justify-between p-2 bg-neutral-50 rounded-xl border border-neutral-100">
-                                        <span class="text-sm font-bold text-neutral-700">{{ acc.nombre_accesorio }}</span>
-                                        <span :class="['px-2.5 py-1 rounded-lg text-[10px] font-black uppercase border', statusColorA(acc.estado_accesorio)]">
-                                            {{ acc.estado_accesorio }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <div class="p-2 bg-green-50 rounded-lg"><PaintBucket class="w-4 h-4 text-neutral-900" /></div>
-                                    <div>
-                                        <p class="text-[12px] text-neutral-700 uppercase font-bold">Color</p>
-                                        <p class="text-sm font-bold text-neutral-800">{{ itemInformacion?.equipment?.color }}</p>
-                                    </div>
-                                </div>
-                            </div>
+                            </template>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div v-if="itemInformacion?.descripcion_item" class="mt-3 p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl">
                                 <p class="text-[14px] text-neutral-700 uppercase font-bold flex items-center gap-2 mb-1">
                                     <AlignLeft class="w-4 h-4 stroke-indigo-900" />
                                     <span>Descripción</span>
                                 </p>
-                                <p class="text-sm text-neutral-800 italic">"{{ itemInformacion?.descripcion_item }}"</p>
+                                <p class="text-sm leading-relaxed text-neutral-800 italic font-medium">"{{ itemInformacion?.descripcion_item }}"</p>
                             </div>
 
-                            <div v-if="itemInformacion?.equipment?.observacion_equipo" class="mt-3 p-4 bg-orange-50/50 border border-orange-100 rounded-xl">
-                                <p class="text-[14px] text-neutral-700 uppercase font-bold flex items-center gap-2 mb-1">
-                                    <AlignLeft class="w-4 h-4 stroke-orange-600" />
-                                    <span>Observación</span>
+                            <div v-if="itemInformacion?.observacion_item" class="mt-3 p-4 bg-orange-50/50 border border-orange-100 rounded-xl">
+                                <p class="text-[14px] text-amber-600 font-black uppercase mb-2 flex items-center gap-2">
+                                    <Eye class="w-3 h-3" /> Observaciones de Seguridad
                                 </p>
-                                <p class="text-sm text-neutral-800 italic">"{{ itemInformacion.equipment.observacion_equipo }}"</p>
+                                <p class="text-sm text-amber-900 italic font-medium">"{{ itemInformacion.observacion_item }}"</p>
                             </div>
                         </div>
                     </div>
@@ -608,7 +690,7 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                                         <span>{{ itemInformacion?.nombre_item }}</span>
                                     </div>
                                     <div class="flex justify-center gap-4 mt-1 text-[9px] font-bold uppercase">
-                                        <span>Código: {{ itemInformacion?.equipment?.codigo_qr || 'N/A' }}</span>
+                                        <span>Código: {{ itemInformacion?.codigo_qr || 'N/A' }}</span>
                                         <span>Fecha: {{ formatDate(new Date().toISOString()) }}</span>
                                     </div>
                                 </div>
@@ -621,12 +703,14 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                             <div class="grid grid-cols-2 border-b-2 border-neutral-800 bg-neutral-50">
                                 <div class="p-2 border-r-2 border-neutral-800">
                                     <p class="text-[9px] font-black uppercase text-neutral-800">Área / Ubicación:</p>
-                                    <p class="text-xs font-bold">{{ itemInformacion?.equipment?.ubicacion || 'ALMACÉN' }}</p>
+                                    <p class="text-xs font-bold">{{ itemInformacion?.ubicacion_item || 'ALMACÉN' }}</p>
                                 </div>
-                                <div class="p-2">
+                                <!--<div class="p-2">
                                     <p class="text-[9px] font-black uppercase text-neutral-800">Estado Técnico:</p>
                                     <p class="text-xs font-bold uppercase">{{ itemInformacion?.estado }}</p>
                                 </div>
+                                -->
+
                             </div>
 
                             <div class="grid grid-cols-3 border-b-2 border-neutral-800">
@@ -665,7 +749,7 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                             <div class="p-2 min-h-20">
                                 <p class="text-[9px] font-black uppercase text-neutral-800">Observaciones / Especificaciones de Seguridad:</p>
                                 <p class="text-[10px] italic leading-tight mt-1">
-                                    {{ itemInformacion?.equipment?.observacion_equipo || 'Sin observaciones adicionales.' }}
+                                    {{ itemInformacion?.observacion_item || 'Sin observaciones adicionales.' }}
                                 </p>
                             </div>
                         </div>

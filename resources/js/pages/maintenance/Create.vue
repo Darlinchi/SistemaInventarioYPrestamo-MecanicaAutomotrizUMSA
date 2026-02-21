@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { ref, computed } from 'vue';
-import { ArrowLeft, Wrench, Building2, Search, AlignLeft, Loader2, Save, ClipboardPen, Check, Package} from 'lucide-vue-next';
+import { ArrowLeft, Wrench, Building2, Search, Loader2, Save, ClipboardPen, Check, Package} from 'lucide-vue-next';
 
 // Props: Recibimos los equipos (Epson, Osciloscopios, etc.) y las empresas registradas
 const props = defineProps<{
@@ -159,7 +159,7 @@ const submit = () => {
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-bold text-black truncate">{{ unit.item.nombre_item }}</p>
                                     <p class="text-[10px] text-neutral-500 uppercase">Serie: {{ unit.serie || 'S/N' }}</p>
-                                    <p class="text-[9px] font-mono text-blue-600 font-bold uppercase">Cód: {{ unit.codigo_qr }}</p>
+                                    <p class="text-[9px] font-mono text-blue-600 font-bold uppercase">Cód: {{ unit.item.codigo_qr }}</p>
                                 </div>
 
                                 <div v-if="form.equipment_id === unit.id" class="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shrink-0">

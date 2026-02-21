@@ -66,8 +66,8 @@ class MaintenanceController extends Controller
                 $equipment = Equipment::findOrFail($validated['equipment_id']);
 
                 // Actualizamos el estado usando el ENUM que definiste
-                $equipment->item()->update([
-                    'estado' => 'Mantenimiento'
+                $equipment->update([
+                    'estado_equipo' => 'Mantenimiento'
                 ]);
 
                 return Redirect::route('maintenances.index')
@@ -112,14 +112,13 @@ class MaintenanceController extends Controller
             // 1. Finalizamos el mantenimiento
             $maintenance->update([
                 'hora_fin'             => $request->hora_fin,
-                'actividad'            => $request->observacion, // 'observacion' en Vue -> 'actividad' en DB
+                'actividad'            => $request->observacion,
                 'estado_mantenimiento' => 'Completado',
             ]);
 
             // 2. Actualizamos el estado del item (vinculado al equipo)
-            // Accedemos: Mantenimiento -> Equipo -> Item
-            $maintenance->equipment->item->update([
-                'estado' => $request->estado_equipo
+            $maintenance->equipment->update([
+                'estado_equipo' => $request->estado_equipo
             ]);
 
             DB::commit();

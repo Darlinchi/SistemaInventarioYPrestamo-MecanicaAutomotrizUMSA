@@ -10,9 +10,8 @@ class Loan extends Model
 {
     // Definicion de los campos que se pueden llenar masivamente
     protected $fillable = [
-        'user_id', 'borrower_id', 'subject_id',
-        'fecha_prestamo', 'hora_inicio', 'hora_fin',
-        'observacion', 'estado_prestamo'
+        'user_id', 'borrower_id', 'subject_id', 'fecha_salida', 'fecha_retorno', 'fecha_retorno_prevista',
+        'hora_inicio', 'hora_fin_prevista', 'hora_fin', 'observacion', 'estado_prestamo'
     ];
 
     // Relacion con quien realizo el prestamo (Staff/User)

@@ -98,7 +98,7 @@ const submit = () => {
                                     <Calendar class="w-4 h-4 text-orange-400" />
                                     <span>Fecha</span>
                                 </p>
-                                <p class="text-xs font-medium">{{ loan.fecha_prestamo }}</p>
+                                <p class="text-xs font-medium">{{ loan.fecha_salida }}</p>
                             </div>
                             <div>
                                 <p class="flex items-center gap-1 text-[12px] font-black text-blue-600 uppercase tracking-widest">
@@ -139,8 +139,11 @@ const submit = () => {
                                     <div class="w-8 h-8 rounded bg-white flex items-center justify-center border border-blue-100">
                                         <Package class="w-4 h-4 text-blue-500" />
                                     </div>
-                                    <div>
-                                        <p class="text-xs font-bold text-neutral-800">{{ item.nombre_item }}</p>
+                                    <div class="flex-1">
+                                        <p class="text-[14px] font-bold text-neutral-800 leading-tight">{{ item.nombre_item }}</p>
+                                        <p class="text-[10px] text-blue-500 font-black uppercase tracking-tighter">
+                                            {{ item.equipment ? 'Equipo' : 'Herramienta' }}
+                                        </p>
                                     </div>
                                 </div>
                                 <button type="button" @click="toggleItemSelection(item.id)" class="text-neutral-400 hover:text-red-500 p-2">
@@ -174,13 +177,15 @@ const submit = () => {
                                 </div>
                                 <div class="flex-1">
                                     <p class="text-[15px] font-bold text-neutral-800 leading-tight">{{ item.nombre_item }}</p>
+                                    <p class="text-[10px] text-blue-500 font-black uppercase tracking-tighter">
+                                        {{ item.equipment ? 'Equipo' : 'Herramienta' }}
+                                    </p>
                                 </div>
                                 <Plus class="w-4 h-4 text-neutral-300" />
                             </div>
                         </div>
                         <p v-if="availableItemsForSearch.length === 0 && searchTerm" class="text-center py-4 text-xs text-neutral-400">No se encontraron coincidencias</p>
                     </div>
-
                 </div>
             </form>
         </div>

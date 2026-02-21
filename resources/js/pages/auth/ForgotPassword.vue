@@ -7,15 +7,18 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { login } from '@/routes';
-import { email } from '@/routes/password';
+//import { email } from '@/routes/password';
+import password from '@/routes/password';
 import { Form, Head } from '@inertiajs/vue3';
 
 defineProps<{
     status?: string;
 }>();
+
+const emailRoute = (password as any).email || (password as any).confirmation;
 </script>
 
-<template>
+<!--<template>
     <AuthLayout
         title="Forgot password"
         description="Enter your email to receive a password reset link"
@@ -30,7 +33,10 @@ defineProps<{
         </div>
 
         <div class="space-y-6">
-            <Form v-bind="email.form()" v-slot="{ errors, processing }">
+            <Form v-bind="password.email.form()" v-slot="{ errors, processing }">
+                <!--<Form v-bind="email.form()" v-slot="{ errors, processing }">
+                -->
+<!--
                 <div class="grid gap-2">
                     <Label for="email">Email address</Label>
                     <Input
@@ -60,6 +66,17 @@ defineProps<{
                 <span>Or, return to</span>
                 <TextLink :href="login()">log in</TextLink>
             </div>
+        </div>
+    </AuthLayout>
+</template>
+-->
+
+<template>
+    <AuthLayout title="Forgot password" description="...">
+        <Head title="Forgot password" />
+        <div class="space-y-6">
+            <Form v-bind="emailRoute.form()" v-slot="{ errors, processing }">
+                </Form>
         </div>
     </AuthLayout>
 </template>

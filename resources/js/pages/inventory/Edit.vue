@@ -30,28 +30,36 @@ const photoPreview = ref<string | null>(props.item.foto ? `/storage/${props.item
 // Formulario con datos iniciales
 const form = useForm({
     _method: 'put', // para las fotos
+    codigo_qr: props.item.codigo_qr,
     nombre_item: props.item.nombre_item,
+    ubicacion_item: props.item.ubicacion_item,
     descripcion_item: props.item.descripcion_item,
-    estado: props.item.estado,
+    observacion_item: props.item.observacion_item,
     foto: null as File | null,
 
     // Datos de equipo
     es_equipo: props.item.equipment !== null,
-    codigo_qr: props.item.equipment?.codigo_qr || '',
-    ubicacion: props.item.equipment?.ubicacion || '',
+    estado_equipo: props.item.equipment?.estado_equipo || 'Disponible',
     color: props.item.equipment?.color || '',
     marca: props.item.equipment?.marca || '',
     modelo: props.item.equipment?.modelo || '',
     serie: props.item.equipment?.serie || '',
     rubro: props.item.equipment?.rubro || '',
-    fecha_adquisicion: props.item.equipment?.fecha_adquisicion || '',
-    observacion_equipo: props.item.equipment?.observacion_equipo || '',
+    //fecha_adquisicion: props.item.equipment?.fecha_adquisicion || '',
+    fecha_adquisicion: props.item.equipment?.fecha_adquisicion
+        ? props.item.equipment.fecha_adquisicion.substring(0, 10)
+        : '',
 
     // Mapeado de los accesorios
     accesorios: props.item.equipment?.accessories?.map((a: any) => ({
         nombre: a.nombre_accesorio,
         estado: a.estado_accesorio
     })) || [],
+
+    // Datos de la herramienta
+    es_herramienta: props.item.tool !== null,
+    estado_herramienta: props.item.tool?.estado_herramienta || 'Disponible',
+    marca_modelo: props.item.tool?.marca_modelo || '',
 });
 
 const handleFileChange = (e: Event) => {
@@ -98,10 +106,18 @@ function submit() {
                 <div class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-4">
                     <h3 class="font-bold text-lg border-b pb-2">Editar Información General</h3>
 
-                    <div class="grid gap-2">
-                        <Label><PencilLine class="w-5 h-5 text-neutral-900"/> Nombre</Label>
-                        <Input id="nombre_item" v-model="form.nombre_item" />
-                        <InputError :message="form.errors.nombre_item" />
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                        <div class="grid gap-2">
+                            <Label><QrCode class="w-5 h-5 text-neutral-900"/> Codigo QR</Label>
+                            <Input id="codigo_qr" v-model="form.codigo_qr" />
+                            <InputError :message="form.errors.codigo_qr" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label><PencilLine class="w-5 h-5 text-neutral-900"/> Nombre del Item</Label>
+                            <Input id="nombre_item" v-model="form.nombre_item" />
+                            <InputError :message="form.errors.nombre_item" />
+                        </div>
                     </div>
 
                     <div class="grid gap-2">
@@ -121,37 +137,55 @@ function submit() {
                         <InputError :message="form.errors.foto" />
                     </div>
 
-                    <div class="grid gap-2">
-                        <Label for="estado"><ListTodo class="w-5 h-5 text-neutral-900"/> Estado del Item</Label>
-                        <select
-                            id="estado"
-                            v-model="form.estado"
-                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        >
-                            <option value="Disponible">Disponible</option>
-                            <option value="Prestado">Prestado</option>
-                            <option value="Mantenimiento">Mantenimiento</option>
-                            <option value="Dañado">Dañado</option>
-                            <option value="Baja">Baja</option>
-                        </select>
-                        <InputError :message="form.errors.estado" />
+                    <div v-if="tipoItem === 'herramienta'" class="grid gap-2">
+                        <div class="grid gap-2">
+                            <Label><Rows3 class="w-4 h-4 text-neutral-900"/> Ubicación en Taller</Label>
+                            <Input id="ubicacion" v-model="form.ubicacion_item" />
+                            <InputError :message="form.errors.ubicacion_item" />
+                        </div>
                     </div>
 
-                    <div class="grid gap-2">
-                        <Label><AlignLeft class="w-5 h-5 text-neutral-900"/> Descripción</Label>
-                        <Textarea id="descripcion_item" v-model="form.descripcion_item" />
-                        <InputError :message="form.errors.descripcion_item" />
+                    <div v-if="tipoItem === 'equipo'" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                        <div class="grid gap-2">
+                            <Label><Rows3 class="w-4 h-4 text-neutral-900"/> Ubicación en Taller</Label>
+                            <Input id="ubicacion" v-model="form.ubicacion_item" />
+                            <InputError :message="form.errors.ubicacion_item" />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="estado"><ListTodo class="w-5 h-5 text-neutral-900"/> Estado del Equipo</Label>
+                            <select
+                                id="estado"
+                                v-model="form.estado_equipo"
+                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            >
+                                <option value="Disponible">Disponible</option>
+                                <option value="Prestado">Prestado</option>
+                                <option value="Mantenimiento">Mantenimiento</option>
+                                <option value="Dañado">Dañado</option>
+                                <option value="Baja">Baja</option>
+                            </select>
+                            <InputError :message="form.errors.estado_equipo" />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                        <div class="grid gap-2">
+                            <Label><AlignLeft class="w-5 h-5 text-neutral-900"/> Descripción del Item</Label>
+                            <Textarea id="descripcion_item" v-model="form.descripcion_item" />
+                            <InputError :message="form.errors.descripcion_item" />
+                        </div>
+
+                        <div class="grid gap-2">
+                            <Label><AlignLeft class="w-5 h-5 text-neutral-900"/> Observación del Item</Label>
+                            <Textarea id="observacion_item" v-model="form.observacion_item" />
+                            <InputError :message="form.errors.observacion_item" />
+                        </div>
                     </div>
                 </div>
 
                 <div v-if="form.es_equipo" class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-4">
                     <h3 class="font-bold text-lg border-b pb-2">Editar Detalles del Equipo</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="grid gap-2">
-                            <Label><QrCode class="w-5 h-5 text-neutral-900"/> Codigo QR</Label>
-                            <Input id="codigo_qr" v-model="form.codigo_qr" />
-                            <InputError :message="form.errors.codigo_qr" />
-                        </div>
                         <div class="grid gap-2">
                             <Label><Hash class="w-4 h-4 text-neutral-900"/> Serie</Label>
                             <Input id="serie" v-model="form.serie" />
@@ -168,18 +202,13 @@ function submit() {
                             <InputError :message="form.errors.modelo" />
                         </div>
                         <div class="grid gap-2">
-                            <Label><Rows3 class="w-4 h-4 text-neutral-900"/> Ubicación en Taller</Label>
-                            <Input id="ubicacion" v-model="form.ubicacion" />
-                            <InputError :message="form.errors.ubicacion" />
-                        </div>
-                        <div class="grid gap-2">
                             <Label><BookText class="w-4 h-4 text-neutral-900"/> Rubro</Label>
                             <Input id="rubro" v-model="form.rubro" />
                             <InputError :message="form.errors.rubro" />
                         </div>
                         <div class="grid gap-2">
                             <Label><CalendarDays class="w-4 h-4 text-neutral-900"/> Fecha de adquisición</Label>
-                            <Input id="fecha_adquisicion" v-model="form.fecha_adquisicion" />
+                            <Input id="fecha_adquisicion" v-model="form.fecha_adquisicion" type="date"/>
                             <InputError :message="form.errors.fecha_adquisicion" />
                         </div>
                         <div class="grid gap-2">
@@ -187,11 +216,6 @@ function submit() {
                             <Input id="color" v-model="form.color" />
                             <InputError :message="form.errors.color" />
                         </div>
-                    </div>
-                    <div class="grid gap-2">
-                        <Label><AlignLeft class="w-5 h-5 text-neutral-900"/> Observación</Label>
-                        <Textarea id="observacion_equipo" v-model="form.observacion_equipo" />
-                        <InputError :message="form.errors.observacion_equipo" />
                     </div>
                 </div>
 
@@ -206,7 +230,7 @@ function submit() {
                     <div v-for="(acc, index) in form.accesorios" :key="index" class="flex flex-col md:flex-row gap-2 mb-4 p-3 border rounded-lg bg-neutral-50 relative">
                         <div class="flex-1">
                             <Label class="text-s text-neutral-800">Nombre del accesorio</Label>
-                            <Input id="acc.nombre" v-model="acc.nombre" placeholder="Ej: Cargador, Estuche..." />
+                            <Input :id="'acc_nombre_' + index" v-model="acc.nombre" placeholder="Ej: Cargador, Estuche..." />
                         </div>
 
                         <div class="w-full md:w-40">
@@ -231,6 +255,31 @@ function submit() {
                             >
                                 <Trash2 class="w-4 h-4" />
                             </Button>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="form.es_herramienta" class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-4">
+                    <h3 class="font-bold text-lg border-b pb-2">Editar Detalles de la Herramienta</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid gap-2">
+                            <Label for="estado"><ListTodo class="w-5 h-5 text-neutral-900"/> Estado del Equipo</Label>
+                            <select
+                                id="estado"
+                                v-model="form.estado_herramienta"
+                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            >
+                                <option value="Disponible">Disponible</option>
+                                <option value="Prestado">Prestado</option>
+                                <option value="Dañado">Dañado</option>
+                                <option value="Baja">Baja</option>
+                            </select>
+                            <InputError :message="form.errors.estado_herramienta" />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label><Package class="w-4 h-4 text-neutral-900"/> Marca/Modelo</Label>
+                            <Input id="marca_modelo" v-model="form.marca_modelo" />
+                            <InputError :message="form.errors.marca_modelo" />
                         </div>
                     </div>
                 </div>

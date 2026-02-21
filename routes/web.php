@@ -11,10 +11,10 @@ use App\Http\Controllers\MaintenanceController;
 
 // ruta publica: pagina de bienvenida
 Route::get('/', function () {
-    return redirect()->route('login');
-    /*return Inertia::render('Welcome', [
+    /*return redirect()->route('login');*/
+    return Inertia::render('Welcome', [
         'canRegister' => Features::enabled(Features::registration()),
-    ]);*/
+    ]);
 })->name('home');
 
 // rutas protegidas

@@ -9,13 +9,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Item extends Model
 {
     // Definicion de los campos que se pueden llenar masivamente
-    protected $fillable = ['nombre_item', 'descripcion_item', 'estado', 'foto'];
+    protected $fillable = ['codigo_qr', 'nombre_item', 'foto', 'observacion_item', 'descripcion_item', 'ubicacion_item' ];
 
     // Un Item puede ser un Equipo
     public function equipment(): HasOne
     {
         // La relación es 1 a 1
         return $this->hasOne(Equipment::class, 'id', 'id');
+    }
+
+    // Un Item puede ser una herramienta
+    public function tool(): HasOne
+    {
+        // La relación es 1 a 1
+        return $this->hasOne(Tool::class, 'id', 'id');
     }
 
     // Acceder a accesorios desde el item pasando por Equipo

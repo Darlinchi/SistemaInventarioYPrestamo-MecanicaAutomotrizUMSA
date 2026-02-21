@@ -62,7 +62,6 @@ const filteredMaintenances = computed(() => {
     };
 
     const estadoBusqueda = estadoMapa[activeTab.value];
-
     // 1. Filtro por pestaña activa
     let filtered = (props.maintenances || []).filter(maint =>
         maint.estado_mantenimiento === estadoBusqueda
@@ -88,7 +87,6 @@ const filteredMaintenances = computed(() => {
     if (selectedCompany.value !== '') {
         filtered = filtered.filter(maint => maint.companies[0]?.nombre_empresa === selectedCompany.value);
     }
-
     // Filtro por fecha
     if (filterDate.value !== '') {
         // Importante: Asegúrate de que maint.fecha_mantenimiento venga como 'YYYY-MM-DD' de la DB
@@ -220,7 +218,7 @@ const processReturn = () => {
                         @click="searchQuery = ''"
                         class="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-red-500 transition-colors"
                     >
-                        <XCircle class="w-5 h-5"/>
+                        <XIcon class="w-5 h-5"/>
                     </button>
                 </div>
 
@@ -363,7 +361,7 @@ const processReturn = () => {
                             <div>
                                 <p class="text-[11px] font-black text-neutral-700 uppercase tracking-widest">Equipo en Reparación</p>
                                 <p class="text-base font-bold">{{ selectedMaint?.equipment.item.nombre_item }}</p>
-                                <p class="text-xs text-blue-500">Código QR: {{ selectedMaint?.equipment.codigo_qr }}</p>
+                                <p class="text-xs text-blue-500">Código QR: {{ selectedMaint?.equipment.item.codigo_qr }}</p>
                             </div>
                             <div>
                                 <p class="text-[11px] font-black text-neutral-700 uppercase tracking-widest">Taller Responsable</p>

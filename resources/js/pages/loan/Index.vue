@@ -23,7 +23,7 @@ interface Item {
 
 interface Loan {
     id: number;
-    fecha_prestamo: string;
+    fecha_salida: string;
     estado_prestamo: string;
     hora_inicio: string;
     hora_fin?: string;
@@ -143,18 +143,18 @@ const filteredLoans = computed(() => {
     }
     // Filtro por fecha
     if (filterDate.value !== '') {
-        filtered = filtered.filter(loan => loan.fecha_prestamo === filterDate.value);
+        filtered = filtered.filter(loan => loan.fecha_salida === filterDate.value);
     }
     if (filterMonth.value !== '') {
         filtered = filtered.filter(loan => {
-            const date = new Date(loan.fecha_prestamo);
+            const date = new Date(loan.fecha_salida);
             // date.getMonth() devuelve 0-11, por eso sumamos 1
             return (date.getMonth() + 1).toString() === filterMonth.value;
         });
     }
     if (filterDay.value !== '') {
         filtered = filtered.filter(loan => {
-            const day = loan.fecha_prestamo.split('-')[2]; // Extrae el DD de YYYY-MM-DD
+            const day = loan.fecha_salida.split('-')[2]; // Extrae el DD de YYYY-MM-DD
             return day === filterDay.value.padStart(2, '0');
         });
     }
@@ -191,6 +191,8 @@ const selectedLoan = ref<any>(null);
 const returnForm = useForm({
     items: [] as any[],
     observacion: '',
+    fecha_retorno: new Date().toISOString().split('T')[0], // Por defecto hoy
+    hora_fin: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
 });
 
 // Funcion para abrir el modal (preguntar si le gustaria si un accesorio esta mal el equipo completo marcarse como dañado)
@@ -207,6 +209,10 @@ const openReturnModal = (loan: any) => {
             estado_accesorio: acc.estado_accesorio
         })) : []
     }));
+    // Inicializamos el formulario con la fecha y hora actual al abrir
+    const now = new Date();
+    returnForm.fecha_retorno = now.toISOString().split('T')[0];
+    returnForm.hora_fin = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
     isReturnModalOpen.value = true;
 };
@@ -282,7 +288,7 @@ watch(isReturnModalOpen, (isOpen) => {
                         @click="searchQuery = ''"
                         class="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-red-500 transition-colors"
                     >
-                        <XCircle class="w-5 h-5"/>
+                        <XIcon class="w-5 h-5"/>
                     </button>
                 </div>
 
@@ -387,7 +393,7 @@ watch(isReturnModalOpen, (isOpen) => {
                                         <Calendar class="w-4 h-4 text-neutral-800" />
                                         <span>Fecha</span>
                                     </p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ loan.fecha_prestamo }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ loan.fecha_salida }}</p>
                                 </div>
                                 <div>
                                     <p class="flex items-center gap-1 text-xs text-neutral-700 uppercase font-bold mb-1">
@@ -430,7 +436,7 @@ watch(isReturnModalOpen, (isOpen) => {
                         </thead>
                         <tbody class="divide-y divide-neutral-100 text-sm">
                             <tr v-for="loan in filteredLoans" :key="loan.id" class="hover:bg-neutral-50 transition-colors group">
-                                <td class="p-4 font-bold text-black">{{ loan.fecha_prestamo }}</td>
+                                <td class="p-4 font-bold text-black">{{ loan.fecha_salida }}</td>
                                 <td class="p-4 text-neutral-900">{{ loan.borrower.cedula_identidad }} </td>
                                 <td class="p-4 text-neutral-900">{{ loan.borrower.nombresP }} {{ loan.borrower.apellidosP }}</td>
                                 <td class="p-4 text-neutral-900">{{ loan.subject.nombre_materia }} - {{ loan.subject.sigla }} </td>
@@ -450,6 +456,11 @@ watch(isReturnModalOpen, (isOpen) => {
                                                 <div v-for="item in loan.items" :key="item.id"
                                                     class="flex items-center justify-between p-2.5 bg-neutral-50 border border-neutral-100 rounded-lg">
                                                     <span class="text-xs font-bold text-neutral-800">{{ item.nombre_item }}</span>
+                                                    <!--<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border">
+                                                        {{ item.equipment ? 'Equipo' : 'Herramienta' }}
+                                                    </span>
+                                                    -->
+
                                                     <span :class="['px-2 py-0.5 rounded-full text-[9px] font-bold uppercase border',
                                                         item.pivot?.estado_devolucion === 'Disponible' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200']">
                                                         {{ item.pivot?.estado_devolucion }}
@@ -485,7 +496,6 @@ watch(isReturnModalOpen, (isOpen) => {
                     </div>
 
                     <div class="p-8 overflow-y-auto custom-scrollbar space-y-8 flex-1">
-
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-neutral-50 rounded-2xl border border-neutral-200">
                             <div class="space-y-1">
                                 <p class="text-[13px] font-black text-neutral-700 uppercase tracking-widest">Responsable</p>
@@ -501,6 +511,34 @@ watch(isReturnModalOpen, (isOpen) => {
                             </div>
                         </div>
 
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-orange-50/50 rounded-2xl border border-orange-100 mt-4">
+                            <div class="space-y-2 border-r border-orange-100 pr-4">
+                                <p class="text-[11px] font-black text-orange-600 uppercase tracking-widest">Planificado (Tesis/Proyecto)</p>
+                                <div class="flex flex-col gap-1">
+                                    <p class="text-sm font-bold text-neutral-800 flex items-center gap-2">
+                                        <Calendar class="w-4 h-4" /> Limite: {{ selectedLoan?.fecha_retorno_prevista }}
+                                    </p>
+                                    <p class="text-sm font-bold text-neutral-800 flex items-center gap-2">
+                                        <Clock class="w-4 h-4" /> Hora: {{ selectedLoan?.hora_fin_prevista }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2 pl-2">
+                                <p class="text-[11px] font-black text-blue-600 uppercase tracking-widest">Registro Real de Entrada</p>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <Label class="text-[10px] uppercase font-bold text-neutral-500">Fecha Retorno</Label>
+                                        <Input type="date" v-model="returnForm.fecha_retorno" class="h-8 text-xs rounded-lg" />
+                                    </div>
+                                    <div>
+                                        <Label class="text-[10px] uppercase font-bold text-neutral-500">Hora Entrada</Label>
+                                        <Input type="time" v-model="returnForm.hora_fin" class="h-8 text-xs rounded-lg" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-blue-50/50 rounded-2xl border border-blue-100 mt-4">
                             <div class="flex items-center gap-3">
                                 <div class="p-2 bg-white rounded-lg shadow-sm">
@@ -508,7 +546,7 @@ watch(isReturnModalOpen, (isOpen) => {
                                 </div>
                                 <div>
                                     <p class="text-[13px] font-black text-orange-400 uppercase tracking-widest leading-none mb-1">Fecha</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ selectedLoan?.fecha_prestamo }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ selectedLoan.fecha_salida }}</p>
                                 </div>
                             </div>
 

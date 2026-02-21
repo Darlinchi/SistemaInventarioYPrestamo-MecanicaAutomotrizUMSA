@@ -16,7 +16,7 @@ class Equipment extends Model
     public $incrementing = false; // El ID no aumenta solo, lo hereda.
 
     // Campos que se pueden llenar
-    protected $fillable = ['id', 'codigo_qr', 'marca', 'modelo', 'serie', 'ubicacion','color', 'rubro', 'fecha_adquisicion', 'observacion_equipo'];
+    protected $fillable = ['id', 'color', 'marca', 'modelo', 'serie', 'rubro', 'fecha_adquisicion', 'estado_equipo'];
 
     // El equipo pertenece a un Item
     public function item(): BelongsTo
@@ -31,8 +31,8 @@ class Equipment extends Model
     }
 
     // Relacion de equipo con mantenimientos
-    public function maintenances(): HasMany
+    public function maintenances()
     {
-        return $this->hasMany(Maintenance::class);
+        return $this->hasMany(Maintenance::class, 'equipment_id');
     }
 }

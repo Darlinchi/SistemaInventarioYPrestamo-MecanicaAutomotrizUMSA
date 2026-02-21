@@ -30,13 +30,16 @@ return new class extends Migration
                 ->onDelete('restrict');
 
             // Datos del préstamo
-            $table->date('fecha_prestamo');
+            $table->date('fecha_salida');
+            $table->date('fecha_retorno')->nullable();
+            $table->date('fecha_retorno_prevista')->nullable();
             $table->time('hora_inicio');
-            $table->time('hora_fin')->nullable(); // Se llena cuando devuelven el ítem
+            $table->time('hora_fin_prevista');
+            $table->time('hora_fin')->nullable();
             $table->text('observacion')->nullable();
 
             // Estado del préstamo (opcional pero muy útil)
-            $table->enum('estado_prestamo', ['Activo', 'Devuelto', 'Vencido', 'Parcial'])
+            $table->enum('estado_prestamo', ['Activo', 'Devuelto', 'Vencido'])
                 ->default('Activo');
             $table->timestamps();
         });
