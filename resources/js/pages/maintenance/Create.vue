@@ -44,6 +44,10 @@ const form = useForm({
 const filteredItems = computed(() => {
     const search = searchTerm.value.toLowerCase();
     return props.equipment.filter(unit => {
+        // Validación extra: Solo mostrar si el estado_equipo es 'Disponible'
+        // o si es el que ya está seleccionado en el form
+        const isAvailable = unit.estado_equipo === 'Disponible' || form.equipment_id === unit.id;
+        if (!isAvailable) return false;
         // 1. Buscamos en el nombre (viene de la relación item)
         const nameMatch = unit.item.nombre_item.toLowerCase().includes(search);
         // 2. Buscamos en el número de serie (viene de equipment)
@@ -63,9 +67,19 @@ const toggleItemSelection = (id: number) => {
 };
 
 const submit = () => {
+    if (!form.equipment_id) {
+        alert("Por favor, seleccione un equipo antes de continuar.");
+        return;
+    }
     form.post(maintenancesRoutes.store.url(), {
         preserveScroll: true,
-        onSuccess: () => form.reset(),
+        onSuccess: () => {
+            // Opcional: Notificación de éxito
+            form.reset();
+        },
+        onError: () => {
+            // Manejo de errores del servidor (ej. si la empresa es obligatoria)
+        }
     });
 };
 </script>
@@ -93,7 +107,11 @@ const submit = () => {
                             <Label>
                                 <Building2 class="w-3.5 h-3.5 text-green-500"/> Empresa Encargada
                             </Label>
-                            <select v-model="form.maintenance_company_id" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm disabled:bg-neutral-50">
+                            <select
+                                v-model="form.maintenance_company_id"
+                                :class="['flex h-10 w-full rounded-md border bg-white px-3 py-2 text-sm',
+                                        form.errors.maintenance_company_id ? 'border-red-500' : 'border-input']"
+                            >
                                 <option :value="null" disabled>Seleccionar empresa</option>
                                 <option v-for="company in companies" :key="company.id" :value="company.id">
                                     {{ company.nombre_empresa }}

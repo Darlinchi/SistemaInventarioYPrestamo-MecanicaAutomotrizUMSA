@@ -11,6 +11,6 @@ class Accessory extends Model
 
     public function equipment(): BelongsTo
     {
-        return $this->belongsTo(Equipment::class, 'equipment_id', 'id');
+        return $this->belongsTo(Equipment::class);
     }
 }

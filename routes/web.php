@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\ToolController;      // <--- ¡Añade esto!
+use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\BorrowerController;
 use App\Http\Controllers\MaintenanceCompanyController;
@@ -35,6 +37,8 @@ Route::middleware(['auth', 'verified'])
         // Esta línea genera automáticamente: index, create, store, show, edit, update, destroy
         // Rutas del Inventario
         Route::resource('items', ItemController::class);
+        Route::resource('tools', ToolController::class);
+        Route::resource('equipments', EquipmentController::class);
 
         // Rutas de prestamos
         Route::resource('loans', LoanController::class);

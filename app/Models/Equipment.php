@@ -8,26 +8,43 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Equipment extends Model
 {
+    protected $table = 'equipment';
+
+    public $incrementing = true; // El ID no aumenta solo, lo hereda.
+
     protected $casts = [
         'fecha_adquisicion' => 'date',
     ];
-    // No se tiene ID auto-incremental propio, sino el del Item:
-    protected $primaryKey = 'id';
-    public $incrementing = false; // El ID no aumenta solo, lo hereda.
 
     // Campos que se pueden llenar
-    protected $fillable = ['id', 'color', 'marca', 'modelo', 'serie', 'rubro', 'fecha_adquisicion', 'estado_equipo'];
+    protected $fillable = [
+        'codigo_qr', 'nombre_equipo', 'foto', 'ubicacion_equipo',
+        'descripcion_equipo', 'observacion_equipo', 'estado_equipo',
+        'color', 'marca', 'modelo', 'serie', 'rubro', 'fecha_adquisicion'
+    ];
 
     // El equipo pertenece a un Item
-    public function item(): BelongsTo
+    // public function item(): BelongsTo
+    // {
+    //     return $this->belongsTo(Item::class, 'id', 'id');
+    // }
+
+    public function loans()
     {
-        return $this->belongsTo(Item::class, 'id', 'id');
+        return $this->morphToMany(Loan::class, 'loanable', 'item_loan')
+                    ->withPivot('estado_devolucion')
+                    ->withTimestamps();
     }
 
     // Un equipo tiene muchos accesorios
+    // public function accessories(): HasMany
+    // {
+    //     return $this->hasMany(Accessory::class, 'equipment_id', 'id');
+    // }
+
     public function accessories(): HasMany
     {
-        return $this->hasMany(Accessory::class, 'equipment_id', 'id');
+        return $this->hasMany(Accessory::class, 'equipment_id');
     }
 
     // Relacion de equipo con mantenimientos

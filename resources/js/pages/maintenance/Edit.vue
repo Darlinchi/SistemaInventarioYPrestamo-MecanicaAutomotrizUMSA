@@ -9,10 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { ref, computed, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 
 // Props: Recibimos los equipos (Epson, Osciloscopios, etc.) y las empresas registradas
 const props = defineProps<{
+    maintenance: any;
     equipment: Array<any>;
     companies: Array<any>;
 }>();

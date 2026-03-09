@@ -6,16 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tool extends Model
 {
-    // No se tiene ID auto-incremental propio, sino el del Item:
-    protected $primaryKey = 'id';
-    public $incrementing = false; // El ID no aumenta solo, lo hereda.
+    public $incrementing = true;
 
     // Campos que se pueden llenar
-    protected $fillable = ['id', 'marca_modelo', 'estado_herramienta'];
+    protected $fillable = [
+        'codigo_qr', 'nombre_herramienta', 'foto', 'ubicacion_herramienta',
+        'descripcion_herramienta', 'observacion_herramienta', 'marca_modelo', 'estado_herramienta'
+    ];
 
-    // El equipo pertenece a un Item
-    public function item(): BelongsTo
+    public function loans()
     {
-        return $this->belongsTo(Item::class, 'id', 'id');
+        return $this->morphToMany(Loan::class, 'loanable', 'item_loan')
+                    ->withPivot('estado_devolucion')
+                    ->withTimestamps();
     }
 }

@@ -18,7 +18,10 @@ class MaintenanceController extends Controller
     public function index()
     {
         // Cargamos con TODA su información relacionada para la tabla
-        $maintenances = Maintenance::with(['equipment.item', 'companies'])->get();
+        $maintenances = Maintenance::with(['equipment.item', 'companies'])
+        ->orderBy('fecha_mantenimiento', 'desc')
+        ->orderBy('hora_inicio', 'desc')
+        ->get();
 
         return Inertia::render('maintenance/Index', [
             'maintenances' => $maintenances,
@@ -101,9 +104,9 @@ class MaintenanceController extends Controller
     {
         // Validamos los campos que vienen de tu returnForm en Vue
         $request->validate([
-            'hora_fin'      => 'required',
+            'hora_fin'      => 'required|date_format:H:i:s',
             'estado_equipo' => 'required|in:Disponible,Dañado,Baja',
-            'observacion'   => 'required|string|min:5',
+            'observacion'   => 'required|string|min:5|max:1000',
         ]);
 
         try {

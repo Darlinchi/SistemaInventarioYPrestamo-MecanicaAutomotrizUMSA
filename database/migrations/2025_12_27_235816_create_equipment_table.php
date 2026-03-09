@@ -12,12 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('equipment', function (Blueprint $table) {
-            // El id de esta tabla es al mismo tiempo la llave foránea de la tabla items
-            $table->foreignId('id')
-                ->primary()
-                ->constrained('items')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
+            $table->id();
+            $table->string('codigo_qr', 100)->unique()->nullable();
+            $table->string('nombre_equipo', 100);
+            $table->string('foto', 255)->nullable();
+            $table->string('ubicacion_equipo', 100)->nullable();
+            $table->text('descripcion_equipo')->nullable();
+            $table->text('observacion_equipo')->nullable();
 
             // Atributos específicos que nos pediste
             $table->enum('estado_equipo', [
@@ -28,6 +29,7 @@ return new class extends Migration
                 'Reparado',
                 'Dañado',
                 'Extraviado',
+                'Incompleto',
                 'Baja'
             ])->default('Disponible');
             $table->string('color', 50)->nullable();

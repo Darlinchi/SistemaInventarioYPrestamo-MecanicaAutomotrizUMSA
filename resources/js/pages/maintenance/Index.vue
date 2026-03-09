@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Plus, Wrench, Building2, Calendar, Clock, Search, Package, CheckCircle, SquarePen, XIcon, History,
-    Loader2, Eraser, ClipboardCheck, FileClock, FileCheck } from 'lucide-vue-next';
+    Loader2, Eraser, FileCog, FileClock, FileCheck, Cog } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -94,9 +94,9 @@ const filteredMaintenances = computed(() => {
     }
     if (filterMonth.value !== '') {
         filtered = filtered.filter(maint => {
-            const date = new Date(maint.fecha_mantenimientoS);
-            // date.getMonth() devuelve 0-11, por eso sumamos 1
-            return (date.getMonth() + 1).toString() === filterMonth.value;
+            const partes = maint.fecha_mantenimiento.split('-');
+            const mesMantenimiento = partes[1];
+            return parseInt(mesMantenimiento).toString() === filterMonth.value;
         });
     }
 
@@ -152,14 +152,16 @@ const openReturnModal = (maint: any) => {
 };
 
 const processReturn = () => {
-    // Obtenemos la hora actual en formato 24h (HH:mm:ss)
-    const date = new Date();
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
+    // Generar la hora exacta
+    const ahora = new Date();
+    const horaFormateada = ahora.toLocaleTimeString('es-BO', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
 
-    // Asignamos el formato que MySQL acepta: "15:38:00"
-    returnForm.hora_fin = `${hours}:${minutes}:${seconds}`;
+    returnForm.hora_fin = horaFormateada;
 
     returnForm.put(maintenancesRoutes.update.url(selectedMaint.value.id), {
         preserveScroll: true,
@@ -207,11 +209,8 @@ const processReturn = () => {
             <div class="flex flex-wrap items-center gap-4 mb-6">
                 <div class="relative w-full md:w-80">
                     <Search class="absolute left-3 top-3 w-5 h-5 text-neutral-400" />
-                    <input
-                        v-model="searchQuery"
-                        type="text"
-                        placeholder="Buscar por empresa, equipo o serie..."
-                        class="w-full pl-10 pr-12 py-3 bg-neutral-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-black transition"
+                    <input v-model="searchQuery" type="text" placeholder="Buscar por empresa, equipo o serie..."
+                        class="pl-10 flex h-10 w-full rounded-md border border-input bg-neutral-50 px-3 py-2 text-sm shadow-sm transition-colors focus:bg-white"
                     />
                     <button
                         v-if="searchQuery"
@@ -270,7 +269,7 @@ const processReturn = () => {
                                         />
                                     </div>
                                     <div class="min-w-0">
-                                        <p class="text-xs text-neutral-800 uppercase font-bold mb-1">Equipo</p>
+                                        <p class="text-xs text-blue-600 uppercase font-bold mb-1">Equipo</p>
                                         <p class="text-base font-bold text-black truncate">{{ maint.equipment.item.nombre_item }}</p>
                                         <div class="flex items-center gap-2 mt-1">
                                             <span v-if="maint.equipment.codigo_qr" class="text-[13px] bg-neutral-100 text-blue-600 px-2 py-0.5 rounded font-mono font-bold uppercase">QR: {{ maint.equipment.codigo_qr }}</span>
@@ -279,8 +278,8 @@ const processReturn = () => {
                                 </div>
                             </div>
 
-                            <div class="bg-white/50 p-3 rounded-2xl border border-transparent group-hover:border-neutral-100 transition-colors">
-                                <p class="flex items-center gap-1 text-xs text-neutral-700 uppercase font-bold mb-1">
+                            <div class="mb-4">
+                                <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest">
                                     <Building2 class="w-4 h-4 text-green-600"/>
                                     <span>Empresa Encargada</span>
                                 </p>
@@ -290,20 +289,27 @@ const processReturn = () => {
                             </div>
 
                             <div class="flex flex-col gap-2">
-                                <p class="text-xs text-neutral-700 uppercase font-bold mb-1">Fecha y Hora de Inicio</p>
-                                <div class="flex items-center gap-4">
-                                    <span class="flex items-center gap-1.5 text-xs font-bold text-neutral-700">
-                                        <Calendar class="w-4 h-4 text-neutral-800" /> {{ maint.fecha_mantenimiento }}
-                                    </span>
-                                    <span class="flex items-center gap-1.5 text-xs font-bold text-neutral-700">
-                                        <Clock class="w-4 h-4 text-neutral-800" /> {{ maint.hora_inicio }}
-                                    </span>
+                                <div class="grid grid-cols-2 ">
+                                    <div class="mb-4">
+                                        <p class="flex items-center gap-2 text-[13px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">
+                                            <Calendar class="w-4 h-4 text-blue-600" />
+                                            <span>Fecha</span>
+                                        </p>
+                                        <p class="text-sm font-bold text-neutral-800">{{ maint.fecha_mantenimiento }}</p>
+                                    </div>
+                                    <div class="mb-4">
+                                        <p class="flex items-center gap-2 text-[13px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">
+                                            <Calendar class="w-4 h-4 text-blue-600" />
+                                            <span>Inicio</span>
+                                        </p>
+                                        <p class="text-sm font-bold text-neutral-800">{{ maint.hora_inicio }}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="flex flex-col gap-2 ml-6">
-                            <button @click="openReturnModal(maint)" class="flex items-center gap-2 bg-blue-600 border border-neutral-200 px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition text-white shadow-m">
+                            <button @click="openReturnModal(maint)" class="flex items-center gap-2 bg-blue-600 border border-neutral-200 px-4 py-2 rounded-lg text-[13px] font-bold hover:bg-blue-700 transition text-white shadow-m">
                                 <CheckCircle class="w-4 h-4"/> Completar
                             </button>
                         </div>
@@ -349,7 +355,13 @@ const processReturn = () => {
 
                     <div class="px-8 py-6 border border-neutral-100 flex justify-between items-center">
                         <div>
-                            <h2 class="text-2xl font-black uppercase tracking-tighter text-neutral-900">Finalizar Mantenimiento</h2>
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="p-2 bg-blue-600 rounded-lg">
+                                    <FileCog class="w-6 h-6 text-white" />
+                                </div>
+                                <h2 class="text-2xl font-black uppercase tracking-tighter text-neutral-900">Finalizar Mantenimiento</h2>
+                            </div>
+                            <p class="text-neutral-700 text-sm font-medium">Verifique los datos y el estado del equipo recibido</p>
                         </div>
                         <button @click="isReturnModalOpen = false" class="p-2 hover:bg-neutral-100 rounded-full transition-colors group">
                             <XIcon class="w-7 h-7 text-neutral-300 group-hover:text-red-500"/>
@@ -358,14 +370,22 @@ const processReturn = () => {
 
                     <div class="p-8 overflow-y-auto space-y-6 flex-1">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-neutral-50 rounded-2xl border border-neutral-200">
-                            <div>
-                                <p class="text-[11px] font-black text-neutral-700 uppercase tracking-widest">Equipo en Reparación</p>
-                                <p class="text-base font-bold">{{ selectedMaint?.equipment.item.nombre_item }}</p>
-                                <p class="text-xs text-blue-500">Código QR: {{ selectedMaint?.equipment.item.codigo_qr }}</p>
+
+                            <div class="space-y-1">
+                                <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest">
+                                    <Cog class="w-4 h-4" /> <span>Equipo en Reparación</span>
+                                </p>
+                                <p class="text-base font-bold text-neutral-900">{{ selectedMaint?.equipment.item.nombre_item }} </p>
+                                <span class="inline-block px-2 py-0.5 rounded-md bg-blue-100 text-[13px] font-bold text-blue-700 uppercase tracking-tighter">
+                                    {{ selectedMaint?.equipment.item.codigo_qr }}
+                                </span>
                             </div>
-                            <div>
-                                <p class="text-[11px] font-black text-neutral-700 uppercase tracking-widest">Taller Responsable</p>
-                                <p class="text-base font-bold">{{ selectedMaint?.companies[0]?.nombre_empresa }}</p>
+
+                            <div class="space-y-1">
+                                <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest">
+                                    <Building2 class="w-4 h-4 text-green-600" /> <span>Empresa Encargada</span>
+                                </p>
+                                <p class="text-base font-bold text-neutral-900">{{ selectedMaint?.companies[0]?.nombre_empresa }}</p>
                             </div>
                         </div>
 

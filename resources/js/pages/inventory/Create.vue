@@ -19,32 +19,36 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 // Estado para controlar si es Equipo o Herramienta
 const tipoItem = ref<'equipo' | 'herramienta'>('equipo');
+// Interfaz para los accesorios nuevos
+interface NewAccessory {
+    nombre: string;
+    estado: 'Bueno' | 'Dañado' | 'Extraviado';
+}
 // Función para capturar el archivo cuando el usuario lo selecciona
 const photoPreview = ref<string | null>(null);
 
 // Formulario con los campos correspondietnes
 const initialValues = {
+    tipo: 'equipo' as 'equipo' | 'herramienta', // Campo clave para el controlador
     codigo_qr: "",
-    nombre_item: "",
-    ubicacion_item: "",
-    descripcion_item: "",
-    observacion_item: "",
+    nombre: "", // Simplificado
+    ubicacion: "",
+    descripcion: "",
+    observacion: "",
     foto: null as File | null,
 
-    // Datos especificos de Equipo en caso de que lo sea
-    es_equipo: true,
-    estado_equipo: "Disponible", // Valor por defecto o Nuevo pregutar importante
+    // Datos Equipo
+    estado_equipo: "Disponible",
     color: "",
     marca: "",
     modelo: "",
     serie: "",
     rubro: "",
     fecha_adquisicion: "",
-    // Lista de accesorios
-    accesorios: [] as Array<{ nombre: string; estado: "Bueno" }>,
-    // Datos especificos de Herramienta en caso de que lo sea
-    es_herramienta: false,
-    estado_herramienta: "Disponible", // Valor por defecto o Nuevo pregutar importante
+    accesorios: [] as NewAccessory[],
+
+    // Datos Herramienta
+    estado_herramienta: "Disponible",
     marca_modelo: "",
 }
 const form = useForm(initialValues);
@@ -52,8 +56,8 @@ const form = useForm(initialValues);
 // Limpia el formulario
 const setTipoItem = (tipo: 'herramienta' | 'equipo') => {
     tipoItem.value = tipo;
-    form.es_equipo = (tipo === 'equipo');
-    (form as any).es_herramienta = (tipo === 'herramienta');
+    form.tipo = tipo;
+    form.clearErrors();
     if (tipo === 'herramienta') {
         form.marca = "";
         form.modelo = "";
@@ -62,6 +66,9 @@ const setTipoItem = (tipo: 'herramienta' | 'equipo') => {
         form.rubro = "";
         form.fecha_adquisicion = "";
         form.accesorios = [];
+    } else {
+        // Limpiamos campos de herramienta
+        form.marca_modelo = "";
     }
 };
 
@@ -95,11 +102,13 @@ const removeAccesorio = (index: number) => {
 };
 
 function submit() {
-    form.post(items.store.url(), {
+    // Importante: Como enviamos archivos, usamos post
+    form.post(items.store.url(), { // Asegúrate que 'items.store' exista en tus rutas
         forceFormData: true,
         preserveScroll: true,
         onSuccess: () => {
             photoPreview.value = null;
+            form.reset();
         },
         onError: (errors) => {
             console.error("Errores del servidor:", errors);
@@ -144,29 +153,29 @@ function submit() {
                     <h3 class="font-bold text-lg border-b pb-2">Información General</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                         <div class="grid gap-2">
-                            <Label><QrCode class="w-5 h-5 text-neutral-900"/> Codigo QR </Label>
+                            <Label for="codigo_qr"><QrCode class="w-5 h-5 text-neutral-900"/> Codigo QR </Label>
                             <Input id="codigo_qr" v-model="form.codigo_qr" type="text"placeholder="Ej. 1234567"/>
                             <InputError :message="form.errors.codigo_qr" />
                         </div>
 
                         <div class="grid gap-2">
-                            <Label for="nombre_item"><PencilLine class="w-5 h-5 text-neutral-900"/> Nombre del Item</Label>
-                            <Input id="nombre_item" v-model="form.nombre_item" type="text" placeholder="Ej. Éscaner automotriz..." />
-                            <InputError :message="form.errors.nombre_item" />
+                            <Label for="nombre"><PencilLine class="w-5 h-5 text-neutral-900"/> Nombre del Item</Label>
+                            <Input id="nombre" v-model="form.nombre" type="text" placeholder="Ej. Éscaner automotriz..." />
+                            <InputError :message="form.errors.nombre" />
                         </div>
                     </div>
 
                     <div class="grid gap-2">
-                        <Label><ImageUp class="w-5 h-5 text-neutral-900"/> Foto del Item</Label>
-                        <div v-if="photoPreview" class="relative w-40 h-40 mb-2 group">
-                            <img
-                                :src="photoPreview"
-                                class="w-full h-full object-cover rounded-xl border-2 border-blue-500 shadow-md"
+                        <Label for="foto"><ImageUp class="w-5 h-5 text-neutral-900"/> Foto del Item</Label>
+                        <div v-if="photoPreview" class="relative w-40 h-40 mb-4 group">
+                            <img :src="photoPreview"
+                                class="w-full h-full object-cover rounded-2xl border-4 border-white shadow-xl ring-2 ring-blue-500/20"
                             />
                             <button
                                 type="button"
                                 @click="photoPreview = null; form.foto = null"
-                                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600 transition-colors"
+                                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-lg hover:bg-red-600 hover:scale-110 transition-all"
+                                title="Quitar foto"
                             >
                                 <Trash2 class="w-4 h-4" />
                             </button>
@@ -179,19 +188,19 @@ function submit() {
                         <InputError :message="form.errors.foto" />
                     </div>
                     <div v-if="tipoItem === 'herramienta'" class="grid gap-2">
-                        <Label><Rows3 class="w-4 h-4 text-neutral-900"/> Ubicación en Taller </Label>
-                        <Input id="ubicacion_item" v-model="form.ubicacion_item" type="text" placeholder="Ej. Estante A-1"/>
-                        <InputError :message="form.errors.ubicacion_item" />
+                        <Label for="ubicacion"><Rows3 class="w-4 h-4 text-neutral-900"/> Ubicación en Taller </Label>
+                        <Input id="ubicacion" v-model="form.ubicacion" type="text" placeholder="Ej. Estante A-1"/>
+                        <InputError :message="form.errors.ubicacion" />
                     </div>
 
                     <div v-if="tipoItem === 'equipo'" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                         <div class="grid gap-2">
-                            <Label><Rows3 class="w-4 h-4 text-neutral-900"/> Ubicación en Taller </Label>
-                            <Input id="ubicacion_item" v-model="form.ubicacion_item" type="text" placeholder="Ej. Estante A-1"/>
-                            <InputError :message="form.errors.ubicacion_item" />
+                            <Label for="ubicacion"><Rows3 class="w-4 h-4 text-neutral-900"/> Ubicación en Taller </Label>
+                            <Input id="ubicacion" v-model="form.ubicacion" type="text" placeholder="Ej. Estante A-1"/>
+                            <InputError :message="form.errors.ubicacion" />
                         </div>
                         <div class="grid gap-2">
-                            <Label><Hash class="w-4 h-4 text-neutral-900"/> Estado del Equipo</Label>
+                            <Label for="estado_equipo"><Hash class="w-4 h-4 text-neutral-900"/> Estado del Equipo</Label>
                             <select v-model="form.estado_equipo" class="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm">
                                 <option value="Disponible">Disponible</option>
                                 <option value="Nuevo">Nuevo</option>
@@ -203,13 +212,13 @@ function submit() {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                         <div class="grid gap-2">
                             <Label for="descripcion"><AlignLeft class="w-5 h-5 text-neutral-900"/> Descripción del Item</Label>
-                            <Textarea id="descripcion_item" v-model="form.descripcion_item" :rows="4" placeholder="Detalles técnicos..." />
-                            <InputError :message="form.errors.descripcion_item" />
+                            <Textarea id="descripcion" v-model="form.descripcion" :rows="4" placeholder="Detalles técnicos..." />
+                            <InputError :message="form.errors.descripcion" />
                         </div>
                         <div class="grid gap-2">
-                            <Label><AlignLeft class="w-5 h-5 text-neutral-900"/> Observación del Item</Label>
-                            <Textarea id="observacion_item" v-model="form.observacion_item" :rows="4" placeholder="Notas adicionales..." />
-                            <InputError :message="form.errors.observacion_item" />
+                            <Label for="observacion"><AlignLeft class="w-5 h-5 text-neutral-900"/> Observación del Item</Label>
+                            <Textarea id="observacion" v-model="form.observacion" :rows="4" placeholder="Notas adicionales..." />
+                            <InputError :message="form.errors.observacion" />
                         </div>
                     </div>
                 </div>
@@ -219,39 +228,39 @@ function submit() {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
 
                         <div class="grid gap-2">
-                            <Label><Hash class="w-4 h-4 text-neutral-900"/> Serie</Label>
+                            <Label for="serie"><Hash class="w-4 h-4 text-neutral-900"/> Serie</Label>
                             <Input id="serie" v-model="form.serie" type="text" placeholder="Ej. XYZ1234"/>
                             <InputError :message="form.errors.serie" />
                         </div>
                         <div class="grid gap-2">
-                            <Label><Package class="w-4 h-4 text-neutral-900"/> Marca</Label>
+                            <Label for="marca"><Package class="w-4 h-4 text-neutral-900"/> Marca</Label>
                             <Input id="marca" v-model="form.marca" type="text" placeholder="Ej. Launch"/>
                             <InputError :message="form.errors.marca" />
                         </div>
                         <div class="grid gap-2">
-                            <Label><Package class="w-4 h-4 text-neutral-900"/> Modelo</Label>
+                            <Label for="modelo"><Package class="w-4 h-4 text-neutral-900"/> Modelo</Label>
                             <Input id="modelo" v-model="form.modelo" type="text" placeholder="Ej. X123"/>
                             <InputError :message="form.errors.modelo" />
                         </div>
                         <div class="grid gap-2">
-                            <Label><BookText class="w-4 h-4 text-neutral-900"/> Rubro</Label>
+                            <Label for="rubro"><BookText class="w-4 h-4 text-neutral-900"/> Rubro</Label>
                             <Input id="rubro" v-model="form.rubro" type="text" placeholder="Ej. Equipos de diagnóstico"/>
                             <InputError :message="form.errors.rubro"/>
                         </div>
                         <div class="grid gap-2">
-                            <Label><CalendarDays class="w-4 h-4 text-neutral-900"/> Fecha de Adquisición</Label>
+                            <Label for="fecha_adquisicion"><CalendarDays class="w-4 h-4 text-neutral-900"/> Fecha de Adquisición</Label>
                             <Input id="fecha_adquisicion" v-model="form.fecha_adquisicion" type="date"/>
                             <InputError :message="form.errors.fecha_adquisicion" />
                         </div>
                         <div class="grid gap-2">
-                            <Label><PaintBucket class="w-4 h-4 text-neutral-900"/> Color</Label>
+                            <Label for="color"><PaintBucket class="w-4 h-4 text-neutral-900"/> Color</Label>
                             <Input id="color" v-model="form.color" type="text" placeholder="Ej. Negro"/>
                             <InputError :message="form.errors.color" />
                         </div>
                     </div>
                 </div>
 
-                <div v-if="tipoItem === 'equipo'" class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm">
+                <div v-if="tipoItem === 'equipo'" class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300 space-y-4">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="flex items-center font-bold text-lg"><ListPlus class="w-6 h-6 text-neutral-900"/> Accesorios del Equipo</h3>
                         <Button type="button" variant="outline" size="sm" @click="addAccesorio">
@@ -276,15 +285,21 @@ function submit() {
                             <Trash2 class="w-4 h-4" />
                         </Button>
                     </div>
-                    <p v-if="form.accesorios.length === 0" class="text-sm text-neutral-400 italic">No se han agregado accesorios.</p>
+                    <div v-if="form.accesorios.length === 0"
+                        class="flex flex-col items-center justify-center p-8 border-2 border-dashed border-neutral-100 rounded-xl bg-neutral-50/50">
+                        <ListPlus class="w-8 h-8 text-neutral-300 mb-2" />
+                        <p class="text-sm text-neutral-400 font-medium text-center">
+                            ¿Este equipo tiene accesorios?<br>
+                            <span class="text-[11px]">Ej: Cables, estuches, puntas de prueba...</span>
+                        </p>
+                    </div>
                 </div>
 
                 <div v-if="tipoItem === 'herramienta'" class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm animate-in fade-in slide-in-from-top-4">
                     <h3 class="font-bold text-lg border-b pb-2 mb-4">Detalles de la Herramienta</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-
                         <div class="grid gap-2">
-                            <Label><Hash class="w-4 h-4 text-neutral-900"/> Estado de la Herramienta</Label>
+                            <Label for="estado_herramienta"><Hash class="w-4 h-4 text-neutral-900"/> Estado de la Herramienta</Label>
                             <select v-model="form.estado_herramienta" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm">
                                 <option value="Disponible">Disponible</option>
                                 <option value="Nuevo">Nuevo</option>
@@ -292,7 +307,7 @@ function submit() {
                             <InputError :message="form.errors.estado_herramienta" />
                         </div>
                         <div class="grid gap-2">
-                            <Label><Package class="w-4 h-4 text-neutral-900"/> Marca/Modelo </Label>
+                            <Label for=""><Package class="w-4 h-4 text-neutral-900"/> Marca/Modelo </Label>
                             <Input id="marca_modelo" v-model="form.marca_modelo" type="text" placeholder="Ej. Launch"/>
                             <InputError :message="form.errors.marca_modelo" />
                         </div>
@@ -301,20 +316,21 @@ function submit() {
 
                 <div class="flex gap-4">
                     <Link :href="items.index.url()" class="flex-1">
-                        <Button variant="outline" class="w-full">Cancelar</Button>
+                        <Button variant="outline" class="w-full py-6" :disabled="form.processing">
+                            Cancelar
+                        </Button>
                     </Link>
                     <Button
-                        type="submit" :disabled="form.processing"
-                        class="flex-1 py-6 text-lg font-bold transition-all"
-
+                        type="submit"
+                        class="flex-1 py-6 text-lg font-bold transition-all shadow-lg active:scale-95"
+                        :disabled="form.processing"
                     >
                         <template v-if="form.processing">
                             <Loader2 class="mr-2 h-5 w-5 animate-spin" />
                             Guardando...
                         </template>
-
                         <template v-else>
-                            <Save class="w-6 h-6 mr-2"/>
+                            <Save class="w-5 h-5 mr-2" />
                             Guardar {{ tipoItem === 'equipo' ? 'Equipo' : 'Herramienta' }}
                         </template>
                     </Button>

@@ -12,12 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tools', function (Blueprint $table) {
-            // El id de esta tabla es al mismo tiempo la llave foránea de la tabla items
-            $table->foreignId('id')
-                ->primary()
-                ->constrained('items')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
+            $table->id();
+            $table->string('codigo_qr', 100)->unique()->nullable();
+            $table->string('nombre_herramienta', 100);
+            $table->string('foto', 255)->nullable();
+            $table->string('ubicacion_herramienta', 100)->nullable();
+            $table->text('descripcion_herramienta')->nullable();
+            $table->text('observacion_herramienta')->nullable();
 
             $table->string('marca_modelo', 200)->nullable();
             $table->enum('estado_herramienta', [
