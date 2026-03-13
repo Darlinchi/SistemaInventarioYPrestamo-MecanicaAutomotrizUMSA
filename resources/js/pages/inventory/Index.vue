@@ -5,9 +5,10 @@ import { Head, Link, usePage, router } from '@inertiajs/vue3';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import {
     Package, Wrench, SquarePen, Ban, Search, List, Image, Plus, CircleCheck, XIcon, Eye, Hash, BookText,
-    QrCode, CalendarDays, Rows3, AlignLeft, PaintBucket, FileText
+    QrCode, CalendarDays, Rows3, AlignLeft, PaintBucket, FileText, Layers
 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
+import itemRoutes from '@/routes/items';
 import equipmentRoutes from '@/routes/equipments'; // Asegúrate que el nombre coincida con tus archivos de rutas
 import toolRoutes from '@/routes/tools';
 
@@ -34,6 +35,7 @@ interface Item {
     ubicacion_herramienta?: string;
     estado_herramienta?: string;
     marca_modelo?: string;
+    cantidad_piezas?: BigInteger;
     descripcion_herramienta?: string;
     // Identificador para saber qué es
     tipo: 'equipo' | 'herramienta';
@@ -45,7 +47,10 @@ const props = defineProps<{
     estados_herramienta: string[];
 }>();
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Inventario', href: '#' }];
+const breadcrumbs: BreadcrumbItem[] = [{
+    title: 'Inventario',
+    href: itemRoutes.index.url()
+}];
 
 // --- NOTIFICACIONES FLASH ---
 const page = usePage();
@@ -287,94 +292,102 @@ const ultimoMantenimiento = computed(() => {
                 </select>
             </div>
 
-            <div class="relative bg-white border border-neutral-200 rounded-xl shadow-sm overflow-x-auto">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left min-w-max border-separate border-spacing-0">
-                    <thead class="bg-neutral-200 border-b border-neutral-300 text-xs font-bold uppercase tracking-widest text-neutral-800 sticky top-0 z-10">
-                        <tr>
-                            <th class="p-4">Item / Información</th>
-                            <th class="p-4">Estado</th>
-                            <th class="p-4">Ubicación</th>
-                            <th v-if="activeTab === 'equipos'" class="p-4">Accesorios</th>
-                            <th v-else class="p-4">Marca / Modelo</th>
-                            <th class="p-4 text-center sticky right-0 bg-neutral-200 border-l border-neutral-300 shadow-l">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-neutral-100">
-                        <tr v-for="item in filteredItems" :key="item.id" class="hover:bg-neutral-50/50 group transition-colors">
-                            <td class="p-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="h-12 w-12 rounded-lg border overflow-hidden bg-neutral-100 shrink-0">
-                                        <img v-if="item.foto" :src="'/storage/' + item.foto" class="h-full w-full object-cover" />
-                                        <Image v-else class="h-full w-full p-3 text-neutral-300" />
-                                    </div>
-                                    <div>
-                                        <div class="font-bold text-black">{{ item.nombre_equipo || item.nombre_herramienta }}</div>
-                                        <div class="text-[10px] font-mono text-neutral-400">{{ item.codigo_qr }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-4">
-                                <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border', statusColor(item.estado_equipo || item.estado_herramienta)]">
-                                    {{ item.estado_equipo || item.estado_herramienta }}
-                                </span>
-                            </td>
-                            <td class="p-4 text-sm text-neutral-600">
-                                <div class="flex items-center gap-1">
-                                    <Rows3 class="w-3 h-3" /> {{ item.ubicacion_equipo || item.ubicacion_herramienta }}
-                                </div>
-                            </td>
-                            <td class="p-4 whitespace-nowrap">
-                                <div v-if="activeTab === 'equipos'" class="relative inline-block text-left">
-                                    <button v-if="item.accessories && item.accessories.length > 0"
-                                        @click.stop="toggleAccessories(item.id)"
-                                        class="flex items-center gap-2 px-3 py-1 bg-white border border-neutral-200 rounded-lg shadow-sm hover:bg-neutral-50 transition active:scale-95" >
-                                        <List class="w-4 h-4 stroke-black"/>
-                                        <span class="text-sm font-bold text-black">{{ item.accessories.length }}</span>
-                                    </button>
-                                    <span v-else class="text-sm text-neutral-400 italic">Sin accesorios</span>
-                                    <div v-if="openAccessoryId === item.id"
-                                        class="absolute right-0 z-100 mt-2 w-72 bg-white border border-neutral-200 rounded-xl shadow-2xl p-4 animate-in fade-in zoom-in duration-200" >
-                                        <div class="max-h-60 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                                            <div v-for="acc in item.accessories"
-                                                :key="acc.id"
-                                                class="flex items-center justify-between p-2 bg-neutral-50 border border-neutral-100 rounded-lg" >
-                                                <span class="text-xs font-bold text-neutral-700">{{ acc.nombre_accesorio }}</span>
-                                                <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border', statusColor(acc.estado_accesorio)]">
-                                                    {{ acc.estado_accesorio }}
-                                                </span>
+            <div class="space-y-4">
+                <div v-if="filteredItems.length === 0" class="text-center py-20 bg-neutral-50 rounded-3xl border-2 border-dashed border-neutral-200">
+                    <Package class="w-12 h-12 mx-auto text-neutral-300 mb-4" />
+                    <p class="text-neutral-500 font-medium">No se encontraron items con esos criterios.</p>
+                </div>
+
+                <div class="relative bg-white border border-neutral-200 rounded-xl shadow-sm overflow-x-auto">
+                    <div v-if="(activeTab === 'equipos' || activeTab === 'herramientas') && filteredItems.length > 0" class="overflow-x-auto">
+                        <table class="w-full text-left min-w-max border-separate border-spacing-0">
+                            <thead class="bg-neutral-200 border-b border-neutral-300 text-xs font-bold uppercase tracking-widest text-neutral-800 sticky top-0 z-10">
+                                <tr>
+                                    <th class="p-4">Item / Información</th>
+                                    <th class="p-4">Estado</th>
+                                    <th class="p-4">Ubicación</th>
+                                    <th v-if="activeTab === 'equipos'" class="p-4">Accesorios</th>
+                                    <th v-else class="p-4">Marca / Modelo</th>
+                                    <th class="p-4 text-center sticky right-0 bg-neutral-200 border-l border-neutral-300 shadow-l">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-neutral-100">
+                                <tr v-for="item in filteredItems" :key="item.id" class="hover:bg-neutral-50/50 group transition-colors">
+                                    <td class="p-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="h-12 w-12 rounded-lg border overflow-hidden bg-neutral-100 shrink-0">
+                                                <img v-if="item.foto" :src="'/storage/' + item.foto" class="h-full w-full object-cover" />
+                                                <Image v-else class="h-full w-full p-3 text-neutral-300" />
+                                            </div>
+                                            <div>
+                                                <div class="font-bold text-black">{{ item.nombre_equipo || item.nombre_herramienta }}</div>
+                                                <div class="text-[10px] font-mono text-neutral-400">{{ item.codigo_qr }}</div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div v-else class="text-sm text-neutral-600">
-                                    {{ item.marca_modelo || '-' }}
-                                </div>
-                            </td>
-                            <td class="p-4 text-right space-x-2">
-                                <Button
-                                    @click="openViewInformacion(item)"
-                                    class="p-2 bg-white border border-neutral-200 rounded-lg hover:bg-red-50 group shadow-sm transition text-red-500"
-                                    title="Información"
-                                >
-                                    <Eye class="w-4.5 h-4.5 stroke-green-500"/>
-                                </Button>
-                                <Link :href="item.tipo === 'equipo' ? equipmentRoutes.edit.url(item.id) : toolRoutes.edit.url(item.id)">
-                                    <button class="p-2 border rounded-lg hover:bg-blue-50 text-blue-600"><SquarePen class="w-4 h-4"/></button>
-                                </Link>
-                                <Button
-                                    @click="openConfirmBaja(item)"
-                                    class="p-2 bg-white border border-neutral-200 rounded-lg hover:bg-red-50 text-red-500"
-                                    title="Dar de baja"
-                                >
-                                    <Ban class="w-4 h-4 stroke-red-500"/>
-                                </Button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                    </td>
+                                    <td class="p-4">
+                                        <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border', statusColor(item.estado_equipo || item.estado_herramienta)]">
+                                            {{ item.estado_equipo || item.estado_herramienta }}
+                                        </span>
+                                    </td>
+                                    <td class="p-4 text-sm text-neutral-600">
+                                        <div class="flex items-center gap-1">
+                                            <Rows3 class="w-3 h-3" /> {{ item.ubicacion_equipo || item.ubicacion_herramienta }}
+                                        </div>
+                                    </td>
+                                    <td class="p-4 whitespace-nowrap">
+                                        <div v-if="activeTab === 'equipos'" class="relative inline-block text-left">
+                                            <button v-if="item.accessories && item.accessories.length > 0"
+                                                @click.stop="toggleAccessories(item.id)"
+                                                class="flex items-center gap-2 px-3 py-1 bg-white border border-neutral-200 rounded-lg shadow-sm hover:bg-neutral-50 transition active:scale-95" >
+                                                <List class="w-4 h-4 stroke-black"/>
+                                                <span class="text-sm font-bold text-black">{{ item.accessories.length }}</span>
+                                            </button>
+                                            <span v-else class="text-sm text-neutral-400 italic">Sin accesorios</span>
+                                            <div v-if="openAccessoryId === item.id"
+                                                class="absolute right-0 z-100 mt-2 w-72 bg-white border border-neutral-200 rounded-xl shadow-2xl p-4 animate-in fade-in zoom-in duration-200" >
+                                                <div class="max-h-60 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                                                    <div v-for="acc in item.accessories"
+                                                        :key="acc.id"
+                                                        class="flex items-center justify-between p-2 bg-neutral-50 border border-neutral-100 rounded-lg" >
+                                                        <span class="text-xs font-bold text-neutral-700">{{ acc.nombre_accesorio }}</span>
+                                                        <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border', statusColor(acc.estado_accesorio)]">
+                                                            {{ acc.estado_accesorio }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div v-else class="text-sm text-neutral-600">
+                                            {{ item.marca_modelo || '-' }}
+                                        </div>
+                                    </td>
+                                    <td class="p-4 text-right space-x-2">
+                                        <Button
+                                            @click="openViewInformacion(item)"
+                                            class="p-2 bg-white border border-neutral-200 rounded-lg hover:bg-red-50 group shadow-sm transition text-red-500"
+                                            title="Información"
+                                        >
+                                            <Eye class="w-4.5 h-4.5 stroke-green-500"/>
+                                        </Button>
+                                        <Link :href="item.tipo === 'equipo' ? equipmentRoutes.edit.url(item.id) : toolRoutes.edit.url(item.id)">
+                                            <button class="p-2 border rounded-lg hover:bg-blue-50 text-blue-600"><SquarePen class="w-4 h-4"/></button>
+                                        </Link>
+                                        <Button
+                                            @click="openConfirmBaja(item)"
+                                            class="p-2 bg-white border border-neutral-200 rounded-lg hover:bg-red-50 text-red-500"
+                                            title="Dar de baja"
+                                        >
+                                            <Ban class="w-4 h-4 stroke-red-500"/>
+                                        </Button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+
 
             <div v-if="isConfirmingBaja" class="fixed inset-0 z-50 flex items-center justify-center p-4">
                 <div class="absolute inset-0 bg-neutral-900/40 backdrop-blur-sm" @click="closeConfirmBaja"></div>
@@ -431,7 +444,7 @@ const ultimoMantenimiento = computed(() => {
 
                                 <div class="flex-1">
                                     <div class="flex items-center gap-3 mb-2">
-                                        <h2 class="text-3xl font-black text-neutral-900 uppercase tracking-tighter leading-none">
+                                        <h2 class="text-2xl font-black text-neutral-800 flex items-center gap-3">
                                             {{ itemInformacion?.nombre_item }}
                                         </h2>
                                     </div>
@@ -550,6 +563,13 @@ const ultimoMantenimiento = computed(() => {
                                             <div>
                                                 <p class="text-[12px] text-neutral-700 uppercase font-bold">Marca / Modelo Específico</p>
                                                 <p class="text-sm font-bold text-neutral-800">{{ itemInformacion.tool.marca_modelo || 'Sin especificar' }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <div class="p-2 bg-blue-50 rounded-lg"><Layers class="w-4 h-4 text-neutral-900"/></div>
+                                            <div>
+                                                <p class="text-[12px] text-neutral-700 uppercase font-bold">Cantidad de piezas</p>
+                                                <p class="text-sm font-bold text-neutral-800">{{ itemInformacion.tool.cantidad_piezas || 'Sin especificar' }}</p>
                                             </div>
                                         </div>
                                     </div>

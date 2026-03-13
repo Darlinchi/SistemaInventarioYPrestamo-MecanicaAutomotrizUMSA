@@ -104,18 +104,6 @@ function submit() {
                         </div>
                     </div>
 
-                    <div class="grid gap-2">
-                        <Label for="foto"><ImageUp class="w-5 h-5 text-neutral-900"/> Foto del Equipo</Label>
-                        <div v-if="photoPreview" class="relative w-40 h-40 group">
-                            <img :src="photoPreview" class="w-full h-full object-cover rounded-xl border shadow-md" />
-                            <button type="button" @click="photoPreview = null; form.foto = null" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg">
-                                <Trash2 class="w-4 h-4"/>
-                            </button>
-                        </div>
-                        <FileInput accept="image/*" @change="handleFileChange" />
-                        <InputError :message="form.errors.foto" />
-                    </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid gap-2">
                             <Label for="ubicacion"><Rows3 class="w-4 h-4 inline mr-1"/> Ubicación en Taller</Label>
@@ -130,6 +118,19 @@ function submit() {
                             </select>
                         </div>
                     </div>
+
+                    <div class="grid gap-2">
+                        <Label for="foto"><ImageUp class="w-5 h-5 text-neutral-900"/> Foto del Equipo</Label>
+                        <div v-if="photoPreview" class="relative w-40 h-40 group">
+                            <img :src="photoPreview" class="w-full h-full object-cover rounded-xl border shadow-md" />
+                            <button type="button" @click="photoPreview = null; form.foto = null" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg">
+                                <Trash2 class="w-4 h-4"/>
+                            </button>
+                        </div>
+                        <FileInput accept="image/*" @change="handleFileChange" />
+                        <InputError :message="form.errors.foto" />
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="grid gap-2">
                             <Label for="serie"><Hash class="w-4 h-4 text-neutral-900"/> Número de Serie</Label>

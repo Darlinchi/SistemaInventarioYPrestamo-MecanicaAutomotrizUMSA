@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { FileInput } from '@/components/ui/file-input';
 import { Button } from '@/components/ui/button';
 import {
-    Save, ArrowLeft, Trash2, Loader2, AlignLeft, PencilLine,
+    Save, ArrowLeft, Trash2, Loader2, AlignLeft, PencilLine, Layers, Hash,
     Rows3, Image, QrCode, Package, ListTodo, Wrench
 } from 'lucide-vue-next';
 import itemsRoutes from '@/routes/items';
@@ -36,6 +36,7 @@ const form = useForm({
     descripcion: props.tool.descripcion_herramienta,
     observacion: props.tool.observacion_herramienta,
     marca_modelo: props.tool.marca_modelo,
+    cantidad_piezas: props.tool.cantidad_piezas,
     estado_herramienta: props.tool.estado_herramienta,
     foto: null as File | null,
 });
@@ -105,6 +106,27 @@ function submit() {
                         </div>
                     </div>
 
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid gap-2">
+                            <Label for="estado_herramienta"><Hash class="w-4 h-4 inline mr-1"/> Estado de la Herramienta</Label>
+                            <select
+                                v-model="form.estado_herramienta"
+                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                            >
+                                <option value="Disponible">Disponible</option>
+                                <option value="Dañado">Dañado</option>
+                                <option value="Extraviado">Extraviado</option>
+                                <option value="Baja">Baja</option>
+                            </select>
+                            <InputError :message="form.errors.estado_herramienta" />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="ubicacion"><Rows3 class="w-5 h-5 inline mr-1"/> Ubicación en Taller</Label>
+                            <Input id="ubicacion" v-model="form.ubicacion" />
+                            <InputError :message="form.errors.ubicacion" />
+                        </div>
+                    </div>
+
                     <div class="grid gap-2">
                         <Label for="foto"><Image class="w-5 h-5 inline mr-1"/> Foto de la Herramienta</Label>
                         <div v-if="photoPreview" class="relative w-40 h-40 mb-2 group">
@@ -123,22 +145,15 @@ function submit() {
                         <InputError :message="form.errors.foto" />
                     </div>
 
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid gap-2">
-                            <Label for="estado_herramienta">Estado de la Herramienta</Label>
-                            <select
-                                v-model="form.estado_herramienta"
-                                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                            >
-                                <option value="Disponible">Disponible</option>
-                                <option value="Dañado">Dañado</option>
-                                <option value="Extraviado">Extraviado</option>
-                                <option value="Baja">Baja</option>
-                            </select>
-                            <InputError :message="form.errors.estado_herramienta" />
+                            <Label for="cantidad_piezas"><Layers class="w-4 h-4 inline mr-1"/> Cantidad de piezas</Label>
+                            <Input id="cantidad_piezas" v-model="form.cantidad_piezas" />
+                            <InputError :message="form.errors.cantidad_piezas" />
                         </div>
                         <div class="grid gap-2">
-                            <Label for="marca_modelo">Marca / Modelo</Label>
+                            <Label for="marca_modelo"><Package class="w-4 h-4 inline mr-1"/> Marca / Modelo</Label>
                             <Input id="marca_modelo" v-model="form.marca_modelo" />
                             <InputError :message="form.errors.marca_modelo" />
                         </div>

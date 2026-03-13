@@ -10,6 +10,7 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\BorrowerController;
 use App\Http\Controllers\MaintenanceCompanyController;
 use App\Http\Controllers\MaintenanceController;
+use App\Http\Controllers\DashboardController;
 
 // ruta publica: pagina de bienvenida
 Route::get('/', function () {
@@ -25,7 +26,8 @@ Route::middleware(['auth', 'verified'])
     ->group(function () {
 
     // Dashboard principal
-    Route::get('/', fn() => Inertia::render('Dashboard'))->name('dashboard');
+    //Route::get('/', fn() => Inertia::render('Dashboard'))->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // SOLO ADMIN
     Route::middleware(['role:admin'])->group(function () {

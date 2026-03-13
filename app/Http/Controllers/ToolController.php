@@ -41,6 +41,7 @@ class ToolController extends Controller
             'observacion'        => 'nullable|string',
             'foto'               => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'marca_modelo'       => 'required|string|max:255',
+            'cantidad_piezas'    => 'required|integer|min:1',
             'estado_herramienta' => 'required|string',
         ]);
 
@@ -57,8 +58,9 @@ class ToolController extends Controller
                     'descripcion_herramienta' => $validated['descripcion'],
                     'ubicacion_herramienta'   => $validated['ubicacion'],
                     'observacion_herramienta' => $validated['observacion'],
-                    'foto'        => $fotoPath,
+                    'foto'                    => $fotoPath,
                     'marca_modelo'            => $validated['marca_modelo'],
+                    'cantidad_piezas'         => $validated['cantidad_piezas'],
                     'estado_herramienta'      => $validated['estado_herramienta'],
                 ]);
 
@@ -111,6 +113,7 @@ class ToolController extends Controller
             'descripcion'        => 'nullable|string',
             'observacion'        => 'nullable|string',
             'marca_modelo'       => 'required|string|max:255',
+            'cantidad_piezas'    => 'required|integer|min:0',
             'estado_herramienta' => 'required|string',
         ]);
 
@@ -135,6 +138,7 @@ class ToolController extends Controller
                     'ubicacion_herramienta'   => $validated['ubicacion'],
                     'observacion_herramienta' => $validated['observacion'],
                     'marca_modelo'            => $validated['marca_modelo'],
+                    'cantidad_piezas'         => $validated['cantidad_piezas'],
                     'estado_herramienta'      => $validated['estado_herramienta'],
                 ]);
 

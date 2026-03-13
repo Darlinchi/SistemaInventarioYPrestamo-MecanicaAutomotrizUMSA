@@ -11,7 +11,9 @@ import { Button } from '@/components/ui/button';
 import { ref } from 'vue';
 import toolsRoutes from '@/routes/tools'; // Importamos las rutas de herramientas
 import items from '@/routes/items';
-import { Trash2, ArrowLeft, Save, Loader2, Wrench, QrCode, Rows3, ImageUp, AlignLeft, PencilLine, Package, Hash } from 'lucide-vue-next';
+import { Trash2, ArrowLeft, Save, Loader2, Wrench, QrCode, Rows3, ImageUp, AlignLeft, PencilLine, Package, Hash,
+        Layers
+ } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Inventario', href: items.index.url() },
@@ -29,6 +31,7 @@ const form = useForm({
     foto: null as File | null,
     estado_herramienta: "Disponible",
     marca_modelo: "",
+    cantidad_piezas: 1,
 });
 
 // FUNCIONES DE APOYO
@@ -100,6 +103,22 @@ function submit() {
                         </div>
                     </div>
 
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid gap-2">
+                            <Label for="estado_herramienta"><Hash class="w-4 h-4 inline mr-1"/> Estado de la Herramienta</Label>
+                            <select v-model="form.estado_herramienta" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm">
+                                <option value="Disponible">Disponible</option>
+                                <option value="Nuevo">Nuevo</option>
+                            </select>
+                            <InputError :message="form.errors.estado_herramienta" />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="ubicacion"><Rows3 class="w-4 h-4 inline mr-1"/> Ubicación en Taller</Label>
+                            <Input id="ubicacion" v-model="form.ubicacion" placeholder="Ej. Caja de Herramientas 01"/>
+                            <InputError :message="form.errors.ubicacion" />
+                        </div>
+                    </div>
+
                     <div class="grid gap-2">
                         <Label for="foto"><ImageUp class="w-4 h-4 inline mr-1"/> Foto de la Herramienta</Label>
                         <div v-if="photoPreview" class="relative w-40 h-40 mb-4 group">
@@ -114,14 +133,12 @@ function submit() {
                         <p class="text-[12px] text-neutral-600 italic">Formatos permitidos: JPG, PNG. Máximo 2MB.</p>
                         <InputError :message="form.errors.foto" class="mt-2" />
                     </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid gap-2">
-                            <Label for="estado_herramienta"><Hash class="w-4 h-4 inline mr-1"/> Estado de la Herramienta</Label>
-                            <select v-model="form.estado_herramienta" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm">
-                                <option value="Disponible">Disponible</option>
-                                <option value="Nuevo">Nuevo</option>
-                            </select>
-                            <InputError :message="form.errors.estado_herramienta" />
+                            <Label for="cantidad_piezas"><Layers class="w-4 h-4 inline mr-1"/> Cantidad de piezas</Label>
+                            <Input id="cantidad_piezas" v-model="form.cantidad_piezas" placeholder="Ej. 10"/>
+                            <InputError :message="form.errors.cantidad_piezas" />
                         </div>
                         <div class="grid gap-2">
                             <Label for="marca_modelo"><Package class="w-4 h-4 inline mr-1"/> Marca / Modelo</Label>
@@ -130,11 +147,7 @@ function submit() {
                         </div>
                     </div>
 
-                    <div class="grid gap-2">
-                        <Label for="ubicacion"><Rows3 class="w-4 h-4 inline mr-1"/> Ubicación en Taller</Label>
-                        <Input id="ubicacion" v-model="form.ubicacion" placeholder="Ej. Caja de Herramientas 01"/>
-                        <InputError :message="form.errors.ubicacion" />
-                    </div>
+
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid gap-2">

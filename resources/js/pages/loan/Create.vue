@@ -239,16 +239,16 @@ function submit() {
 
                         <div class="grid grid-cols-2 gap-4 ">
                             <div class="space-y-2">
-                                <Label for="fecha_salida" class="flex items-center gap-1 text-[13px] font-black uppercase text-orange-500 tracking-wider">
-                                    <Calendar class="w-3.5 h-3.5" />
+                                <Label for="fecha_salida" class="flex items-center gap-1 text-[12px] font-black uppercase text-blue-500 tracking-wider">
+                                    <Calendar class="w-4 h-4" />
                                     <span>Fecha Salida</span>
                                 </Label>
                                 <Input v-model="form.fecha_salida" type="date" readonly class="rounded-xl border-neutral-200 bg-neutral-100 h-10 text-xs px-2 cursor-not-allowed w-full" />
                                 <InputError :message="form.errors.fecha_salida" />
                             </div>
                             <div class="space-y-2">
-                                <Label for="hora_inicio" class="flex items-center gap-1.5 text-[13px] font-black uppercase text-blue-500 tracking-wider">
-                                    <Clock class="w-3.5 h-3.5" />
+                                <Label for="hora_inicio" class="flex items-center gap-1.5 text-[12px] font-black uppercase text-blue-500 tracking-wider">
+                                    <Clock class="w-4 h-4" />
                                     <span>Hora Inicio</span>
                                 </Label>
                                 <Input v-model="form.hora_inicio" type="time" readonly class="rounded-xl border-neutral-200 bg-neutral-100 h-10 text-xs px-2 cursor-not-allowed w-full" />
@@ -261,16 +261,16 @@ function submit() {
                         </h3>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-2">
-                                <Label for="fecha_retorno_prevista" class="flex items-center gap-1 text-[13px] font-black uppercase text-orange-500 tracking-wider">
-                                    <CalendarCheck2 class="w-3.5 h-3.5" />
+                                <Label for="fecha_retorno_prevista" class="flex items-center gap-1 text-[12px] font-black uppercase text-orange-500 tracking-wider">
+                                    <CalendarCheck2 class="w-4 h-4" />
                                     <span>F. Retorno</span>
                                 </Label>
                                 <Input v-model="form.fecha_retorno_prevista" type="date":min="form.fecha_salida" class="rounded-xl border-neutral-300 h-10 text-xs" />
                                 <InputError :message="form.errors.fecha_retorno_prevista" />
                             </div>
                             <div class="space-y-2">
-                                <Label for="hora_fin_prevista" class="flex items-center gap-1.5 text-[13px] font-black uppercase text-blue-500 tracking-wider">
-                                    <ClockAlert class="w-3.5 h-3.5" />
+                                <Label for="hora_fin_prevista" class="flex items-center gap-1.5 text-[12px] font-black uppercase text-orange-500 tracking-wider">
+                                    <ClockAlert class="w-4 h-4" />
                                     <span>H. Retorno</span>
                                 </Label>
                                 <Input v-model="form.hora_fin_prevista" type="time":min="form.hora_inicio" class="rounded-xl border-neutral-300 h-10 text-xs" />

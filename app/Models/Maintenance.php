@@ -10,10 +10,15 @@ class Maintenance extends Model
 
     protected $fillable = [
         'equipment_id',
+        'tipo_mantenimiento',
         'fecha_mantenimiento',
+        'fecha_retorno',
+        'fecha_retorno_estimado',
         'hora_inicio',
         'hora_fin',
+        'hora_fin_estimado',
         'actividad',
+        'estado_final_equipo',
         'estado_mantenimiento',
     ];
     protected $appends = ['estado_texto'];

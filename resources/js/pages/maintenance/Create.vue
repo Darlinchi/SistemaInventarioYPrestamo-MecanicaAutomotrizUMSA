@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import maintenancesRoutes from '@/routes/maintenances';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
@@ -8,7 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { ref, computed } from 'vue';
-import { ArrowLeft, Wrench, Building2, Search, Loader2, Save, ClipboardPen, Check, Package} from 'lucide-vue-next';
+import maintenancesRoutes from '@/routes/maintenances';
+import { ArrowLeft, Wrench, Building2, Search, Loader2, Save, ClipboardPen, Check, Package,
+        Calendar, Clock, CalendarClock, ClockAlert, CalendarCheck2
+} from 'lucide-vue-next';
 
 // Props: Recibimos los equipos (Epson, Osciloscopios, etc.) y las empresas registradas
 const props = defineProps<{
@@ -37,23 +39,24 @@ const searchTerm = ref('');
 const form = useForm({
     equipment_id: null as number | null, // Cambia '' por null
     maintenance_company_id: null as number | null,
+    tipo_mantenimiento: 'Preventivo',
     fecha_mantenimiento: today,
     hora_inicio: now,
+    hora_fin_estimado: '',
+    fecha_retorno_estimado: '',
 });
 
 const filteredItems = computed(() => {
     const search = searchTerm.value.toLowerCase();
     return props.equipment.filter(unit => {
-        // Validación extra: Solo mostrar si el estado_equipo es 'Disponible'
-        // o si es el que ya está seleccionado en el form
+        // Filtro de disponibilidad
         const isAvailable = unit.estado_equipo === 'Disponible' || form.equipment_id === unit.id;
         if (!isAvailable) return false;
-        // 1. Buscamos en el nombre (viene de la relación item)
-        const nameMatch = unit.item.nombre_item.toLowerCase().includes(search);
-        // 2. Buscamos en el número de serie (viene de equipment)
+
+        // CORRECCIÓN AQUÍ: Quitamos el ".item"
+        // Asegúrate de usar el nombre de la columna real (ej. nombre_equipo)
+        const nameMatch = unit.nombre_equipo ? unit.nombre_equipo.toLowerCase().includes(search) : false;
         const serieMatch = unit.serie ? unit.serie.toLowerCase().includes(search) : false;
-        // 3. Buscamos el código directamente en equipment
-        // Ajusta 'codigo' al nombre exacto de tu columna en la tabla equipment
         const codeMatch = unit.codigo_qr ? unit.codigo_qr.toLowerCase().includes(search) : false;
 
         return nameMatch || serieMatch || codeMatch;
@@ -62,7 +65,6 @@ const filteredItems = computed(() => {
 
 // Función para seleccionar un solo equipo
 const toggleItemSelection = (id: number) => {
-    // Si haces clic en el mismo, se deselecciona; si no, marca el nuevo
     form.equipment_id = form.equipment_id === id ? null : id;
 };
 
@@ -88,7 +90,7 @@ const submit = () => {
     <Head title="Registrar Mantenimiento" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="max-w-3xl mx-auto p-6 w-full">
+        <div class="max-w-5xl mx-auto p-4 w-full">
             <div class="mb-6">
                 <Link :href="maintenancesRoutes.index.url()" class="inline-flex items-center text-sm text-neutral-500 hover:text-black font-medium transition">
                     <ArrowLeft class="w-4 h-4 mr-1"/> Volver a mantenimientos
@@ -97,7 +99,7 @@ const submit = () => {
             </div>
 
             <form @submit.prevent="submit" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="md:col-span-1 space-y-6">
+                <div class="md:col-span-1 space-y-4">
                     <div class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-4">
                         <h3 class="font-bold text-lg border-b pb-2 flex items-center">
                             <ClipboardPen class="w-5 h-5 mr-2 text-blue-500"/> Información
@@ -105,7 +107,7 @@ const submit = () => {
 
                         <div class="grid gap-2">
                             <Label>
-                                <Building2 class="w-3.5 h-3.5 text-green-500"/> Empresa Encargada
+                                <Building2 class="w-4 h-4 text-green-500"/> Empresa Encargada
                             </Label>
                             <select
                                 v-model="form.maintenance_company_id"
@@ -121,15 +123,58 @@ const submit = () => {
                         </div>
 
                         <div class="grid gap-2">
-                            <Label for="fecha_mantenimiento">Fecha de Mantenimiento</Label>
-                            <Input id="fecha_mantenimiento" v-model="form.fecha_mantenimiento" type="date":max="today"/>
-                            <InputError :message="form.errors.fecha_mantenimiento" />
+                            <Label>
+                                <Wrench class="w-4 h-4 text-amber-500"/> Tipo de Mantenimiento
+                            </Label>
+                            <select v-model="form.tipo_mantenimiento"
+                                    :class="['flex h-10 w-full rounded-md border bg-white px-3 py-2 text-sm',
+                                        form.errors.tipo_mantenimiento ? 'border-red-500' : 'border-input']">
+                                <option :value="null" disabled>Seleccionar tipo</option>
+                                <option value="Preventivo">Preventivo</option>
+                                <option value="Correctivo">Correctivo</option>
+                            </select>
+                            <InputError :message="form.errors.tipo_mantenimiento" />
                         </div>
 
-                        <div class="grid gap-2">
-                            <Label for="hora_inicio">Hora de Inicio</Label>
-                            <Input id="hora_inicio" v-model="form.hora_inicio"  type="time":max="now" />
-                            <InputError :message="form.errors.hora_inicio" />
+                        <div class="grid grid-cols-2 gap-4 ">
+                            <div class="space-y-2">
+                                <Label for="fecha_mantenimiento" class="flex items-center gap-1 text-[12px] font-black uppercase text-blue-500 tracking-wider">
+                                    <Calendar class="w-4 h-4" />
+                                    <span>Fecha Salida</span>
+                                </Label>
+                                <Input v-model="form.fecha_mantenimiento" type="date" readonly class="rounded-xl border-neutral-200 bg-neutral-100 h-10 text-xs px-2 cursor-not-allowed w-full" />
+                                <InputError :message="form.errors.fecha_mantenimiento" />
+                            </div>
+                            <div class="space-y-2">
+                                <Label for="hora_inicio" class="flex items-center gap-1.5 text-[12px] font-black uppercase text-blue-500 tracking-wider">
+                                    <Clock class="w-4 h-4" />
+                                    <span>Hora Inicio</span>
+                                </Label>
+                                <Input v-model="form.hora_inicio" type="time" readonly class="rounded-xl border-neutral-200 bg-neutral-100 h-10 text-xs px-2 cursor-not-allowed w-full" />
+                                <InputError :message="form.errors.hora_inicio" />
+                            </div>
+                        </div>
+
+                        <h3 class="text-[13px] font-black uppercase text-neutral-800 tracking-wider flex items-center gap-1">
+                            <CalendarClock class="w-4 h-4 text-neutral-700" /> Retorno (Opcional)
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <Label for="fecha_retorno_estimado" class="flex items-center gap-1 text-[12px] font-black uppercase text-orange-500 tracking-wider">
+                                    <CalendarCheck2 class="w-4 h-4" />
+                                    <span>F. Retorno</span>
+                                </Label>
+                                <Input v-model="form.fecha_retorno_estimado" type="date" class="rounded-xl border-neutral-300 h-10 text-xs" />
+                                <InputError :message="form.errors.fecha_retorno_estimado" />
+                            </div>
+                            <div class="space-y-2">
+                                <Label for="hora_fin_estimado" class="flex items-center gap-1.5 text-[12px] font-black uppercase text-orange-500 tracking-wider">
+                                    <ClockAlert class="w-4 h-4" />
+                                    <span>H. Retorno</span>
+                                </Label>
+                                <Input v-model="form.hora_fin_estimado" type="time" class="rounded-xl border-neutral-300 h-10 text-xs" />
+                                <InputError :message="form.errors.hora_fin_estimado" />
+                            </div>
                         </div>
 
                         <!--
@@ -146,6 +191,16 @@ const submit = () => {
                         </div>
                         -->
                     </div>
+
+                    <Button type="submit"
+                    class="w-full py-7 rounded-2xl text-lg font-bold shadow-lg shadow-neutral-200" :disabled="form.processing">
+                        <template v-if="form.processing">
+                            <Loader2 class="mr-2 h-6 w-6 animate-spin" /> Registrando...
+                        </template>
+                        <template v-else><Save class="mr-2 h-5 w-5" />
+                            Registrar Mantenimiento
+                        </template>
+                    </Button>
                 </div>
 
                 <div class="md:col-span-2 space-y-6">
@@ -170,14 +225,14 @@ const submit = () => {
                                     form.equipment_id === unit.id ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-neutral-200 hover:border-neutral-400']"
                             >
                                 <div class="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center overflow-hidden shrink-0">
-                                    <img v-if="unit.item.foto" :src="'/storage/' + unit.item.foto" class="object-cover w-full h-full" />
+                                    <img v-if="unit.foto" :src="'/storage/' + unit.foto" class="object-cover w-full h-full" />
                                     <Package v-else class="w-5 h-5 text-neutral-400" />
                                 </div>
 
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-bold text-black truncate">{{ unit.item.nombre_item }}</p>
+                                    <p class="text-sm font-bold text-black truncate">{{ unit.nombre_equipo }}</p>
                                     <p class="text-[10px] text-neutral-500 uppercase">Serie: {{ unit.serie || 'S/N' }}</p>
-                                    <p class="text-[9px] font-mono text-blue-600 font-bold uppercase">Cód: {{ unit.item.codigo_qr }}</p>
+                                    <p class="text-[9px] font-mono text-blue-600 font-bold uppercase">Cód: {{ unit.codigo_qr }}</p>
                                 </div>
 
                                 <div v-if="form.equipment_id === unit.id" class="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shrink-0">
@@ -187,15 +242,6 @@ const submit = () => {
                         </div>
                         <InputError :message="form.errors.equipment_id" class="mt-2" />
                     </div>
-
-                    <Button type="submit" class="w-full py-7 rounded-2xl text-lg font-bold shadow-lg shadow-neutral-200" :disabled="form.processing">
-                        <template v-if="form.processing">
-                            <Loader2 class="mr-2 h-6 w-6 animate-spin" /> Registrando...
-                        </template>
-                        <template v-else><Save class="mr-2 h-5 w-5" />
-                            Registrar Mantenimiento
-                        </template>
-                    </Button>
                 </div>
             </form>
         </div>

@@ -25,13 +25,21 @@ return new class extends Migration
 
             // Atributos de tiempo y actividad
             $table->date('fecha_mantenimiento');
-            $table->date('fecha_retorno');
-            $table->date('fecha_retorno_estimado');
+            $table->date('fecha_retorno')->nullable();
+            $table->date('fecha_retorno_estimado')->nullable();
             $table->time('hora_inicio')->nullable();
             $table->time('hora_fin_estimado')->nullable();
             $table->time('hora_fin')->nullable();
-            $table->text('actividad');
+            $table->text('actividad')->nullable();
             $table->enum('estado_mantenimiento', ['En Proceso', 'Completado'])->default('En Proceso');
+            $table->enum('estado_final_equipo', [
+                'Disponible',
+                'Mantenimiento',
+                'Reparado',
+                'Dañado',
+                'Incompleto',
+                'Baja'
+            ])->nullable();
             $table->timestamps();
         });
     }

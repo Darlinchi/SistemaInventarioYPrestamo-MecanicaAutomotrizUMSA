@@ -21,6 +21,7 @@ return new class extends Migration
             $table->text('observacion_herramienta')->nullable();
 
             $table->string('marca_modelo', 200)->nullable();
+            $table->integer('cantidad_piezas')->default(1);
             $table->enum('estado_herramienta', [
                 'Nuevo',
                 'Disponible',

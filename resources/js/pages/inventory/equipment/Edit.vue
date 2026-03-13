@@ -116,16 +116,6 @@ function submit() {
                         </div>
                     </div>
 
-                    <div class="grid gap-2">
-                        <Label><Image class="w-4 h-4 inline mr-1"/> Foto Actual / Nueva</Label>
-                        <div v-if="photoPreview" class="relative w-40 h-40 mb-2">
-                            <img :src="photoPreview" class="w-full h-full object-cover rounded-xl border shadow-md" />
-                        </div>
-                        <FileInput accept="image/*" @change="handleFileChange" />
-                        <p class="text-[12px] text-neutral-600 italic">Formatos permitidos: JPG, PNG. Máximo 2MB.</p>
-                        <InputError :message="form.errors.foto" />
-                    </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                         <div class="grid gap-2">
                             <Label for="ubicacion" ><Rows3 class="w-4 h-4 text-neutral-900"/> Ubicación en Taller</Label>
@@ -139,7 +129,7 @@ function submit() {
                                 v-model="form.estado_equipo"
                                 class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                             >
-                                <option value="Nuevo">Nuevo</option>
+                                <option value="Mantenimiento">Mantenimiento</option>
                                 <option value="Disponible">Disponible</option>
                                 <option value="Dañado">Dañado</option>
                                 <option value="Extraviado">Extraviado</option>
@@ -148,6 +138,17 @@ function submit() {
                             <InputError :message="form.errors.estado_equipo" />
                         </div>
                     </div>
+
+                    <div class="grid gap-2">
+                        <Label><Image class="w-4 h-4 inline mr-1"/> Foto Actual / Nueva</Label>
+                        <div v-if="photoPreview" class="relative w-40 h-40 mb-2">
+                            <img :src="photoPreview" class="w-full h-full object-cover rounded-xl border shadow-md" />
+                        </div>
+                        <FileInput accept="image/*" @change="handleFileChange" />
+                        <p class="text-[12px] text-neutral-600 italic">Formatos permitidos: JPG, PNG. Máximo 2MB.</p>
+                        <InputError :message="form.errors.foto" />
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="grid gap-2">
                             <Label for="serie"><Hash class="w-4 h-4 text-neutral-900"/> Número de Serie</Label>

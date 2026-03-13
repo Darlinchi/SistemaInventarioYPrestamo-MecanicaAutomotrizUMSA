@@ -8,8 +8,30 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Plus, Wrench, Building2, Calendar, Clock, Search, Package, CheckCircle, SquarePen, XIcon, History,
-    Loader2, Eraser, FileCog, FileClock, FileCheck, Cog } from 'lucide-vue-next';
+import { Plus, Wrench, Building2, Calendar, Clock, Search, Package, CheckCircle, SquarePen, XIcon, AlignLeft,
+    Loader2, Eraser, Image, ClipboardList, ClipboardPen, Printer, Cog, ClockAlert, CalendarCheck2,
+    CalendarClock, Eye, History } from 'lucide-vue-next';
+
+interface Maintenance {
+    id: number;
+    fecha_mantenimiento: string;
+    fecha_retorno?: string;
+    fecha_retorno_estimado?: string ;
+    estado_mantenimiento: string;
+    tipo_mantenimiento: string;
+    hora_inicio: string;
+    hora_fin?: string;
+    hora_fin_estimado?: string;
+    actividad?: string;
+    equipment: any;
+    estado_final_equipo: string;
+    company?: any;   // Añade el signo ? para que sea opcional
+    companies?: any[];
+}
+
+const props = defineProps<{
+    maintenances: Array<any>; // Recibidos del controlador
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -17,10 +39,6 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: maintenancesRoutes.index.url(),
     },
 ];
-
-const props = defineProps<{
-    maintenances: Array<any>; // Recibidos del controlador
-}>();
 
 // --- ESTADO Y BUSQUEDA ---
 const activeTab = ref<'proceso' | 'completados'>('proceso');
@@ -72,7 +90,7 @@ const filteredMaintenances = computed(() => {
         const query = searchQuery.value.toLowerCase();
         filtered = filtered.filter(maint => {
             const nombreEmpresa = maint.companies[0]?.nombre_empresa?.toLowerCase() || '';
-            const nombreEquipo = maint.equipment.item.nombre_item.toLowerCase();
+            const nombreEquipo = maint.equipment.nombre_equipo?.toLowerCase() || '';
             const serieEquipo = maint.equipment.serie?.toLowerCase() || '';
             const codigoQr = maint.equipment.codigo_qr?.toLowerCase() || '';
 
@@ -136,7 +154,8 @@ const currentTime = ref(new Date().toLocaleTimeString('es-BO', {
 }));
 // --- FORMULARIO DE FINALIZACIÓN ---
 const returnForm = useForm({
-    hora_fin: '',
+    fecha_retorno: new Date().toISOString().split('T')[0],
+    hora_fin: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
     estado_equipo: 'Disponible',
     observacion: '',
 });
@@ -145,6 +164,8 @@ const returnForm = useForm({
 // --- FUNCIONES DEL MODAL ---
 const openReturnModal = (maint: any) => {
     selectedMaint.value = maint;
+    const now = new Date();
+    returnForm.fecha_retorno = now.toISOString().split('T')[0];
     returnForm.hora_fin = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
     returnForm.estado_equipo = 'Disponible';
     returnForm.observacion = '';
@@ -176,6 +197,35 @@ const processReturn = () => {
     });
 };
 
+// Para visualizar toda la informacion y hacer reporte
+const viewInformacion = ref(false);
+const maintenanceInformacion = ref<Maintenance | null>(null);
+
+// Abre el modal y guarda el item seleccionado
+const openViewInformacion = (maintenance: Maintenance) => {
+    maintenanceInformacion.value = maintenance;
+    viewInformacion.value = true;
+};
+
+// Cierra el modal y limpia el estado
+const closeViewInformacion = () => {
+    viewInformacion.value = false;
+    maintenanceInformacion.value = null;
+};
+
+const getStatusStyles = (status: string | undefined) => {
+    const styles: Record<string, string> = {
+        'Disponible': 'bg-green-100 text-green-700 border border-green-200',
+        'Reparado':   'bg-blue-100 text-blue-700 border border-blue-200',
+        'Nuevo':      'bg-emerald-100 text-emerald-700 border border-emerald-200',
+        'Dañado':     'bg-red-100 text-red-700 border border-red-200',
+        'Baja':       'bg-neutral-800 text-white',
+        'Incompleto': 'bg-orange-100 text-orange-700 border border-orange-200',
+        'Extraviado': 'bg-red-600 text-white',
+    };
+    return styles[status ?? ''] || 'bg-neutral-100 text-neutral-500';
+};
+
 </script>
 
 <template>
@@ -197,12 +247,12 @@ const processReturn = () => {
                 <button @click="activeTab = 'proceso'"
                     :class="['flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all',
                     activeTab === 'proceso' ? 'bg-white text-black shadow-sm' : 'text-neutral-500 hover:text-black']">
-                    <FileClock class="w-4.5 h-4.5 "/>En Proceso ({{ countEnProceso }})
+                    <ClipboardPen class="w-4.5 h-4.5 "/>En Proceso ({{ countEnProceso }})
                 </button>
                 <button @click="activeTab = 'completados'"
                     :class="['flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all',
                     activeTab === 'completados' ? 'bg-white text-black shadow-sm' : 'text-neutral-500 hover:text-black']">
-                    <FileCheck class="w-4.5 h-4.5 "/>Completados ({{ countCompletado }})
+                    <ClipboardList class="w-4.5 h-4.5 "/>Completados ({{ countCompletado }})
                 </button>
             </div>
 
@@ -250,7 +300,7 @@ const processReturn = () => {
                     <p class="text-neutral-500 font-medium">No se encontraron registros en esta sección.</p>
                 </div>
 
-                <div v-if="activeTab === 'proceso'" class="space-y-4" >
+                <div v-if="activeTab === 'proceso' && filteredMaintenances.length > 0" class="space-y-4" >
                     <div v-for="maint in filteredMaintenances" :key="maint.id"
                     class="group border border-blue-100 bg-blue-50/50 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center transition-all duration-300 shadow-sm hover:shadow-xl hover:border-blue-400 hover:-translate-y-1 mb-4">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full items-center">
@@ -258,51 +308,78 @@ const processReturn = () => {
                                 <div class="flex gap-4">
                                     <div class="w-14 h-14 rounded-2xl bg-white border border-neutral-100 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform overflow-hidden">
                                         <img
-                                            v-if="maint.equipment.item.foto"
-                                            :src="'/storage/' + maint.equipment.item.foto"
+                                            v-if="maint.equipment.foto"
+                                            :src="'/storage/' + maint.equipment.foto"
                                             class="w-full h-full object-cover"
                                             alt="Foto del equipo"
                                         />
-                                        <Wrench
+                                        <Package
                                             v-else
-                                            :class="['w-7 h-7', activeTab === 'proceso' ? 'text-blue-500' : 'text-neutral-400']"
+                                            :class="['w-7 h-7', activeTab === 'proceso' ? 'text-red-500' : 'text-neutral-400']"
                                         />
                                     </div>
                                     <div class="min-w-0">
-                                        <p class="text-xs text-blue-600 uppercase font-bold mb-1">Equipo</p>
-                                        <p class="text-base font-bold text-black truncate">{{ maint.equipment.item.nombre_item }}</p>
+                                        <p class="text-xs text-red-600 uppercase font-bold mb-1">Equipo</p>
+                                        <p class="text-base font-bold text-black truncate">{{ maint.equipment.nombre_equipo }}</p>
                                         <div class="flex items-center gap-2 mt-1">
-                                            <span v-if="maint.equipment.codigo_qr" class="text-[13px] bg-neutral-100 text-blue-600 px-2 py-0.5 rounded font-mono font-bold uppercase">QR: {{ maint.equipment.codigo_qr }}</span>
+                                            <span v-if="maint.equipment.codigo_qr" class="text-[14px] bg-neutral-100 text-blue-600 px-2 py-0.5 rounded font-mono font-bold uppercase">QR: {{ maint.equipment.codigo_qr }}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="mb-4">
-                                <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest">
-                                    <Building2 class="w-4 h-4 text-green-600"/>
-                                    <span>Empresa Encargada</span>
-                                </p>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <p class="text-sm font-extrabold text-neutral-800">{{ maint.companies[0]?.nombre_empresa || 'Empresa No Registrada' }}</p>
+                            <div>
+                                <div class="mb-4">
+                                    <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest">
+                                        <Building2 class="w-4 h-4 text-green-600"/>
+                                        <span>Empresa Encargada</span>
+                                    </p>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <p class="text-sm font-extrabold text-neutral-800">{{ maint.companies[0]?.nombre_empresa || 'Empresa No Registrada' }}</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest">
+                                        <Wrench class="w-4 h-4 text-neutral-800" />
+                                        <span>Tipo de Mantenimiento</span>
+                                    </p>
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-neutral-900 leading-tight">{{ maint.tipo_mantenimiento }}</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="flex flex-col gap-2">
-                                <div class="grid grid-cols-2 ">
+                            <div>
+                                <div class="grid grid-cols-2 gap-4">
                                     <div class="mb-4">
                                         <p class="flex items-center gap-2 text-[13px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">
                                             <Calendar class="w-4 h-4 text-blue-600" />
-                                            <span>Fecha</span>
+                                            <span>F. Salida</span>
                                         </p>
                                         <p class="text-sm font-bold text-neutral-800">{{ maint.fecha_mantenimiento }}</p>
                                     </div>
                                     <div class="mb-4">
+                                        <p class="flex items-center gap-2 text-[13px] font-black text-orange-500 uppercase tracking-widest leading-none mb-1">
+                                            <CalendarCheck2 class="w-4 h-4 text-orange-600" />
+                                            <span>F. Limite</span>
+                                        </p>
+                                        <p class="text-sm font-bold text-neutral-800">{{ maint.fecha_retorno_estimado }}</p>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
                                         <p class="flex items-center gap-2 text-[13px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">
-                                            <Calendar class="w-4 h-4 text-blue-600" />
-                                            <span>Inicio</span>
+                                            <Clock class="w-4 h-4 text-blue-600" />
+                                            <span>Hora Inicio</span>
                                         </p>
                                         <p class="text-sm font-bold text-neutral-800">{{ maint.hora_inicio }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="flex items-center gap-2 text-[13px] font-black text-orange-500 uppercase tracking-widest leading-none mb-1">
+                                            <ClockAlert class="w-4 h-4 text-orange-600" />
+                                            <span>Hora Fin</span>
+                                        </p>
+                                        <p class="text-sm font-bold text-neutral-800">{{ maint.hora_fin_estimado }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -317,7 +394,7 @@ const processReturn = () => {
                 </div>
 
                 <!--HOSTORIAL DE MANTENIMIENTOS COMPLETADOS-->
-                <div v-if="activeTab === 'completados'"
+                <div v-if="activeTab === 'completados' && filteredMaintenances.length > 0"
                     class="relative bg-white border border-neutral-200 rounded-xl shadow-sm overflow-x-auto">
                     <table class="w-full text-left min-w-max border-separate border-spacing-0">
                         <thead class="bg-neutral-200 border-b border-neutral-300 text-xs font-bold uppercase tracking-widest text-neutral-800">
@@ -335,11 +412,18 @@ const processReturn = () => {
                             <tr v-for="maint in filteredMaintenances" :key="maint.id" class="hover:bg-neutral-50 transition-colors group">
                                 <td class="p-4 font-bold text-black">{{ maint.fecha_mantenimiento }}</td>
                                 <td class="p-4 text-neutral-900">{{ maint.companies[0]?.nombre_empresa }}</td>
-                                <td class="p-4 text-neutral-900">{{ maint.equipment.item.nombre_item }}</td>
+                                <td class="p-4 text-neutral-900">{{ maint.equipment.nombre_equipo}}</td>
                                 <td class="p-4 text-neutral-900">{{ maint.hora_inicio }} </td>
                                 <td class="p-4 text-neutral-900">{{ maint.hora_fin }} </td>
                                 <td class="p-4 italic text-neutral-400 max-w-xs truncate">{{ maint.actividad }} </td>
                                 <td class="p-4 text-right space-x-3 sticky right-0 bg-white group-hover:bg-neutral-50 border-l border-neutral-100">
+                                    <Button
+                                        @click="openViewInformacion(maint)"
+                                        class="p-2 bg-white border border-neutral-200 rounded-lg hover:bg-red-50 group shadow-sm transition text-red-500"
+                                        title="Información"
+                                    >
+                                        <Eye class="w-4.5 h-4.5 stroke-green-500"/>
+                                    </Button>
                                     <Link >
                                         <Button title="Generar Reporte" class="p-2 bg-white border border-neutral-200 rounded-lg hover:bg-red-50 group shadow-sm transition text-blue-500"><SquarePen class="w-4.5 h-4.5 stroke-blue-500"/></Button>
                                     </Link>
@@ -350,34 +434,33 @@ const processReturn = () => {
                 </div>
             </div>
 
-            <div v-if="isReturnModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-6">
-                <div class="bg-white w-full max-w-2xl rounded-4xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in duration-300">
-
-                    <div class="px-8 py-6 border border-neutral-100 flex justify-between items-center">
+            <div v-if="isReturnModalOpen" class="fixed inset-0 z-200 flex items-center justify-center bg-black/40 backdrop-blur-md p-6 lg:p-12">
+                <div class="bg-white w-full max-w-3xl rounded-4xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in duration-300">
+                    <div class="px-8 py-6 border-b border-neutral-100 flex justify-between items-center bg-white">
                         <div>
                             <div class="flex items-center gap-3 mb-2">
                                 <div class="p-2 bg-blue-600 rounded-lg">
-                                    <FileCog class="w-6 h-6 text-white" />
+                                    <ClipboardPen class="w-6 h-6 text-white" />
                                 </div>
                                 <h2 class="text-2xl font-black uppercase tracking-tighter text-neutral-900">Finalizar Mantenimiento</h2>
                             </div>
-                            <p class="text-neutral-700 text-sm font-medium">Verifique los datos y el estado del equipo recibido</p>
+                            <p class="text-neutral-700 text-sm font-medium">Verifique el estado del equipo recibido</p>
                         </div>
                         <button @click="isReturnModalOpen = false" class="p-2 hover:bg-neutral-100 rounded-full transition-colors group">
-                            <XIcon class="w-7 h-7 text-neutral-300 group-hover:text-red-500"/>
+                            <XIcon class="w-7 h-7 text-neutral-300 group-hover:text-red-500 transition-colors"/>
                         </button>
                     </div>
 
-                    <div class="p-8 overflow-y-auto space-y-6 flex-1">
+                    <div class="p-8 pt-2 overflow-y-auto custom-scrollbar space-y-3 flex-1">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-neutral-50 rounded-2xl border border-neutral-200">
 
                             <div class="space-y-1">
                                 <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest">
                                     <Cog class="w-4 h-4" /> <span>Equipo en Reparación</span>
                                 </p>
-                                <p class="text-base font-bold text-neutral-900">{{ selectedMaint?.equipment.item.nombre_item }} </p>
+                                <p class="text-base font-bold text-neutral-900">{{ selectedMaint?.equipment.nombre_equipo }} </p>
                                 <span class="inline-block px-2 py-0.5 rounded-md bg-blue-100 text-[13px] font-bold text-blue-700 uppercase tracking-tighter">
-                                    {{ selectedMaint?.equipment.item.codigo_qr }}
+                                    {{ selectedMaint?.equipment.codigo_qr }}
                                 </span>
                             </div>
 
@@ -386,46 +469,105 @@ const processReturn = () => {
                                     <Building2 class="w-4 h-4 text-green-600" /> <span>Empresa Encargada</span>
                                 </p>
                                 <p class="text-base font-bold text-neutral-900">{{ selectedMaint?.companies[0]?.nombre_empresa }}</p>
+                                <p class="text-[14px] text-neutral-900 font-mono">{{ selectedMaint?.companies[0]?.telefono }}</p>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
-                            <div class="flex items-center gap-3">
-                                <Calendar class="w-4 h-4 text-orange-600" />
-                                <div>
-                                    <p class="text-[11px] font-black text-orange-400 uppercase">Fecha</p>
-                                    <p class="text-sm font-bold">{{ selectedMaint?.fecha_mantenimiento }}</p>
+                        <div class="space-y-2">
+                            <h3 class="text-[13px] font-black uppercase tracking-widest text-neutral-800 flex items-center gap-2">
+                                <CalendarClock class="w-4 h-4" /> Fecha y horario del préstamo
+                            </h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-neutral-50 rounded-2xl border border-neutral-200 mt-4">
+                                <div class="flex flex-col gap-3">
+                                    <span class="text-[13px] font-bold text-blue-600 uppercase tracking-tighter">Registro de Salida</span>
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 bg-white rounded-lg shadow-sm">
+                                            <Calendar class="w-4 h-4 text-blue-600" />
+                                        </div>
+                                        <div>
+                                            <p class="text-[11px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">Fecha Salida</p>
+                                            <p class="text-sm font-bold text-neutral-800">{{ selectedMaint?.fecha_mantenimiento }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 bg-white rounded-lg shadow-sm">
+                                            <Clock class="w-4 h-4 text-blue-600" />
+                                        </div>
+                                        <div>
+                                            <p class="text-[11px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">Hora Inicio</p>
+                                            <p class="text-sm font-bold text-neutral-800">{{ selectedMaint?.hora_inicio }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col gap-3 border-l border-neutral-100 pl-4">
+                                    <span class="text-[13px] font-bold text-orange-600 uppercase tracking-tighter">Retorno Planificado</span>
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 bg-white rounded-lg shadow-sm">
+                                            <Calendar class="w-4 h-4 text-orange-600" />
+                                        </div>
+                                        <div>
+                                            <p class="text-[11px] font-black text-orange-500 uppercase tracking-widest leading-none mb-1">Fecha Limite</p>
+                                            <p class="text-sm font-bold text-neutral-800">{{ selectedMaint?.fecha_retorno_estimado }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 bg-white rounded-lg shadow-sm">
+                                            <Clock class="w-4 h-4 text-orange-600" />
+                                        </div>
+                                        <div>
+                                            <p class="text-[11px] font-black text-orange-500 uppercase tracking-widest leading-none mb-1">Hora Fin</p>
+                                            <p class="text-sm font-bold text-neutral-800">{{ selectedMaint?.hora_fin_estimado }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col gap-3 border-l border-neutral-100 pl-4">
+                                    <span class="text-[13px] font-bold text-green-600 uppercase tracking-tighter">Retorno Real</span>
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 bg-white rounded-lg shadow-sm">
+                                            <Calendar class="w-4 h-4 text-green-600" />
+                                        </div>
+                                        <div>
+                                            <Label for="fecha_retorno" class="text-[11px] font-black text-green-500 uppercase tracking-widest leading-none mb-1">Fecha Retorno</Label>
+                                            <Input type="date" v-model="returnForm.fecha_retorno" class="h-8 text-xs rounded-lg" />
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 bg-white rounded-lg shadow-sm">
+                                            <Clock class="w-4 h-4 text-green-600" />
+                                        </div>
+                                        <div>
+                                            <Label for="hora_fin" class="text-[11px] font-black text-green-500 uppercase tracking-widest leading-none mb-1">Hora Retorno</Label>
+                                            <Input type="time" v-model="returnForm.hora_fin" class="h-8 text-xs rounded-lg" />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-3 border-l border-blue-100 pl-4">
-                                <Clock class="w-4 h-4 text-blue-600" />
-                                <div>
-                                    <p class="text-[11px] font-black text-blue-400 uppercase">Inicio</p>
-                                    <p class="text-sm font-bold">{{ selectedMaint?.hora_inicio }}</p>
-                                </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-3">
+                                <Label class="text-[13px] font-black uppercase tracking-widest text-neutral-800 flex items-center gap-2"><Package class="w-4 h-4" /> Estado del Equipo</Label>
+                                <select v-model="returnForm.estado_equipo"
+                                    class="w-full text-[13px] font-bold rounded-xl border-neutral-200 bg-neutral-50 focus:ring-black focus:border-black transition-all py-1.5 px-3">
+                                    <option value="Disponible">Disponible (Reparado)</option>
+                                    <option value="Dañado">No Reparado (Dañado)</option>
+                                    <option value="Baja">Dar de Baja</option>
+                                </select>
                             </div>
-                            <div class="flex items-center gap-3 border-l border-blue-100 pl-4">
-                                <History class="w-4 h-4 text-green-600" />
-                                <div>
-                                    <p class="text-[11px] font-black text-green-400 uppercase">Finalización</p>
-                                    <p class="text-sm font-bold">{{ currentTime }}</p>
-                                </div>
+
+                            <div class="space-y-3">
+                                <Label class="text-[13px] font-black uppercase tracking-widest text-neutral-800 flex items-center gap-2"><Wrench class="w-4 h-4" /> Tipo de Mantenimiento</Label>
+                                <p class="text-sm font-bold text-neutral-800">{{ selectedMaint?.tipo_mantenimiento }}</p>
                             </div>
                         </div>
 
                         <div class="space-y-3">
-                            <Label class="text-[11px] font-black uppercase text-neutral-800">Estado del Equipo</Label>
-                            <select v-model="returnForm.estado_equipo"
-                                class="w-full rounded-xl border-neutral-200 bg-neutral-50 text-sm font-bold focus:ring-black">
-                                <option value="Disponible">Disponible (Reparado)</option>
-                                <option value="Dañado">No Reparado (Dañado)</option>
-                                <option value="Baja">Dar de Baja</option>
-                            </select>
-                        </div>
-
-                        <div class="space-y-3">
-                            <Label class="text-[11px] font-black uppercase text-neutral-800">Actividad Desarrollada</Label>
-                            <Textarea v-model="returnForm.observacion" placeholder="Detalle las reparaciones realizadas o el motivo del cambio de estado..." class="bg-neutral-50 rounded-2xl min-h-[100px]" />
+                            <Label for="observacion" class="text-[13px] font-black uppercase text-amber-500 tracking-widest">
+                                <AlignLeft class="w-4 h-4 text-amber-500"/> Actividad Desarrollada
+                            </Label>
+                            <Textarea v-model="returnForm.observacion" placeholder="Detalle las reparaciones realizadas o el motivo del cambio de estado..." class="bg-amber-50 border-amber-200 text-sm rounded-2xl min-h-[100px] focus:bg-white transition-all" />
                         </div>
                     </div>
 
@@ -435,6 +577,165 @@ const processReturn = () => {
                             <Loader2 v-if="returnForm.processing" class="mr-2 animate-spin w-4 h-4"/> Confirmar Finalización
                         </Button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="viewInformacion" class="fixed inset-0 z-100 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-neutral-900/60 backdrop-blur-md no-print" @click="closeViewInformacion"></div>
+            <div class="relative bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col">
+                <div class="px-8 py-6 border-b border-neutral-100 flex justify-between items-center bg-white">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 bg-blue-600 rounded-lg">
+                                <ClipboardList class="w-6 h-6 text-white" />
+                            </div>
+                            <h2 class="text-2xl font-black text-neutral-800 flex items-center gap-3">Detalle del Mantenimiento </h2>
+                        </div>
+                        <p class="text-neutral-700 text-sm font-medium">Información técnica y estado del registro</p>
+                    </div>
+                    <button @click="closeViewInformacion" class="p-2 hover:bg-neutral-100 rounded-full transition-colors group">
+                        <XIcon class="w-7 h-7 text-neutral-300 group-hover:text-red-500 transition-colors"/>
+                    </button>
+                </div>
+
+                <div class="p-8 pt-2 overflow-y-auto custom-scrollbar  space-y-3 flex-1">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-white rounded-2xl border border-neutral-200 shadow-sm">
+                            <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest">
+                                <Package class="w-4 h-4" /> <span>Equipo</span>
+                            </p>
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center overflow-hidden">
+                                    <img v-if="maintenanceInformacion?.equipment.foto" :src="'/storage/' + maintenanceInformacion.equipment.foto" class="w-full h-full object-cover" />
+                                    <Image v-else class="w-6 h-6 text-neutral-400" />
+                                </div>
+                                <div>
+                                    <p class="font-bold text-neutral-900">{{ maintenanceInformacion?.equipment.nombre_equipo }}</p>
+                                    <p class="text-xs text-blue-600">Código QR: {{ maintenanceInformacion?.equipment.codigo_qr || 'N/A' }}</p>
+                                    <span :class="[
+                                        'px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-tighter',
+                                        getStatusStyles(maintenanceInformacion?.estado_final_equipo)
+                                    ]">
+                                        {{ maintenanceInformacion?.estado_final_equipo || 'En Revisión' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-white rounded-2xl border border-neutral-200 shadow-sm">
+                            <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest">
+                                <Building2 class="w-4 h-4" /> <span>Empresa Encargada</span>
+                            </p>
+                            <div class="flex items-center gap-3">
+                                <div>
+                                    <p class="font-bold text-neutral-900">
+                                        {{ maintenanceInformacion?.company?.nombre_empresa || maintenanceInformacion?.companies?.[0]?.nombre_empresa || 'Sin Empresa' }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest mt-1">
+                                <Wrench class="w-4 h-4" /> <span>Tipo de mantenimiento</span>
+                            </p>
+                            <div class="flex items-center gap-3">
+                                <div>
+                                    <p class="font-bold text-neutral-900">
+                                    Mantenimiento {{ maintenanceInformacion?.tipo_mantenimiento }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h3 class="text-[13px] font-black uppercase tracking-widest text-neutral-800 flex items-center gap-2">
+                            <CalendarClock class="w-4 h-4" /> Fecha y horario del mantenimiento
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-neutral-50 rounded-2xl border border-neutral-200 mt-4">
+                            <div class="flex flex-col gap-3">
+                                <span class="text-[13px] font-bold text-blue-600 uppercase tracking-tighter">Registro de Salida</span>
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-white rounded-lg shadow-sm">
+                                        <Calendar class="w-4 h-4 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">Fecha Mantenimiento</p>
+                                        <p class="text-sm font-bold text-neutral-800">{{ maintenanceInformacion?.fecha_mantenimiento }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-white rounded-lg shadow-sm">
+                                        <Clock class="w-4 h-4 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">Hora Inicio</p>
+                                        <p class="text-sm font-bold text-neutral-800">{{ maintenanceInformacion?.hora_inicio }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-3 border-l border-neutral-100 pl-4">
+                                <span class="text-[13px] font-bold text-orange-600 uppercase tracking-tighter">Retorno (Opcional)</span>
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-white rounded-lg shadow-sm">
+                                        <Calendar class="w-4 h-4 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] font-black text-orange-500 uppercase tracking-widest leading-none mb-1">Fecha Limite</p>
+                                        <p class="text-sm font-bold text-neutral-800">{{ maintenanceInformacion?.fecha_retorno_estimado }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-white rounded-lg shadow-sm">
+                                        <Clock class="w-4 h-4 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] font-black text-orange-500 uppercase tracking-widest leading-none mb-1">Hora Fin</p>
+                                        <p class="text-sm font-bold text-neutral-800">{{ maintenanceInformacion?.hora_fin_estimado }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-3 border-l border-neutral-100 pl-4">
+                                <span class="text-[13px] font-bold text-green-600 uppercase tracking-tighter">Retorno Real</span>
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-white rounded-lg shadow-sm">
+                                        <Calendar class="w-4 h-4 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] font-black text-green-500 uppercase tracking-widest leading-none mb-1">Fecha Retorno</p>
+                                        <p class="text-sm font-bold text-neutral-800">{{ maintenanceInformacion?.fecha_retorno }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-white rounded-lg shadow-sm">
+                                        <Clock class="w-4 h-4 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] font-black text-green-500 uppercase tracking-widest leading-none mb-1">Hora Entrada</p>
+                                        <p class="text-sm font-bold text-neutral-800">{{ maintenanceInformacion?.hora_fin }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                        <h3 class="text-[13px] font-black uppercase tracking-widest text-amber-600 flex items-center gap-2">
+                            <AlignLeft class="w-4 h-4 text-amber-600"/> Actividad Desarrollada
+                        </h3>
+                        <p class="text-sm text-neutral-700 italic">{{ maintenanceInformacion?.actividad || 'No se registraron detalles de la actividad realizada.' }}</p>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-white border-t border-neutral-100 flex gap-4 no-print">
+                    <Button variant="outline" class="flex-1 py-7 rounded-2xl font-bold uppercase tracking-widest text-[15px]" @click="closeViewInformacion">
+                        Cerrar
+                    </Button>
+                    <Button class="flex-1 py-7 bg-black text-white rounded-2xl font-bold gap-2 uppercase tracking-widest text-[15px]" @click="">
+                        <Printer class="w-5 h-5" /> Imprimir
+                    </Button>
                 </div>
             </div>
         </div>

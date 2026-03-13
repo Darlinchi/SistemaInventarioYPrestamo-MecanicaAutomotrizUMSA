@@ -17,8 +17,7 @@ class MaintenanceController extends Controller
      */
     public function index()
     {
-        // Cargamos con TODA su información relacionada para la tabla
-        $maintenances = Maintenance::with(['equipment.item', 'companies'])
+        $maintenances = Maintenance::with(['equipment', 'companies'])
         ->orderBy('fecha_mantenimiento', 'desc')
         ->orderBy('hora_inicio', 'desc')
         ->get();
@@ -34,7 +33,7 @@ class MaintenanceController extends Controller
     public function create()
     {
         return Inertia::render('maintenance/Create', [
-            'equipment' => Equipment::with('item')->get(),
+            'equipment' => Equipment::all(),
             'companies' => MaintenanceCompany::all() // Para seleccionar la empresa
         ]);
     }
@@ -44,39 +43,48 @@ class MaintenanceController extends Controller
      */
     public function store(Request $request)
     {
+        // 1. Validamos TODO lo que viene del formulario
         $validated = $request->validate([
             'equipment_id'           => 'required|exists:equipment,id',
             'maintenance_company_id' => 'required|exists:maintenance_companies,id',
+            'tipo_mantenimiento'     => 'required|in:Preventivo,Correctivo',
             'fecha_mantenimiento'    => 'required|date',
-            'hora_inicio'            => 'nullable',
+            'hora_inicio'            => 'required',
+            'fecha_retorno_estimado' => 'nullable|date',
+            'hora_fin_estimado'      => 'nullable',
         ]);
 
         try {
-            return DB::transaction(function () use ($validated) {
-                // Creamos el mantenimiento solo con los datos que pertenecen a su tabla
-                $maintenance = Maintenance::create([
-                    'equipment_id' => $validated['equipment_id'],
-                    'fecha_mantenimiento' => $validated['fecha_mantenimiento'],
-                    'hora_inicio' => $validated['hora_inicio'],
-                    'actividad' => 'Mantenimiento iniciado', // Valor por defecto
-                    'estado_mantenimiento' => 'En Proceso', // <--- Estado inicial
-                ]);
+            DB::beginTransaction();
 
-                // Vinculamos la empresa en la tabla pivote
-                $maintenance->companies()->attach($validated['maintenance_company_id']);
+            // 2. Crear el mantenimiento con los datos del formulario
+            $maintenance = Maintenance::create([
+                'equipment_id'            => $validated['equipment_id'],
+                'tipo_mantenimiento'      => $validated['tipo_mantenimiento'],
+                'fecha_mantenimiento'     => $validated['fecha_mantenimiento'],
+                'hora_inicio'             => $validated['hora_inicio'],
+                'fecha_retorno_estimado'  => $validated['fecha_retorno_estimado'],
+                'hora_fin_estimado'       => $validated['hora_fin_estimado'],
+                'estado_mantenimiento'    => 'En Proceso',
+                'actividad'               => 'Mantenimiento iniciado', // Valor inicial
+            ]);
 
-                // Buscamos el equipo y luego su ítem asociado
-                $equipment = Equipment::findOrFail($validated['equipment_id']);
+            // 3. Vincular empresa
+            $maintenance->companies()->attach($validated['maintenance_company_id']);
 
-                // Actualizamos el estado usando el ENUM que definiste
-                $equipment->update([
-                    'estado_equipo' => 'Mantenimiento'
-                ]);
+            // 4. Actualizar estado del equipo a 'Mantenimiento'
+            Equipment::where('id', $validated['equipment_id'])->update([
+                'estado_equipo' => 'Mantenimiento'
+            ]);
 
-                return Redirect::route('maintenances.index')
-                    ->with('success', 'Mantenimiento registrado con éxito.');
-            });
+            DB::commit();
+
+            return redirect()->route('maintenances.index')
+                ->with('message', 'Mantenimiento registrado correctamente.');
+
         } catch (\Exception $e) {
+            DB::rollBack();
+            // IMPORTANTE: Devolvemos el error para que Vue lo muestre y deje de "cargar"
             return back()->withErrors(['error' => 'Error: ' . $e->getMessage()]);
         }
     }
@@ -104,8 +112,9 @@ class MaintenanceController extends Controller
     {
         // Validamos los campos que vienen de tu returnForm en Vue
         $request->validate([
+            'fecha_retorno' => 'required|date',
             'hora_fin'      => 'required|date_format:H:i:s',
-            'estado_equipo' => 'required|in:Disponible,Dañado,Baja',
+            'estado_equipo' => 'required|in:Disponible,Reparado,Dañado,Incompleto,Baja',
             'observacion'   => 'required|string|min:5|max:1000',
         ]);
 
@@ -114,9 +123,11 @@ class MaintenanceController extends Controller
 
             // 1. Finalizamos el mantenimiento
             $maintenance->update([
+                'fecha_retorno' => $request->fecha_retorno,
                 'hora_fin'             => $request->hora_fin,
                 'actividad'            => $request->observacion,
                 'estado_mantenimiento' => 'Completado',
+                'estado_final_equipo'  => $request->estado_equipo,
             ]);
 
             // 2. Actualizamos el estado del item (vinculado al equipo)

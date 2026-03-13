@@ -8,9 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Edit, CheckCircle, Package, XIcon, List, Loader2, Clock, History, Calendar, Eye, AlignLeft,
-    User, SquarePen, Eraser, ClipboardPen, BookMarked, Printer, ClipboardCheck, CornerDownRight, CalendarClock,
-    ClockAlert, CalendarCheck2 } from 'lucide-vue-next';
+import { Plus, Search, Edit, CheckCircle, Package, XIcon, List, Loader2, Clock, Image, Calendar, Eye, AlignLeft,
+    User, SquarePen, Eraser, NotebookPen, BookMarked, Printer, ClipboardCheck, CornerDownRight, CalendarClock,
+    ClockAlert, CalendarCheck2, NotebookText } from 'lucide-vue-next';
 import loanRoutes from '@/routes/loans';
 
 interface Loan {
@@ -40,6 +40,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// --- ESTADO Y BUSQUEDA ---
 // Define si vemos la pestaña de prestamos "activos" o el "historial" (devueltos)
 const activeTab = ref<'activos' | 'historial'>('activos');
 // Variable reactiva que guardara el texto que el usuario escribe en el buscador
@@ -87,10 +88,6 @@ const months = [
     { id: 11, name: 'Noviembre' },
     { id: 12, name: 'Diciembre' }
 ];
-
-// Activar al entrar y desactivar al salir
-onMounted(() => window.addEventListener('click', closePopovers));
-onUnmounted(() => window.removeEventListener('click', closePopovers));
 
 // Buscador y filtrado
 // La pestaña activa (Activos vs Historial)
@@ -156,6 +153,10 @@ const filteredLoans = computed(() => {
     return filtered;
 });
 
+// Activar al entrar y desactivar al salir
+onMounted(() => window.addEventListener('click', closePopovers));
+onUnmounted(() => window.removeEventListener('click', closePopovers));
+
 const uniqueSubjects = computed(() => {
     const subjectsMap = new Map();
     props.loans.forEach(loan => {
@@ -187,7 +188,6 @@ const returnForm = useForm({
     observacion: '',
     fecha_retorno: new Date().toISOString().split('T')[0], // Por defecto hoy
     hora_fin: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
-
 });
 
 // Funcion para abrir el modal (preguntar si le gustaria si un accesorio esta mal el equipo completo marcarse como dañado)
@@ -220,6 +220,17 @@ const openReturnModal = (loan: any) => {
     isReturnModalOpen.value = true;
 };
 
+const processReturn = () => {
+    returnForm.post(`/dashboard/loans/${selectedLoan.value.id}/return`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            isReturnModalOpen.value = false;
+            selectedLoan.value = null;
+            returnForm.reset();
+        }
+    });
+};
+
 // Colores segun los estados para el item y para accesorios
 const statusColor = (status: string | null | undefined) => {
     // Si no hay status, devolvemos el color gris por defecto de inmediato
@@ -242,17 +253,6 @@ const statusColorA = (status: string) => {
         case 'extraviado': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
         default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
-};
-
-const processReturn = () => {
-    returnForm.post(`/dashboard/loans/${selectedLoan.value.id}/return`, {
-        preserveScroll: true,
-        onSuccess: () => {
-            isReturnModalOpen.value = false;
-            selectedLoan.value = null;
-            returnForm.reset();
-        }
-    });
 };
 
 const currentTime = ref(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
@@ -310,12 +310,12 @@ const imprimirReporte = () => {
                 <button @click="activeTab = 'activos'"
                     :class="['flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all',
                     activeTab === 'activos' ? 'bg-white text-black shadow-sm' : 'text-neutral-500 hover:text-black']">
-                    <ClipboardPen class="w-4.5 h-4.5 "/>Préstamos Activos ({{ countActivos }})
+                    <NotebookPen  class="w-4.5 h-4.5 "/>Préstamos Activos ({{ countActivos }})
                 </button>
                 <button @click="activeTab = 'historial'"
                     :class="['flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all',
                     activeTab === 'historial' ? 'bg-white text-black shadow-sm' : 'text-neutral-500 hover:text-black']">
-                    <History class="w-4.5 h-4.5 "/>Historial de Devoluciones ({{ countHistorial }})
+                    <NotebookText class="w-4.5 h-4.5 "/>Historial de Devoluciones ({{ countHistorial }})
                 </button>
             </div>
 
@@ -368,7 +368,8 @@ const imprimirReporte = () => {
                     <Package class="w-12 h-12 mx-auto text-neutral-300 mb-4" />
                     <p class="text-neutral-500 font-medium">No se encontraron préstamos con esos criterios.</p>
                 </div>
-                <div v-if="activeTab === 'activos'" class="space-y-4">
+
+                <div v-if="activeTab === 'activos' && filteredLoans.length > 0" class="space-y-4">
                     <div v-for="loan in filteredLoans" :key="loan.id"
                         class="group border border-blue-100 bg-blue-50/50 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center transition-all duration-300 shadow-sm hover:shadow-xl hover:border-blue-400 hover:-translate-y-1 mb-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-12 w-full">
@@ -489,7 +490,7 @@ const imprimirReporte = () => {
                 </div>
 
                 <!--HOSTORIAL DE DEVOLUCION-->
-                <div v-if="activeTab === 'historial'"
+                <div v-if="activeTab === 'historial' && filteredLoans.length > 0"
                     class="relative bg-white border border-neutral-200 rounded-xl shadow-sm overflow-x-auto">
                     <table class="w-full text-left min-w-max border-separate border-spacing-0">
                         <thead class="bg-neutral-200 border-b border-neutral-300 text-xs font-bold uppercase tracking-widest text-neutral-800">
@@ -579,11 +580,11 @@ const imprimirReporte = () => {
                         <div>
                             <div class="flex items-center gap-3 mb-2">
                                 <div class="p-2 bg-blue-600 rounded-lg">
-                                    <ClipboardCheck class="w-6 h-6 text-white" />
+                                    <NotebookPen class="w-6 h-6 text-white" />
                                 </div>
                                 <h2 class="text-2xl font-black uppercase tracking-tighter text-neutral-900">Registrar Devolución</h2>
                             </div>
-                            <p class="text-neutral-700 text-sm font-medium">Verifique los datos y el estado de los equipos recibidos</p>
+                            <p class="text-neutral-700 text-sm font-medium">Verifique el estado de los items recibidos</p>
                         </div>
                         <button @click="isReturnModalOpen = false" class="p-2 hover:bg-neutral-100 rounded-full transition-colors group">
                             <XIcon class="w-7 h-7 text-neutral-300 group-hover:text-red-500 transition-colors"/>
@@ -610,7 +611,7 @@ const imprimirReporte = () => {
                                     <BookMarked class="w-4 h-4 text-neutral-700" /> <span>Materia Asignada</span>
                                 </p>
                                 <p class="text-base font-bold text-neutral-900">{{ selectedLoan?.subject.nombre_materia }}</p>
-                                <p class="text-[14px] text-neutral-900 font-mono">{{ selectedLoan?.subject.sigla }}</p>
+                                <p class="text-[14px] text-blue-600 font-mono">{{ selectedLoan?.subject.sigla }}</p>
                             </div>
                         </div>
 
@@ -701,7 +702,7 @@ const imprimirReporte = () => {
                                         </div>
 
                                         <div class="flex flex-col min-w-0">
-                                            <span class="text-[13px] font-bold text-neutral-900 truncate leading-tight">{{ item.nombre_mostrar }}</span>
+                                            <span class="text-[14px] font-bold text-neutral-900 truncate leading-tight">{{ item.nombre_mostrar }}</span>
                                             <span :class="[
                                                 'w-fit px-2 py-0.5 rounded-full text-[10px] font-black uppercase border mt-1',
                                                 item.es_equipo ? 'bg-red-50 text-red-600 border-red-100' : 'bg-blue-50 text-blue-700 border-blue-100'
@@ -776,9 +777,9 @@ const imprimirReporte = () => {
                     <div>
                         <div class="flex items-center gap-3 mb-2">
                             <div class="p-2 bg-blue-600 rounded-lg">
-                                <History class="w-6 h-6 text-white" />
+                                <NotebookText class="w-6 h-6 text-white" />
                             </div>
-                            <h2 class="text-2xl font-black uppercase tracking-tighter text-neutral-900">Resumen de Devolución</h2>
+                            <h2 class="text-2xl font-black text-neutral-800 flex items-center gap-3">Resumen de Devolución</h2>
                         </div>
 
                         <p class="text-neutral-700 text-sm font-medium">Comprobante de recepción de equipos y herramientas - Taller de Mecánica</p>
@@ -789,8 +790,8 @@ const imprimirReporte = () => {
                 </div>
 
                 <div class="p-8 pt-2 overflow-y-auto custom-scrollbar  space-y-3 flex-1">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-neutral-50 rounded-2xl border border-neutral-200">
-                        <div class="space-y-1">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-white rounded-2xl border border-neutral-200 shadow-sm">
                             <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest">
                                 <User class="w-4 h-4" /> <span>Responsable</span>
                             </p>
@@ -803,12 +804,12 @@ const imprimirReporte = () => {
                             </span>
                         </div>
 
-                        <div class="space-y-1">
+                        <div class="p-4 bg-white rounded-2xl border border-neutral-200 shadow-sm">
                             <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest">
                                 <BookMarked class="w-4 h-4 text-neutral-700" /> <span>Materia Asignada</span>
                             </p>
                             <p class="text-base font-bold text-neutral-900">{{ loanInformacion?.subject.nombre_materia }}</p>
-                            <p class="text-[14px]  text-neutral-500 font-mono">{{ loanInformacion?.subject.sigla }}</p>
+                            <p class="text-[14px]  text-blue-500 font-mono">{{ loanInformacion?.subject.sigla }}</p>
                         </div>
                     </div>
 
@@ -897,11 +898,11 @@ const imprimirReporte = () => {
                                 <div class="flex items-center gap-4">
                                     <div class="w-14 h-14 rounded-xl bg-neutral-50 flex items-center justify-center overflow-hidden border border-neutral-100 shrink-0 shadow-inner">
                                         <img v-if="item.foto" :src="'/storage/' + item.foto" class="object-cover w-full h-full" />
-                                        <Package v-else class="w-7 h-7 text-neutral-300" />
+                                        <Image v-else class="w-7 h-7 text-neutral-300" />
                                     </div>
 
                                     <div class="flex flex-col gap-1">
-                                        <p class="text-[15px]  font-bold text-neutral-900 leading-tight">{{ item.nombre_mostrar }}</p>
+                                        <p class="text-[15px] font-bold text-neutral-900 leading-tight">{{ item.nombre_mostrar }}</p>
                                         <span :class="[
                                             'w-fit px-2 py-0.5 rounded-full text-[10px] font-black uppercase border leading-none',
                                             item.es_equipo ? 'bg-red-50 text-red-600 border-red-100' : 'bg-blue-50 text-blue-600 border-blue-100'
@@ -915,7 +916,6 @@ const imprimirReporte = () => {
                                 </div>
 
                                 <div class="flex flex-col items-end gap-1">
-                                    <span class="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">Retorno</span>
                                     <span :class="['px-3 py-1 rounded-lg text-[11px] font-black uppercase border shadow-sm', statusColor(item.estado_devolucion)]">
                                         {{ item.estado_devolucion }}
                                     </span>
@@ -945,52 +945,11 @@ const imprimirReporte = () => {
                                 </div>
                             </div>
                         </div>
-
-                        <!--
-                        <div v-for="item in loanInformacion?.items" :key="item.id" class="border border-neutral-200 rounded-2xl overflow-hidden shadow-sm">
-                            <div class="flex items-center justify-between p-4 bg-white">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center overflow-hidden border border-neutral-100 shrink-0">
-                                        <img v-if="item.foto" :src="'/storage/' + item.foto" class="object-cover w-full h-full" />
-                                        <Package v-else class="w-6 h-6 text-neutral-300" />
-                                    </div>
-                                    <div class="flex flex-col gap-1">
-                                        <p class="text-sm font-bold text-neutral-900 leading-tight">{{ item.nombre_item }}</p>
-                                        <span :class="[
-                                            'w-fit px-2 py-0.5 rounded-full text-[10px] font-black uppercase border leading-none',
-                                            item.equipment ? 'bg-red-50 text-red-600 border-red-100' : 'bg-blue-50 text-blue-600 border-blue-100'
-                                        ]">
-                                            {{ item.equipment ? 'Equipo' : 'Herramienta' }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border', statusColor(item.pivot?.estado_devolucion?? '')]">
-                                    {{ item.pivot?.estado_devolucion }}
-                                </span>
-                            </div>
-
-                            <div v-if="item.accessories && item.accessories.length > 0" class="bg-neutral-50 p-4 border-t border-neutral-100">
-                                <p class="text-[11px] font-black text-neutral-800 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 bg-blue-400 rounded-full"></span> Accesorios del Equipo
-                                </p>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <div v-for="acc in item.accessories" :key="acc.id"
-                                        class="flex items-center justify-between bg-white px-3 py-1.5 rounded-lg border border-neutral-200/60 shadow-sm">
-                                        <span class="text-[13px] font-medium text-neutral-800 flex items-center gap-1">
-                                            <CornerDownRight class="w-4 h-4 text-blue-400"/>  {{ acc.nombre_accesorio }}
-                                        </span>
-                                        <span :class="['px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border', statusColorA(acc.estado_accesorio?? '')]">
-                                            {{ acc.estado_accesorio }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>-->
                     </div>
 
                     <div class="mt-4 p-4 bg-amber-50 rounded-2xl border border-amber-100">
-                        <h3 class="text-[13px] font-black uppercase tracking-widest text-amber-500 flex items-center gap-2">
-                            <AlignLeft class="w-4 h-4 text-amber-500"/>  Observación Final
+                        <h3 class="text-[13px] font-black uppercase tracking-widest text-amber-600 flex items-center gap-2">
+                            <AlignLeft class="w-4 h-4 text-amber-600"/>  Observación Final
                         </h3>
                         <p class="text-sm text-neutral-700 italic">{{ loanInformacion?.observacion || 'Sin observaciones.' }}</p>
                     </div>
