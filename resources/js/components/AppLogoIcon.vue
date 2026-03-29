@@ -13,9 +13,9 @@ defineProps<Props>();
 </script>
 
 <template>
-    <img 
-        src="/images/logo-carrera.png" 
-        alt="Logo Carrera de Mecánica" 
+    <img
+        src="/images/logo-carrera.png"
+        alt="Logo Carrera de Mecánica"
         class="h-100 w-auto object-contain"
     />
 </template>

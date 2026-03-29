@@ -30,6 +30,8 @@ import loansRoutes from '@/routes/loans';
 import maintenancesRoutes from '@/routes/maintenances';
 // Rutas de las empresas de mantenimiento
 import maintenanceCompanyRoutes from '@/routes/maintenanceCompanies';
+// Rutas de los reportes
+import reportRoutes from '@/routes/reports';
 
 const page = usePage();
 
@@ -87,7 +89,7 @@ const mainNavItems = computed(() => {
 
         items.push({
             title: 'Reportes',
-            href: '/reportes',
+            href: reportRoutes.index.url(),
             icon: FileText,
         });
     }

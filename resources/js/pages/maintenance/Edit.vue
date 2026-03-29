@@ -222,7 +222,7 @@ const closeViewInformacion = () => {
                     <p class="text-sm text-neutral-500">Gestione el mantenimiento de equipos </p>
                 </div>
                 <Link :href="maintenancesRoutes.create.url()" class="bg-black text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-neutral-800 transition shadow-lg">
-                    <Plus class="w-5 h-5"/> Nueva Actividad de Mantenimiento
+                    <Plus class="w-5 h-5"/> Registrar Actividad de Mantenimiento
                 </Link>
             </div>
 

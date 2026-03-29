@@ -3,14 +3,16 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
+import { CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { FileInput } from '@/components/ui/file-input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import CreateActionButton from '@/components/CreateActionButton.vue';
 import { ref } from 'vue';
-import equipmentRoutes from '@/routes/equipments'; // Ajusta según tu archivo de rutas
-import items from '@/routes/items';
+import equipmentRoutes from '@/routes/equipments';
+import itemsRoutes from '@/routes/items';
 import {
     Plus, Trash2, ArrowLeft, Save, Loader2, Package, QrCode,
     Rows3, ImageUp, ListPlus, AlignLeft, Hash, PencilLine,
@@ -18,8 +20,8 @@ import {
 } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Inventario', href: items.index.url() },
-    { title: 'Nuevo Equipo', href: equipmentRoutes.create.url() },
+    { title: 'Inventario', href: itemsRoutes.index.url() },
+    { title: 'Registrar Equipo', href: equipmentRoutes.create.url() },
 ];
 
 const photoPreview = ref<string | null>(null);
@@ -69,36 +71,37 @@ function submit() {
     <Head title="Nuevo Equipo" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-3xl mx-auto p-4 w-full">
-            <div class="mb-4">
-                <Link :href="items.index.url()" class="inline-flex items-center text-neutral-500 hover:text-black">
-                    <ArrowLeft class="w-5 h-5 mr-1"/> Volver al inventario
+            <div class="mb-6">
+                <Link :href="itemsRoutes.index.url()" class="inline-flex items-center text-[15px] font-medium text-neutral-500 hover:text-[#1a3a5a] transition-colors group">
+                    <ArrowLeft class="w-5 h-5 mr-1 group-hover:-translate-x-1 transition-transform"/>
+                    Volver al inventario
                 </Link>
             </div>
 
-            <div class="flex items-center gap-3 mb-6">
-                <div class="p-3 bg-red-100 rounded-xl">
-                    <Package class="w-6 h-6 text-red-600" />
+            <div class="flex items-center gap-4 mb-8">
+                <div class="p-4 bg-[#1a3a5a] rounded-2xl shadow-lg shadow-blue-900/20">
+                    <Package class="w-8 h-8 text-white" />
                 </div>
-                <div>
-                    <h2 class="text-2xl font-black uppercase tracking-tighter">Nuevo Equipo</h2>
-                    <p class="text-sm text-neutral-500">Registro de activos y equipos de diagnóstico</p>
+                <div class="flex flex-col">
+                    <h2 class="text-3xl font-bold text-neutral-900 tracking-tight">Registrar Equipo</h2>
+                    <p class="text-neutral-500">Registro de activos y equipos de diagnóstico</p>
                 </div>
             </div>
 
             <form @submit.prevent="submit" class="space-y-6">
                 <div class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-4">
-                    <h3 class="font-bold text-lg border-b pb-2 flex items-center gap-2">
-                        <PencilLine class="w-5 h-5"/> Datos Generales
-                    </h3>
+                    <CardTitle class="text-lg font-semibold text-[#1a3a5a] flex items-center gap-2">
+                        <PencilLine class="w-5 h-5 text-[#1a3a5a]"/> Datos Generales
+                    </CardTitle>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid gap-2">
-                            <Label for="codigo_qr"><QrCode class="w-5 h-5 inline mr-1"/> Código QR</Label>
+                            <Label for="codigo_qr"><QrCode class="w-5 h-5 text-[#1a3a5a]"/> Código QR</Label>
                             <Input id="codigo_qr" v-model="form.codigo_qr" placeholder="Ej. EQ-001" />
                             <InputError :message="form.errors.codigo_qr" />
                         </div>
                         <div class="grid gap-2">
-                            <Label for="nombre"><PencilLine class="w-5 h-5 inline mr-1"/> Nombre del Equipo</Label>
+                            <Label for="nombre"><Package class="w-5 h-5 text-[#1a3a5a]"/> Nombre del Equipo</Label>
                             <Input id="nombre" v-model="form.nombre" placeholder="Ej. Escáner Automotriz" />
                             <InputError :message="form.errors.nombre" />
                         </div>
@@ -106,12 +109,12 @@ function submit() {
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid gap-2">
-                            <Label for="ubicacion"><Rows3 class="w-4 h-4 inline mr-1"/> Ubicación en Taller</Label>
+                            <Label for="ubicacion"><Rows3 class="w-5 h-5 text-[#1a3a5a]"/> Ubicación en Taller</Label>
                             <Input id="ubicacion" v-model="form.ubicacion" placeholder="Ej. Estante A-1"/>
                             <InputError :message="form.errors.ubicacion" />
                         </div>
                         <div class="grid gap-2">
-                            <Label for="estado_equipo"><Rows3 class="w-4 h-4 text-neutral-900"/> Estado del Equipo</Label>
+                            <Label for="estado_equipo"><Rows3 class="w-5 h-5 text-[#1a3a5a]"/> Estado del Equipo</Label>
                             <select v-model="form.estado_equipo" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm">
                                 <option value="Disponible">Disponible</option>
                                 <option value="Nuevo">Nuevo</option>
@@ -120,31 +123,51 @@ function submit() {
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="foto"><ImageUp class="w-5 h-5 text-neutral-900"/> Foto del Equipo</Label>
-                        <div v-if="photoPreview" class="relative w-40 h-40 group">
-                            <img :src="photoPreview" class="w-full h-full object-cover rounded-xl border shadow-md" />
-                            <button type="button" @click="photoPreview = null; form.foto = null" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg">
-                                <Trash2 class="w-4 h-4"/>
-                            </button>
+                        <Label class="mb-4 flex items-center gap-2">
+                            <ImageUp class="w-5 h-5 text-[#1a3a5a]"/> Fotografía del Equipo
+                        </Label>
+
+                        <div class="flex flex-col md:flex-row items-center gap-6">
+                            <div v-if="photoPreview" class="relative group">
+                                <img :src="photoPreview"
+                                    class="w-40 h-40 object-cover rounded-3xl shadow-lg border-2 border-white ring-1 ring-[#1a3a5a]/5" />
+
+                                <button
+                                    type="button"
+                                    @click="photoPreview = null; form.foto = null"
+                                    class="absolute -top-2 -right-2 bg-[#d90000] text-white rounded-full p-1.5 shadow-lg hover:bg-red-600 transition-all hover:scale-110"
+                                    title="Quitar imagen"
+                                >
+                                    <Trash2 class="w-4 h-4"/>
+                                </button>
+                            </div>
+
+                            <div v-else class="w-40 h-40 rounded-3xl bg-white border-2 border-dashed border-neutral-200 flex items-center justify-center text-neutral-300">
+                                <ImageUp class="w-12 h-12" />
+                            </div>
+
+                            <div class="flex-1 space-y-2">
+                                <FileInput accept="image/*" @change="handleFileChange" />
+                                <p class="text-[13px] text-neutral-700 leading-tight">Sube una imagen clara de la herramienta. Máximo 2MB (JPG o PNG).</p>
+                                <InputError :message="form.errors.foto" />
+                            </div>
                         </div>
-                        <FileInput accept="image/*" @change="handleFileChange" />
-                        <InputError :message="form.errors.foto" />
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="grid gap-2">
-                            <Label for="serie"><Hash class="w-4 h-4 text-neutral-900"/> Número de Serie</Label>
+                            <Label for="serie"><Hash class="w-5 h-5 text-[#1a3a5a]"/> Número de Serie</Label>
                             <Input id="serie" v-model="form.serie" placeholder="Ej. XYZ1234"/>
                             <InputError :message="form.errors.serie" />
                         </div>
                         <div class="grid gap-2">
-                            <Label for="marca"><Package class="w-4 h-4 text-neutral-900"/> Marca</Label>
+                            <Label for="marca"><Package class="w-5 h-5 text-[#1a3a5a]"/> Marca</Label>
                             <Input id="marca" v-model="form.marca" placeholder="Ej. Launch"/>
                             <InputError :message="form.errors.marca" />
                         </div>
 
                         <div class="grid gap-2">
-                            <Label for="modelo"><Package class="w-4 h-4 text-neutral-900"/> Modelo</Label>
+                            <Label for="modelo"><Package class="w-5 h-5 text-[#1a3a5a]"/> Modelo</Label>
                             <Input id="modelo" v-model="form.modelo" placeholder="Ej. X123"/>
                             <InputError :message="form.errors.modelo" />
                         </div>
@@ -152,17 +175,17 @@ function submit() {
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="grid gap-2">
-                            <Label for="fecha_adquisicion"><CalendarDays class="w-4 h-4 text-neutral-900"/> Fecha de Adquisición</Label>
+                            <Label for="fecha_adquisicion"><CalendarDays class="w-5 h-5 text-[#1a3a5a]"/> Fecha de Adquisición</Label>
                             <Input id="fecha_adquisicion" v-model="form.fecha_adquisicion" type="date"/>
                             <InputError :message="form.errors.fecha_adquisicion" />
                         </div>
                         <div class="grid gap-2">
-                            <Label for="rubro"><BookText class="w-4 h-4 text-neutral-900"/> Rubro</Label>
+                            <Label for="rubro"><BookText class="w-5 h-5 text-[#1a3a5a]"/> Rubro</Label>
                             <Input id="rubro" v-model="form.rubro" placeholder="Ej. Equipos de diagnóstico"/>
                             <InputError :message="form.errors.rubro" />
                         </div>
                         <div class="grid gap-2">
-                            <Label for="color"><PaintBucket class="w-4 h-4 text-neutral-900"/> Color</Label>
+                            <Label for="color"><PaintBucket class="w-5 h-5 text-[#1a3a5a]"/> Color</Label>
                             <Input id="color" v-model="form.color" type="text" placeholder="Ej. Negro"/>
                             <InputError :message="form.errors.color" />
                         </div>
@@ -170,12 +193,12 @@ function submit() {
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid gap-2">
-                            <Label for="descripcion"><AlignLeft class="w-4 h-4 inline mr-1"/> Descripción del Equipo</Label>
+                            <Label for="descripcion"><AlignLeft class="w-5 h-5 text-[#1a3a5a]"/> Descripción del Equipo</Label>
                             <Textarea id="descripcion" v-model="form.descripcion" placeholder="Detalles técnicos..."/>
                             <InputError :message="form.errors.descripcion" />
                         </div>
                         <div class="grid gap-2">
-                            <Label for="observacion"><AlignLeft class="w-4 h-4 inline mr-1"/> Observación del Equipo</Label>
+                            <Label for="observacion"><AlignLeft class="w-5 h-5 text-[#1a3a5a]"/> Observación del Equipo</Label>
                             <Textarea id="observacion" v-model="form.observacion" placeholder="Notas adicionales..."/>
                             <InputError :message="form.errors.observacion" />
                         </div>
@@ -184,9 +207,9 @@ function submit() {
 
                 <div class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-4">
                     <div class="flex justify-between items-center border-b pb-2">
-                        <h3 class="font-bold text-lg flex items-center gap-2">
-                            <ListPlus class="w-5 h-5"/> Accesorios del Equipo
-                        </h3>
+                        <CardTitle class="text-lg font-semibold text-[#1a3a5a] flex items-center gap-2">
+                            <ListPlus class="w-5 h-5 text-[#1a3a5a]"/> Accesorios del Equipo
+                        </CardTitle>
                         <Button type="button" variant="outline" size="sm" @click="addAccesorio">
                             <Plus class="w-4 h-4 mr-1" /> Agregar Accesorio
                         </Button>
@@ -201,7 +224,6 @@ function submit() {
                             <Label class="text-s text-neutral-800">Estado</Label>
                             <select v-model="acc.estado" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm mt-1.5">
                                 <option value="Bueno">Bueno</option>
-                                <option value="Dañado">Dañado</option>
                             </select>
                         </div>
                         <Button type="button" variant="destructive" size="icon" @click="removeAccesorio(index)">
@@ -219,11 +241,29 @@ function submit() {
                     </div>
                 </div>
 
-                <Button type="submit" class="w-full py-6 bg-red-600 hover:bg-red-700 font-bold" :disabled="form.processing">
-                    <Loader2 v-if="form.processing" class="mr-2 h-5 w-5 animate-spin" />
-                    <Save v-else class="w-5 h-5 mr-2" />
-                    Registrar Equipo
-                </Button>
+                <div class="grid grid-cols-1 md:grid-cols-2 justify-end gap-4 w-full">
+                    <button
+                        type="button"
+                        @click="itemsRoutes.index.url()"
+                        class="flex items-center justify-center h-14 bg-white border border-neutral-200 text-neutral-600 rounded-xl font-semibold text-[20px] hover:bg-neutral-50 transition-all active:scale-95"
+                    >
+                        Cancelar
+                    </button>
+
+                    <Button
+                        type="submit"
+                        :disabled="form.processing"
+                        class="h-14 bg-[#1a3a5a] text-white rounded-xl font-semibold text-[20px] shadow-lg shadow-blue-900/20 active:scale-95 transition-all w-full"
+                    >
+                        <template v-if="form.processing">
+                            <Loader2 class="w-5 h-5 animate-spin mr-2" />
+                            Guardando...
+                        </template>
+                        <template v-else>
+                            Registrar Equipo
+                        </template>
+                    </Button>
+                </div>
             </form>
         </div>
     </AppLayout>

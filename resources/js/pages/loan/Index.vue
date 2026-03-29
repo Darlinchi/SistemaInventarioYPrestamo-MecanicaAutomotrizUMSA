@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import InputError from '@/components/InputError.vue';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Plus, Search, Edit, CheckCircle, Package, XIcon, List, Loader2, Clock, Image, Calendar, Eye, AlignLeft,
-    User, SquarePen, Eraser, NotebookPen, BookMarked, Printer, ClipboardCheck, CornerDownRight, CalendarClock,
-    ClockAlert, CalendarCheck2, NotebookText } from 'lucide-vue-next';
+import AlertNotification from '@/components/AlertNotification.vue';
+import PageHeader from '@/components/PageHeader.vue';
+import CreateActionButton from '@/components/CreateActionButton.vue';
+import TabSelector from '@/components/shared/TabSelector.vue';
+import SearchInput from '@/components/shared/SearchInput.vue';
+import SelectFilter from '@/components/shared/SelectFilter.vue';
+import DateFilter from '@/components/shared/DateFilter.vue';
+import LoanHistoryTable from '@/components/LoanHistoryTable.vue';
+import ClearFiltersButton from '@/components/shared/ClearFiltersButton.vue';
+import LoanActiveCard from '@/components/LoanActiveCard.vue';
+import ReturnLoanModal from '@/components/ReturnLoanModal.vue';
+import LoanDetailModal from '@/components/LoanDetailModal.vue';
+import { Package } from 'lucide-vue-next';
 import loanRoutes from '@/routes/loans';
 
 interface Loan {
@@ -40,6 +45,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// --- NOTIFICACIONES FLASH ---
+const page = usePage();
+const flashSuccess = computed(() => (page.props.flash as any)?.success);
+
 // --- ESTADO Y BUSQUEDA ---
 // Define si vemos la pestaña de prestamos "activos" o el "historial" (devueltos)
 const activeTab = ref<'activos' | 'historial'>('activos');
@@ -62,8 +71,13 @@ const toggleItems = (id: number) => {
 
 // La cantidad de prestamos activos hay para mostrar el numero en la pestaña
 const countActivos = computed(() => props.loans.filter((b: Loan) => b.estado_prestamo == "Activo").length);
-// La cantidad de prestamos devueltos hay para el historial
 const countHistorial = computed(() => props.loans.filter((b: Loan) => b.estado_prestamo == "Devuelto").length);
+
+// En tu <script setup> de Index.vue
+const loansTabs = computed(() => [
+    { id: 'activos', label: 'Préstamos Activos', count: countActivos.value, icon: 'NotebookPen' },
+    { id: 'historial', label: 'Préstamos Devueltos', count: countHistorial.value, icon: 'NotebookText' }
+]);
 
 // Cierra el popover si se hace clic fuera del contenedor
 const closePopovers = (e: MouseEvent) => {
@@ -231,30 +245,6 @@ const processReturn = () => {
     });
 };
 
-// Colores segun los estados para el item y para accesorios
-const statusColor = (status: string | null | undefined) => {
-    // Si no hay status, devolvemos el color gris por defecto de inmediato
-    if (!status) return 'bg-gray-100 text-gray-800 border-gray-200';
-
-    switch (status.toLowerCase()) {
-        case 'disponible':
-        case 'nuevo': return 'bg-green-100 text-green-800 border-green-200';
-        case 'prestado': return 'bg-orange-100 text-orange-800 border-orange-200';
-        case 'mantenimiento': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-        case 'dañado': return 'bg-red-100 text-red-800 border-red-200';
-        case 'baja':  return 'bg-neutral-200 text-neutral-600 border-neutral-300';
-        default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-};
-const statusColorA = (status: string) => {
-    switch (status.toLowerCase()) {
-        case 'bueno': return 'bg-green-100 text-green-800 border-green-200';;
-        case 'dañado': return 'bg-red-100 text-red-800 border-red-200';
-        case 'extraviado': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-        default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-};
-
 const currentTime = ref(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
 
 // Hora de devolucion
@@ -296,6 +286,21 @@ const imprimirReporte = () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
+            <AlertNotification :message="flashSuccess" />
+
+            <PageHeader
+                title="Gestión de Préstamos"
+                description="Administre préstamos y devoluciones de equipos y herramientas del taller"
+            >
+                <template #action>
+                    <CreateActionButton
+                        :href="loanRoutes.create.url()"
+                        :label="`Registrar Préstamo`"
+                    />
+                </template>
+            </PageHeader>
+
+            <!--
             <div class="flex justify-between items-center mb-6">
                 <div>
                     <h1 class="text-3xl font-black tracking-tighter uppercase text-black">Gestión de Préstamos</h1>
@@ -304,9 +309,15 @@ const imprimirReporte = () => {
                 <Link :href="loanRoutes.create.url()" class="bg-black text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-neutral-800 transition shadow-lg">
                     <Plus class="w-5 h-5"/> Nuevo Préstamo
                 </Link>
-            </div>
+            </div>-->
 
-            <div class="flex p-1 bg-neutral-100 rounded-xl w-fit mb-6 border border-neutral-200">
+            <TabSelector
+                :tabs="loansTabs"
+                :activeTab="activeTab"
+                @update:activeTab="val => activeTab = val"
+            />
+
+            <!--<div class="flex p-1 bg-neutral-100 rounded-xl w-fit mb-6 border border-neutral-200">
                 <button @click="activeTab = 'activos'"
                     :class="['flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all',
                     activeTab === 'activos' ? 'bg-white text-black shadow-sm' : 'text-neutral-500 hover:text-black']">
@@ -318,8 +329,18 @@ const imprimirReporte = () => {
                     <NotebookText class="w-4.5 h-4.5 "/>Historial de Devoluciones ({{ countHistorial }})
                 </button>
             </div>
+            -->
 
-            <div class="flex flex-wrap items-center gap-4 mb-6">
+            <div class="flex flex-col md:flex-row items-center gap-3 mb-6 w-full">
+                <SearchInput v-model="searchQuery" placeholder="Buscar por item, materia o usuario..." class="flex-1" />
+                <SelectFilter v-model="selectedSubject" label="Materias" :options="uniqueSubjects" option-value="sigla" option-label="nombre" icon="BookText" class="md:w-[165px]" />
+                <SelectFilter v-model="selectedBorrowerCI" label="Usuarios" :options="uniqueBorrowerCI" option-value="cedula_identidad" option-label="apellidosP" icon="User" class="md:w-40" />
+                <SelectFilter v-model="filterMonth" label="Meses" :options="months" option-value="id" option-label="name" icon="CalendarDays" class="md:w-[150px]" />
+                <DateFilter v-model="filterDate" label="Fecha específica" />
+                <ClearFiltersButton @clear="() => { filterDate=''; filterMonth=''; selectedBorrowerCI=''; selectedSubject=''; searchQuery='' }" />
+            </div>
+
+            <!--<div class="flex flex-wrap items-center gap-4 mb-6">
                 <div class="relative w-full md:w-80">
                     <Search class="absolute left-3 top-3 w-5 h-5 text-neutral-400" />
                     <input v-model="searchQuery" type="text" placeholder="Buscar por item, materia o usuario..."
@@ -362,6 +383,8 @@ const imprimirReporte = () => {
                     <Eraser class="w-4 h-4 mr-2"/> Limpiar Filtros
                 </Button>
             </div>
+            -->
+
 
             <div class="space-y-4">
                 <div v-if="filteredLoans.length === 0" class="text-center py-20 bg-neutral-50 rounded-3xl border-2 border-dashed border-neutral-200">
@@ -370,6 +393,18 @@ const imprimirReporte = () => {
                 </div>
 
                 <div v-if="activeTab === 'activos' && filteredLoans.length > 0" class="space-y-4">
+                    <LoanActiveCard
+                        v-for="loan in filteredLoans"
+                        :key="loan.id"
+                        :loan="loan"
+                        :isOpen="openLoanId === loan.id"
+                        :loanRoutes="loanRoutes"
+                        @toggleItems="toggleItems"
+                        @return="openReturnModal"
+                    />
+                </div>
+
+                <!--<div v-if="activeTab === 'activos' && filteredLoans.length > 0" class="space-y-4">
                     <div v-for="loan in filteredLoans" :key="loan.id"
                         class="group border border-blue-100 bg-blue-50/50 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center transition-all duration-300 shadow-sm hover:shadow-xl hover:border-blue-400 hover:-translate-y-1 mb-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-12 w-full">
@@ -488,33 +523,28 @@ const imprimirReporte = () => {
                         </div>
                     </div>
                 </div>
+                -->
+
 
                 <!--HOSTORIAL DE DEVOLUCION-->
-                <div v-if="activeTab === 'historial' && filteredLoans.length > 0"
+                <!--<div v-if="activeTab === 'historial' && filteredLoans.length > 0"
                     class="relative bg-white border border-neutral-200 rounded-xl shadow-sm overflow-x-auto">
                     <table class="w-full text-left min-w-max border-separate border-spacing-0">
                         <thead class="bg-neutral-200 border-b border-neutral-300 text-xs font-bold uppercase tracking-widest text-neutral-800">
                             <tr>
                                 <th class="p-4">Fecha Salida</th>
-                                <!--<th class="p-4">C. Identidad</th>-->
                                 <th class="p-4">Responsable</th>
                                 <th class="p-4">Materia - Sigla</th>
-                                <!--<th class="p-4">Hora Inicio</th>
-                                <th class="p-4">Hora Fin</th>
-                                -->
                                 <th class="p-4">Items Prestados</th>
-                                <!--<th class="p-4">Observación</th>-->
                                 <th class="p-4 text-right sticky right-0 bg-neutral-200 border-l border-neutral-300 shadow-l">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-neutral-100 text-sm">
                             <tr v-for="loan in filteredLoans" :key="loan.id" class="hover:bg-neutral-50 transition-colors group">
                                 <td class="p-4 font-bold text-black">{{ loan.fecha_salida }}</td>
-                                <!--<td class="p-4 text-neutral-900">{{ loan.borrower.cedula_identidad }} </td>-->
                                 <td class="p-4 text-neutral-900">{{ loan.borrower.apellidosP }} {{ loan.borrower.nombresP }} </td>
                                 <td class="p-4 text-neutral-900">{{ loan.subject.nombre_materia }} - {{ loan.subject.sigla }} </td>
-                                <!--<td class="p-4 text-neutral-900">{{ loan.hora_inicio }} </td>
-                                <td class="p-4 text-neutral-900">{{ loan.hora_fin }} </td>-->
+                                <td class="p-4 text-neutral-900">{{ loan.hora_fin }} </td>
                                 <td class="p-4 text-neutral-900">
                                     <div class="flex justify-end relative">
                                         <button @click.stop="toggleItems(loan.id)"
@@ -554,7 +584,6 @@ const imprimirReporte = () => {
                                         </div>
                                     </div>
                                 </td>
-                                <!--<td class="p-4 italic text-neutral-400 max-w-xs truncate">{{ loan.observacion }} </td>-->
                                 <td class="p-4 text-right space-x-3 sticky right-0 bg-white group-hover:bg-neutral-50 border-l border-neutral-100">
                                     <Button
                                         @click="openViewInformacion(loan)"
@@ -571,205 +600,231 @@ const imprimirReporte = () => {
                         </tbody>
                     </table>
                 </div>
-            </div>
+                -->
 
-            <div v-if="isReturnModalOpen" class="fixed inset-0 z-200 flex items-center justify-center bg-black/40 backdrop-blur-md p-6 lg:p-12">
-                <div class="bg-white w-full max-w-3xl rounded-4xl  shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in duration-300">
-
-                    <div class="px-8 py-6 border-b border-neutral-100 flex justify-between items-center bg-white">
-                        <div>
-                            <div class="flex items-center gap-3 mb-2">
-                                <div class="p-2 bg-blue-600 rounded-lg">
-                                    <NotebookPen class="w-6 h-6 text-white" />
-                                </div>
-                                <h2 class="text-2xl font-black uppercase tracking-tighter text-neutral-900">Registrar Devolución</h2>
-                            </div>
-                            <p class="text-neutral-700 text-sm font-medium">Verifique el estado de los items recibidos</p>
-                        </div>
-                        <button @click="isReturnModalOpen = false" class="p-2 hover:bg-neutral-100 rounded-full transition-colors group">
-                            <XIcon class="w-7 h-7 text-neutral-300 group-hover:text-red-500 transition-colors"/>
-                        </button>
-                    </div>
-
-                    <div class="p-8 pt-2 overflow-y-auto custom-scrollbar space-y-3 flex-1">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-neutral-50 rounded-2xl border border-neutral-200">
-                            <div class="space-y-1">
-                                <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest">
-                                    <User class="w-4 h-4" /> <span>Responsable</span>
-                                </p>
-                                <p class="text-base font-bold text-neutral-900">{{ selectedLoan?.borrower.nombresP }} {{ selectedLoan?.borrower.apellidosP }}</p>
-                                <span class="inline-block px-2 py-0.5 rounded-md bg-blue-100 text-[13px] font-bold text-blue-700 uppercase tracking-tighter">
-                                    {{ selectedLoan?.borrower.teacher ? 'Docente' : 'Auxiliar' }}
-                                </span>
-                                <span class="text-[13px] px-2 py-0.5 bg-neutral-100 rounded-md font-bold text-neutral-800">
-                                    CI: {{ selectedLoan?.borrower.cedula_identidad }}
-                                </span>
-                            </div>
-
-                            <div class="space-y-1">
-                                <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest">
-                                    <BookMarked class="w-4 h-4 text-neutral-700" /> <span>Materia Asignada</span>
-                                </p>
-                                <p class="text-base font-bold text-neutral-900">{{ selectedLoan?.subject.nombre_materia }}</p>
-                                <p class="text-[14px] text-blue-600 font-mono">{{ selectedLoan?.subject.sigla }}</p>
-                            </div>
-                        </div>
-
-                        <div class="space-y-2">
-                            <h3 class="text-[13px] font-black uppercase tracking-widest text-neutral-800 flex items-center gap-2">
-                                <CalendarClock class="w-4 h-4" /> Fecha y horario del préstamo
-                            </h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-neutral-50 rounded-2xl border border-neutral-200 mt-4">
-                                <div class="flex flex-col gap-3">
-                                    <span class="text-[13px] font-bold text-blue-600 uppercase tracking-tighter">Registro de Salida</span>
-                                    <div class="flex items-center gap-3">
-                                        <div class="p-2 bg-white rounded-lg shadow-sm">
-                                            <Calendar class="w-4 h-4 text-blue-600" />
-                                        </div>
-                                        <div>
-                                            <p class="text-[11px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">Fecha Salida</p>
-                                            <p class="text-sm font-bold text-neutral-800">{{ selectedLoan?.fecha_salida }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <div class="p-2 bg-white rounded-lg shadow-sm">
-                                            <Clock class="w-4 h-4 text-blue-600" />
-                                        </div>
-                                        <div>
-                                            <p class="text-[11px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">Hora Inicio</p>
-                                            <p class="text-sm font-bold text-neutral-800">{{ selectedLoan?.hora_inicio }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="flex flex-col gap-3 border-l border-neutral-100 pl-4">
-                                    <span class="text-[13px] font-bold text-orange-600 uppercase tracking-tighter">Retorno (Opcional)</span>
-                                    <div class="flex items-center gap-3">
-                                        <div class="p-2 bg-white rounded-lg shadow-sm">
-                                            <Calendar class="w-4 h-4 text-orange-600" />
-                                        </div>
-                                        <div>
-                                            <p class="text-[11px] font-black text-orange-500 uppercase tracking-widest leading-none mb-1">Fecha Limite</p>
-                                            <p class="text-sm font-bold text-neutral-800">{{ selectedLoan?.fecha_retorno_prevista }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <div class="p-2 bg-white rounded-lg shadow-sm">
-                                            <Clock class="w-4 h-4 text-orange-600" />
-                                        </div>
-                                        <div>
-                                            <p class="text-[11px] font-black text-orange-500 uppercase tracking-widest leading-none mb-1">Hora Fin</p>
-                                            <p class="text-sm font-bold text-neutral-800">{{ selectedLoan?.hora_fin_prevista }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="flex flex-col gap-3 border-l border-neutral-100 pl-4">
-                                    <span class="text-[13px] font-bold text-green-600 uppercase tracking-tighter">Retorno Real</span>
-                                    <div class="flex items-center gap-3">
-                                        <div class="p-2 bg-white rounded-lg shadow-sm">
-                                            <Calendar class="w-4 h-4 text-green-600" />
-                                        </div>
-                                        <div>
-                                            <Label for="fecha_retorno" class="text-[11px] font-black text-green-500 uppercase tracking-widest leading-none mb-1">Fecha Retorno</Label>
-                                            <Input type="date" v-model="returnForm.fecha_retorno" :min="selectedLoan?.fecha_salida" class="h-8 text-xs rounded-lg" />
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <div class="p-2 bg-white rounded-lg shadow-sm">
-                                            <Clock class="w-4 h-4 text-green-600" />
-                                        </div>
-                                        <div>
-                                            <Label for="hora_fin" class="text-[11px] font-black text-green-500 uppercase tracking-widest leading-none mb-1">Hora Entrada</Label>
-                                            <Input type="time" v-model="returnForm.hora_fin" class="h-8 text-xs rounded-lg" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="lg:col-span-2 space-y-3">
-                            <h3 class="text-[13px] font-black uppercase tracking-widest text-neutral-800 flex items-center gap-2">
-                                <Package class="w-4 h-4" /> Revisión Detallada de Equipos y Herramientas
-                            </h3>
-
-                            <div v-for="(item, index) in returnForm.items" :key="item.id" class="border border-neutral-200 bg-neutral-50 rounded-3xl overflow-hidden shadow-sm">
-                                <div class="flex items-center justify-between p-4 bg-white">
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center overflow-hidden border border-neutral-100 shadow-inner">
-                                            <img v-if="item.foto" :src="'/storage/' + item.foto" class="object-cover w-full h-full" />
-                                            <Package v-else class="w-6 h-6 text-neutral-300" />
-                                        </div>
-
-                                        <div class="flex flex-col min-w-0">
-                                            <span class="text-[14px] font-bold text-neutral-900 truncate leading-tight">{{ item.nombre_mostrar }}</span>
-                                            <span :class="[
-                                                'w-fit px-2 py-0.5 rounded-full text-[10px] font-black uppercase border mt-1',
-                                                item.es_equipo ? 'bg-red-50 text-red-600 border-red-100' : 'bg-blue-50 text-blue-700 border-blue-100'
-                                            ]">
-                                                {{ item.es_equipo ? 'Equipo' : 'Herramienta' }}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <select v-model="returnForm.items[index].estado_devolucion"
-                                        class="text-[13px] font-bold rounded-xl border-neutral-200 bg-neutral-50 focus:ring-black focus:border-black transition-all py-1.5 px-3">
-                                        <option value="Disponible">Disponible</option>
-                                        <option value="Dañado">Dañado</option>
-                                        <option value="Extraviado">Extraviado</option>
-                                        <option value="Incompleto">Incompleto</option>
-                                        <option value="Baja">Baja</option>
-                                    </select>
-                                </div>
-
-                                <div v-if="item.accessories?.length" class="bg-neutral-50 p-4 border-t border-neutral-100 space-y-2">
-                                    <p class="text-[11px] font-black text-neutral-800 uppercase tracking-widest flex items-center gap-2 mb-1">
-                                        <div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-                                        Accesorios del Equipo
-                                    </p>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                        <div v-for="(acc, accIndex) in item.accessories" :key="acc.id"
-                                            class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-neutral-200/60 shadow-sm">
-                                            <span class="text-[13px] font-semibold text-neutral-800 flex items-center gap-1">
-                                                <CornerDownRight class="w-4 h-4 text-blue-400"/> {{ acc.nombre_accesorio }}
-                                            </span>
-                                            <select v-model="returnForm.items[index].accessories[accIndex].estado_accesorio"
-                                                class="text-[13px] py-1 px-2 border-neutral-100 rounded-lg bg-neutral-50 font-bold focus:ring-black outline-none">
-                                                <option value="Bueno">Bueno</option>
-                                                <option value="Dañado">Dañado</option>
-                                                <option value="Extraviado">Extraviado</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="space-y-3">
-                            <Label for="observacion" class="text-[13px] font-black uppercase text-amber-500 tracking-widest">
-                                <AlignLeft class="w-4 h-4 text-amber-500"/> Observación de recepción final
-                            </Label>
-                            <Textarea v-model="returnForm.observacion"
-                                placeholder="Escriba aquí notas adicionales sobre la devolución..."
-                                class="bg-amber-50 border-amber-200 text-sm rounded-2xl min-h-[100px] focus:bg-white transition-all" />
-                        </div>
-                    </div>
-
-                    <div class="px-8 py-4 bg-white border-t border-neutral-100 flex gap-4">
-                        <Button variant="outline" class="flex-1 py-7 rounded-2xl font-bold uppercase tracking-widest text-[15px]" @click="isReturnModalOpen = false">
-                            Cerrar
-                        </Button>
-                        <Button class="flex-1 bg-black text-white py-7 rounded-2xl font-black uppercase tracking-widest text-[15px] shadow-xl hover:shadow-neutral-200 transition-all active:scale-[0.98]"
-                            @click="processReturn" :disabled="returnForm.processing">
-                            <Loader2 v-if="returnForm.processing" class="mr-2 animate-spin w-4 h-4 text-white"/>
-                            Confirmar Devolución
-                        </Button>
-                    </div>
+                <div v-if="activeTab === 'historial' && filteredLoans.length > 0">
+                    <LoanHistoryTable
+                        :loans="filteredLoans"
+                        :openLoanId="openLoanId"
+                        @view="openViewInformacion"
+                        @toggleItems="toggleItems"
+                        @generateReport=""
+                    />
                 </div>
             </div>
         </div>
 
-        <div v-if="viewInformacion" class="fixed inset-0 z-100 flex items-center justify-center p-4">
+        <ReturnLoanModal
+            :show="isReturnModalOpen"
+            :loan="selectedLoan"
+            :form="returnForm"
+            @close="isReturnModalOpen = false"
+            @confirm="processReturn"
+        />
+
+        <!--<div v-if="isReturnModalOpen" class="fixed inset-0 z-200 flex items-center justify-center bg-black/40 backdrop-blur-md p-6 lg:p-12">
+            <div class="bg-white w-full max-w-3xl rounded-4xl  shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in duration-300">
+
+                <div class="px-8 py-6 border-b border-neutral-100 flex justify-between items-center bg-white">
+                    <div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="p-2 bg-blue-600 rounded-lg">
+                                <NotebookPen class="w-6 h-6 text-white" />
+                            </div>
+                            <h2 class="text-2xl font-black uppercase tracking-tighter text-neutral-900">Registrar Devolución</h2>
+                        </div>
+                        <p class="text-neutral-700 text-sm font-medium">Verifique el estado de los items recibidos</p>
+                    </div>
+                    <button @click="isReturnModalOpen = false" class="p-2 hover:bg-neutral-100 rounded-full transition-colors group">
+                        <XIcon class="w-7 h-7 text-neutral-300 group-hover:text-red-500 transition-colors"/>
+                    </button>
+                </div>
+
+                <div class="p-8 pt-2 overflow-y-auto custom-scrollbar space-y-3 flex-1">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-neutral-50 rounded-2xl border border-neutral-200">
+                        <div class="space-y-1">
+                            <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest">
+                                <User class="w-4 h-4" /> <span>Responsable</span>
+                            </p>
+                            <p class="text-base font-bold text-neutral-900">{{ selectedLoan?.borrower.nombresP }} {{ selectedLoan?.borrower.apellidosP }}</p>
+                            <span class="inline-block px-2 py-0.5 rounded-md bg-blue-100 text-[13px] font-bold text-blue-700 uppercase tracking-tighter">
+                                {{ selectedLoan?.borrower.teacher ? 'Docente' : 'Auxiliar' }}
+                            </span>
+                            <span class="text-[13px] px-2 py-0.5 bg-neutral-100 rounded-md font-bold text-neutral-800">
+                                CI: {{ selectedLoan?.borrower.cedula_identidad }}
+                            </span>
+                        </div>
+
+                        <div class="space-y-1">
+                            <p class="flex items-center gap-2 text-[13px] font-black text-neutral-700 uppercase tracking-widest">
+                                <BookMarked class="w-4 h-4 text-neutral-700" /> <span>Materia Asignada</span>
+                            </p>
+                            <p class="text-base font-bold text-neutral-900">{{ selectedLoan?.subject.nombre_materia }}</p>
+                            <p class="text-[14px] text-blue-600 font-mono">{{ selectedLoan?.subject.sigla }}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h3 class="text-[13px] font-black uppercase tracking-widest text-neutral-800 flex items-center gap-2">
+                            <CalendarClock class="w-4 h-4" /> Fecha y horario del préstamo
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-neutral-50 rounded-2xl border border-neutral-200 mt-4">
+                            <div class="flex flex-col gap-3">
+                                <span class="text-[13px] font-bold text-blue-600 uppercase tracking-tighter">Registro de Salida</span>
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-white rounded-lg shadow-sm">
+                                        <Calendar class="w-4 h-4 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">Fecha Salida</p>
+                                        <p class="text-sm font-bold text-neutral-800">{{ selectedLoan?.fecha_salida }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-white rounded-lg shadow-sm">
+                                        <Clock class="w-4 h-4 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">Hora Inicio</p>
+                                        <p class="text-sm font-bold text-neutral-800">{{ selectedLoan?.hora_inicio }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-3 border-l border-neutral-100 pl-4">
+                                <span class="text-[13px] font-bold text-orange-600 uppercase tracking-tighter">Retorno (Opcional)</span>
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-white rounded-lg shadow-sm">
+                                        <Calendar class="w-4 h-4 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] font-black text-orange-500 uppercase tracking-widest leading-none mb-1">Fecha Limite</p>
+                                        <p class="text-sm font-bold text-neutral-800">{{ selectedLoan?.fecha_retorno_prevista }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-white rounded-lg shadow-sm">
+                                        <Clock class="w-4 h-4 text-orange-600" />
+                                    </div>
+                                    <div>
+                                        <p class="text-[11px] font-black text-orange-500 uppercase tracking-widest leading-none mb-1">Hora Fin</p>
+                                        <p class="text-sm font-bold text-neutral-800">{{ selectedLoan?.hora_fin_prevista }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-3 border-l border-neutral-100 pl-4">
+                                <span class="text-[13px] font-bold text-green-600 uppercase tracking-tighter">Retorno Real</span>
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-white rounded-lg shadow-sm">
+                                        <Calendar class="w-4 h-4 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <Label for="fecha_retorno" class="text-[11px] font-black text-green-500 uppercase tracking-widest leading-none mb-1">Fecha Retorno</Label>
+                                        <Input type="date" v-model="returnForm.fecha_retorno" :min="selectedLoan?.fecha_salida" class="h-8 text-xs rounded-lg" />
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-white rounded-lg shadow-sm">
+                                        <Clock class="w-4 h-4 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <Label for="hora_fin" class="text-[11px] font-black text-green-500 uppercase tracking-widest leading-none mb-1">Hora Entrada</Label>
+                                        <Input type="time" v-model="returnForm.hora_fin" class="h-8 text-xs rounded-lg" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 space-y-3">
+                        <h3 class="text-[13px] font-black uppercase tracking-widest text-neutral-800 flex items-center gap-2">
+                            <Package class="w-4 h-4" /> Revisión Detallada de Equipos y Herramientas
+                        </h3>
+
+                        <div v-for="(item, index) in returnForm.items" :key="item.id" class="border border-neutral-200 bg-neutral-50 rounded-3xl overflow-hidden shadow-sm">
+                            <div class="flex items-center justify-between p-4 bg-white">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center overflow-hidden border border-neutral-100 shadow-inner">
+                                        <img v-if="item.foto" :src="'/storage/' + item.foto" class="object-cover w-full h-full" />
+                                        <Package v-else class="w-6 h-6 text-neutral-300" />
+                                    </div>
+
+                                    <div class="flex flex-col min-w-0">
+                                        <span class="text-[14px] font-bold text-neutral-900 truncate leading-tight">{{ item.nombre_mostrar }}</span>
+                                        <span :class="[
+                                            'w-fit px-2 py-0.5 rounded-full text-[10px] font-black uppercase border mt-1',
+                                            item.es_equipo ? 'bg-red-50 text-red-600 border-red-100' : 'bg-blue-50 text-blue-700 border-blue-100'
+                                        ]">
+                                            {{ item.es_equipo ? 'Equipo' : 'Herramienta' }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <select v-model="returnForm.items[index].estado_devolucion"
+                                    class="text-[13px] font-bold rounded-xl border-neutral-200 bg-neutral-50 focus:ring-black focus:border-black transition-all py-1.5 px-3">
+                                    <option value="Disponible">Disponible</option>
+                                    <option value="Dañado">Dañado</option>
+                                    <option value="Extraviado">Extraviado</option>
+                                    <option value="Incompleto">Incompleto</option>
+                                    <option value="Baja">Baja</option>
+                                </select>
+                            </div>
+
+                            <div v-if="item.accessories?.length" class="bg-neutral-50 p-4 border-t border-neutral-100 space-y-2">
+                                <p class="text-[11px] font-black text-neutral-800 uppercase tracking-widest flex items-center gap-2 mb-1">
+                                    <div class="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                                    Accesorios del Equipo
+                                </p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div v-for="(acc, accIndex) in item.accessories" :key="acc.id"
+                                        class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-neutral-200/60 shadow-sm">
+                                        <span class="text-[13px] font-semibold text-neutral-800 flex items-center gap-1">
+                                            <CornerDownRight class="w-4 h-4 text-blue-400"/> {{ acc.nombre_accesorio }}
+                                        </span>
+                                        <select v-model="returnForm.items[index].accessories[accIndex].estado_accesorio"
+                                            class="text-[13px] py-1 px-2 border-neutral-100 rounded-lg bg-neutral-50 font-bold focus:ring-black outline-none">
+                                            <option value="Bueno">Bueno</option>
+                                            <option value="Dañado">Dañado</option>
+                                            <option value="Extraviado">Extraviado</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <Label for="observacion" class="text-[13px] font-black uppercase text-amber-500 tracking-widest">
+                            <AlignLeft class="w-4 h-4 text-amber-500"/> Observación de recepción final
+                        </Label>
+                        <Textarea v-model="returnForm.observacion"
+                            placeholder="Escriba aquí notas adicionales sobre la devolución..."
+                            class="bg-amber-50 border-amber-200 text-sm rounded-2xl min-h-[100px] focus:bg-white transition-all" />
+                    </div>
+                </div>
+
+                <div class="px-8 py-4 bg-white border-t border-neutral-100 flex gap-4">
+                    <Button variant="outline" class="flex-1 py-7 rounded-2xl font-bold uppercase tracking-widest text-[15px]" @click="isReturnModalOpen = false">
+                        Cerrar
+                    </Button>
+                    <Button class="flex-1 bg-black text-white py-7 rounded-2xl font-black uppercase tracking-widest text-[15px] shadow-xl hover:shadow-neutral-200 transition-all active:scale-[0.98]"
+                        @click="processReturn" :disabled="returnForm.processing">
+                        <Loader2 v-if="returnForm.processing" class="mr-2 animate-spin w-4 h-4 text-white"/>
+                        Confirmar Devolución
+                    </Button>
+                </div>
+            </div>
+        </div>
+        -->
+
+        <LoanDetailModal
+            :show="viewInformacion"
+            :loan="loanInformacion"
+            @close="closeViewInformacion"
+        />
+
+        <!--<div v-if="viewInformacion" class="fixed inset-0 z-100 flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-neutral-900/60 backdrop-blur-md no-print" @click="closeViewInformacion"></div>
             <div class="relative bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-300 flex flex-col">
 
@@ -965,5 +1020,7 @@ const imprimirReporte = () => {
                 </div>
             </div>
         </div>
+        -->
+
     </AppLayout>
 </template>

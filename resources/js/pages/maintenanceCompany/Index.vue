@@ -4,6 +4,9 @@ import maintenanceCompanyRoutes from '@/routes/maintenanceCompanies';
 import { type BreadcrumbItem } from '@/types';
 import { Plus, SquarePen, Trash } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
+import PageHeader from '@/components/PageHeader.vue';
+import CreateActionButton from '@/components/CreateActionButton.vue';
+import CompanyTable from '@/components/CompanyTable.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -47,7 +50,19 @@ const deleteCompany = (id: number) => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
-            <div class="flex justify-between items-center mb-6">
+            <PageHeader
+                title="Empresas de Mantenimiento"
+                description="Información sobre las empresas que realizan mantenimiento de equipos y herramientas del taller"
+            >
+                <template #action>
+                    <CreateActionButton
+                        type="button" :href="maintenanceCompanyRoutes.create.url()"
+                        :label="`Registrar Empresa`"
+                    />
+                </template>
+            </PageHeader>
+
+            <!--<div class="flex justify-between items-center mb-6">
                 <div>
                     <h1 class="text-3xl font-black tracking-tighter uppercase text-black">Empresas de Mantenimiento</h1>
                     <p class="text-sm text-neutral-500">Información sobre las empresas que realizan mantenimiento de equipos y herramientas del taller</p>
@@ -55,9 +70,9 @@ const deleteCompany = (id: number) => {
                 <Link :href="maintenanceCompanyRoutes.create.url()" class="bg-black text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-neutral-800 transition shadow-lg">
                     <Plus class="w-5 h-5"/> Nueva Empresa
                 </Link>
-            </div>
+            </div>-->
 
-            <div class="relative bg-white border border-neutral-200 rounded-xl shadow-sm overflow-x-auto">
+            <!--<div class="relative bg-white border border-neutral-200 rounded-xl shadow-sm overflow-x-auto">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left min-w-max border-separate border-spacing-0">
                         <thead class="bg-neutral-200 border-b border-neutral-300 text-xs font-bold uppercase tracking-widest text-neutral-800">
@@ -93,7 +108,12 @@ const deleteCompany = (id: number) => {
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </div>-->
+
+            <CompanyTable
+                :maintenanceCompanies="maintenanceCompanies"
+                @delete="id => deleteCompany(id)"
+            />
         </div>
     </AppLayout>
 </template>

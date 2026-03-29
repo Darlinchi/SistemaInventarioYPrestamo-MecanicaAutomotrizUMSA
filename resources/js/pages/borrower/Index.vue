@@ -4,6 +4,8 @@ import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { List, UserCog, UserCheck, UserCheck2 } from 'lucide-vue-next';
+import PageHeader from '@/components/PageHeader.vue';
+import TabSelector from '@/components/shared/TabSelector.vue';
 import borrower from '@/routes/borrowers';
 import { router } from '@inertiajs/vue3';
 
@@ -24,6 +26,11 @@ const openSubjectId = ref<number | null>(null);
 // Contadores corregidos
 const countDocentes = computed(() => props.borrowers.filter(b => b.teacher !== null).length);
 const countAuxiliares = computed(() => props.borrowers.filter(b => b.assistant !== null).length);
+
+const borrowerTabs = computed(() => [
+    { id: 'docentes', label: 'Docentes', count: countDocentes.value, icon: 'UserCog' },
+    { id: 'auxiliares', label: 'Auxiliares', count: countAuxiliares.value, icon: 'UserCheck' }
+]);
 
 const filteredUsers = computed(() => {
     return props.borrowers.filter(borrower => {
@@ -61,14 +68,16 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
     <Head title="Usuarios" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
-            <div class="flex p-1 bg-neutral-100 rounded-xl w-fit mb-6 border border-neutral-200">
-                <button @click="activeTab = 'docentes'" :class="['flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all', activeTab === 'docentes' ? 'bg-white text-black shadow-sm' : 'text-neutral-500 hover:text-black']">
-                    <UserCog class="w-5 h-5"/>Docentes ({{ countDocentes }})
-                </button>
-                <button @click="activeTab = 'auxiliares'" :class="['flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all', activeTab === 'auxiliares' ? 'bg-white text-black shadow-sm' : 'text-neutral-500 hover:text-black']">
-                    <UserCheck class="w-5 h-5"/>Auxiliares ({{ countAuxiliares }})
-                </button>
-            </div>
+            <PageHeader
+                title="Prestamístas"
+                description="Información sobre los docentes y auxiliares que realizan préstamos de equipos y herramientas del taller"
+            />
+
+            <TabSelector
+                :tabs="borrowerTabs"
+                :activeTab="activeTab"
+                @update:activeTab="val => activeTab = val"
+            />
 
             <div class="relative bg-white border border-neutral-200 rounded-xl shadow-sm overflow-x-auto">
                 <div class="overflow-x-auto">

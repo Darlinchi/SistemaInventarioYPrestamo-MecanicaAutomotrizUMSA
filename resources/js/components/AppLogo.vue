@@ -4,7 +4,7 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
 
 <template>
     <div
-        class="flex aspect-square size-8 items-center justify-center rounded-md bg-white text-sidebar-primary-foreground shadow"
+        class="flex aspect-square size-10 items-center justify-center rounded-md bg-white text-sidebar-primary-foreground shadow"
     >
         <!-- Ícono con trazo oscuro -->
         <AppLogoIcon class="size-5 text-gray-700" />

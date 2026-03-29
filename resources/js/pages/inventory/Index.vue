@@ -7,9 +7,20 @@ import {
     Package, Wrench, SquarePen, Ban, Search, List, Image, Plus, CircleCheck, XIcon, Eye, Hash, BookText,
     QrCode, CalendarDays, Rows3, AlignLeft, PaintBucket, FileText, Layers
 } from 'lucide-vue-next';
+import AlertNotification from '@/components/AlertNotification.vue';
+import PageHeader from '@/components/PageHeader.vue';
+import TabSelector from '@/components/shared/TabSelector.vue';
+import SearchInput from '@/components/shared/SearchInput.vue';
+import SelectFilter from '@/components/shared/SelectFilter.vue';
+import ClearFiltersButton from '@/components/shared/ClearFiltersButton.vue';
+import InventoryTable from '@/components/InventoryTable.vue';
+import DataTable from '@/components/DataTable.vue';
+import InventoryDetailModal from '@/components/InventoryDetailModal.vue';
+import CreateActionButton from '@/components/CreateActionButton.vue';
+import ConfirmDialog from '@/components/shared/ConfirmDialog.vue';
 import { Button } from '@/components/ui/button';
 import itemRoutes from '@/routes/items';
-import equipmentRoutes from '@/routes/equipments'; // Asegúrate que el nombre coincida con tus archivos de rutas
+import equipmentRoutes from '@/routes/equipments';
 import toolRoutes from '@/routes/tools';
 
 // --- INTERFACES ---
@@ -54,40 +65,49 @@ const breadcrumbs: BreadcrumbItem[] = [{
 
 // --- NOTIFICACIONES FLASH ---
 const page = usePage();
-const showSuccess = ref(false);
-const successMessage = ref('');
-
-watch(() => page.props.flash, (nextFlash: any) => {
-    if (nextFlash?.success) {
-        successMessage.value = nextFlash.success;
-        showSuccess.value = true;
-        setTimeout(() => showSuccess.value = false, 5000);
-    }
-}, { deep: true, immediate: true });
+const flashSuccess = computed(() => (page.props.flash as any)?.success);
 
 // --- LÓGICA DE TABLA ---
 const activeTab = ref<'equipos' | 'herramientas'>('equipos');
 const searchQuery = ref('');
-const selectedStatusEquipo = ref('');
-const selectedStatusHerramienta = ref('');
+const selectedStatus = ref('');
 const openAccessoryId = ref<number | null>(null);
 
+// Limpiamos el filtro de estado cada vez que cambiamos de pestaña (Opcional, pero recomendado)
+watch(activeTab, () => {
+    selectedStatus.value = '';
+});
+// Dependiendo de la pestaña, pasamos los estados correspondientes
+const currentOptions = computed(() => {
+    return activeTab.value === 'equipos'
+        ? props.estados_equipo
+        : props.estados_herramienta;
+});
 // Contadores basados en el campo 'tipo'
 const countEquipos = computed(() => props.items.filter(i => i.tipo === 'equipo').length);
 const countHerramientas = computed(() => props.items.filter(i => i.tipo === 'herramienta').length);
 
+// En tu <script setup> de Index.vue
+const inventoryTabs = computed(() => [
+    { id: 'equipos', label: 'Equipos', count: countEquipos.value, icon: 'Package' },
+    { id: 'herramientas', label: 'Herramientas', count: countHerramientas.value, icon: 'Wrench' }
+]);
+
 // --- FILTRADO INTELIGENTE ---
 const filteredItems = computed(() => {
     const query = searchQuery.value.toLowerCase().trim();
+    const currentStatus = selectedStatus.value;
 
     return props.items.filter(item => {
         // 1. Filtro por Pestaña
         if (activeTab.value === 'equipos' && item.tipo !== 'equipo') return false;
         if (activeTab.value === 'herramientas' && item.tipo !== 'herramienta') return false;
 
-        // 2. Filtro por Estado
-        if (activeTab.value === 'equipos' && selectedStatusEquipo.value && item.estado_equipo !== selectedStatusEquipo.value) return false;
-        if (activeTab.value === 'herramientas' && selectedStatusHerramienta.value && item.estado_herramienta !== selectedStatusHerramienta.value) return false;
+        // 2. Filtro por Estado (Simplificado)
+        if (currentStatus) {
+            const estadoItem = item.tipo === 'equipo' ? item.estado_equipo : item.estado_herramienta;
+            if (estadoItem !== currentStatus) return false;
+        }
 
         // 3. Buscador
         if (!query) return true;
@@ -98,17 +118,6 @@ const filteredItems = computed(() => {
         return nombre.includes(query) || qr.includes(query) || marca.includes(query);
     });
 });
-
-// --- FUNCIONES DE ESTADO (Colores) ---
-const statusColor = (status?: string) => {
-    if (!status) return 'bg-gray-100 text-gray-800 border-gray-200';
-    const s = status.toLowerCase();
-    if (['disponible', 'nuevo', 'bueno'].includes(s)) return 'bg-green-100 text-green-800 border-green-200';
-    if (['dañado', 'roto'].includes(s)) return 'bg-red-100 text-red-800 border-red-200';
-    if (['mantenimiento', 'extraviado'].includes(s)) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    if (s === 'baja') return 'bg-neutral-200 text-neutral-600 border-neutral-300';
-    return 'bg-gray-100 text-gray-800 border-gray-200';
-};
 
 // --- ACCIONES ---
 const toggleAccessories = (id: number) => {
@@ -196,8 +205,6 @@ const formatDate = (date: string) => {
     });
 };
 
-const statusColorA = (status: string) => statusColor(status); // Para accesorios
-
 // Si tienes lógica de mantenimientos, puedes computar el último aquí
 const ultimoMantenimiento = computed(() => {
     if (itemInformacion.value?.equipment?.mantenimientos?.length > 0) {
@@ -212,87 +219,41 @@ const ultimoMantenimiento = computed(() => {
     <Head title="Inventario" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
-            <transition enter-active-class="duration-300" leave-active-class="duration-500">
-                <div v-if="showSuccess" class="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-r-xl flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <CircleCheck class="h-5 w-5 text-green-500"/>
-                        <p class="text-sm font-bold text-green-800">{{ successMessage }}</p>
-                    </div>
-                    <button @click="showSuccess = false"><XIcon class="h-5 w-5 text-green-500"/></button>
-                </div>
-            </transition>
+            <AlertNotification :message="flashSuccess" />
 
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h1 class="text-3xl font-black tracking-tighter uppercase text-black">Gestión de Inventario</h1>
-                    <p class="text-sm text-neutral-500">Administre equipos y herramientas del taller</p>
-
-                </div>
-                <div class="flex justify-end mt-4">
-                    <Link
-                        :href="activeTab === 'equipos' ? equipmentRoutes.create.url() : toolRoutes.create.url()"
-                        class="bg-black text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-neutral-800 transition shadow-lg"
-                    >
-                        <Plus class="w-5 h-5"/>
-                        Agregar {{ activeTab === 'equipos' ? 'Equipo' : 'Herramienta' }}
-                    </Link>
-                </div>
-            </div>
-
-            <div class="flex p-1.5 bg-neutral-100 rounded-xl w-fit mb-6 border border-neutral-200 shadow-inner">
-                <button
-                    @click="activeTab = 'equipos'"
-                    :class="[
-                        'flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200',
-                        activeTab === 'equipos'
-                            ? 'bg-white text-black shadow-md scale-[1.02]'
-                            : 'text-neutral-500 hover:text-black hover:bg-neutral-200/50'
-                    ]"
-                >
-                    <Package :class="['w-5 h-5', activeTab === 'equipos' ? 'text-red-600' : 'text-neutral-400']"/>
-                    <span>Equipos ({{ countEquipos }})</span>
-                </button>
-
-                <button
-                    @click="activeTab = 'herramientas'"
-                    :class="[
-                        'flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200',
-                        activeTab === 'herramientas'
-                            ? 'bg-white text-black shadow-md scale-[1.02]'
-                            : 'text-neutral-500 hover:text-black hover:bg-neutral-200/50'
-                    ]"
-                >
-                    <Wrench :class="['w-5 h-5', activeTab === 'herramientas' ? 'text-blue-600' : 'text-neutral-400']"/>
-                    <span>Herramientas ({{ countHerramientas }})</span>
-                </button>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-4 mb-6">
-                <div class="relative w-full md:w-80">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <Search class="absolute left-3 top-3 w-5 h-5 text-neutral-400" />
-                    </span>
-                    <input v-model="searchQuery" type="text" placeholder="Buscar..."
-                        class="pl-10 flex h-10 w-full rounded-md border border-input bg-neutral-50 px-3 py-2 text-sm shadow-sm transition-colors focus:bg-white"
+            <PageHeader
+                title="Gestión de Inventario"
+                description="Administre equipos y herramientas del taller"
+            >
+                <template #action>
+                    <CreateActionButton
+                        type="button" :href="activeTab === 'equipos' ? equipmentRoutes.create.url() : toolRoutes.create.url()"
+                        :label="`Agregar ${activeTab === 'equipos' ? 'Equipo' : 'Herramienta'}`"
                     />
-                    <button v-if="searchQuery" @click="searchQuery = ''"
-                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-black"
-                    >
-                        <XIcon class="w-4 h-4"/>
-                    </button>
-                </div>
+                </template>
+            </PageHeader>
 
-                <select v-if="activeTab === 'equipos'" v-model="selectedStatusEquipo" class="bg-neutral-100 border border-neutral-500 rounded-xl text-sm py-2 px-4 focus:ring-2 focus:ring-black cursor-pointer text-neutral-600 min-w-[180px]">
-                    <option value="">Todos los estados</option>
-                    <option v-for="estado_equipo in props.estados_equipo" :key="estado_equipo" :value="estado_equipo">{{ estado_equipo }}</option>
-                </select>
-                <select v-if="activeTab === 'herramientas'" v-model="selectedStatusHerramienta" class="bg-neutral-100 border border-neutral-500 rounded-xl text-sm py-2 px-4 focus:ring-2 focus:ring-black cursor-pointer text-neutral-600 min-w-[180px]">
-                    <option value="">Todos los estados</option>
-                    <option v-for="estado_herramienta in props.estados_herramienta" :key="estado_herramienta" :value="estado_herramienta">{{ estado_herramienta }}</option>
-                </select>
+            <TabSelector
+                :tabs="inventoryTabs"
+                :activeTab="activeTab"
+                @update:activeTab="val => activeTab = val"
+            />
+
+            <div class="flex flex-col md:flex-row items-center gap-3 mb-4 w-full">
+                <SearchInput v-model="searchQuery" placeholder="Buscar por nombre, marca o QR..." />
+                <SelectFilter v-model="selectedStatus" label="Estados" :options="currentOptions" />
+                <ClearFiltersButton @clear="() => { selectedStatus=''; searchQuery='' }" />
             </div>
+            <InventoryTable
+                :items="filteredItems"
+                :activeTab="activeTab"
+                :openAccessoryId="openAccessoryId"
+                @view="openViewInformacion"
+                @baja="openConfirmBaja"
+                @toggleAccessories="toggleAccessories"
+            />
 
-            <div class="space-y-4">
+            <!--<div class="space-y-4">
                 <div v-if="filteredItems.length === 0" class="text-center py-20 bg-neutral-50 rounded-3xl border-2 border-dashed border-neutral-200">
                     <Package class="w-12 h-12 mx-auto text-neutral-300 mb-4" />
                     <p class="text-neutral-500 font-medium">No se encontraron items con esos criterios.</p>
@@ -386,9 +347,9 @@ const ultimoMantenimiento = computed(() => {
                         </table>
                     </div>
                 </div>
-            </div>
+            </div>-->
 
-
+            <!--
             <div v-if="isConfirmingBaja" class="fixed inset-0 z-50 flex items-center justify-center p-4">
                 <div class="absolute inset-0 bg-neutral-900/40 backdrop-blur-sm" @click="closeConfirmBaja"></div>
 
@@ -422,7 +383,20 @@ const ultimoMantenimiento = computed(() => {
                     </div>
                 </div>
             </div>
+            -->
 
+            <ConfirmDialog
+                :show="isConfirmingBaja"
+                variant="danger"
+                title="¿Confirmar Baja?"
+                message="Estás a punto de dar de baja el siguiente ítem del sistema:"
+                :item-name="itemToBaja?.nombre_equipo || itemToBaja?.nombre_herramienta"
+                confirm-label="Sí, dar de baja"
+                @close="closeConfirmBaja"
+                @confirm="executeBaja"
+            />
+
+            <!--
             <div v-if="viewInformacion" class="fixed inset-0 z-50 flex items-center justify-center p-4">
                 <div class="absolute inset-0 bg-neutral-900/60 backdrop-blur-md no-print" @click="closeViewInformacion"></div>
 
@@ -602,7 +576,14 @@ const ultimoMantenimiento = computed(() => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>-->
+
+            <InventoryDetailModal
+                :show="viewInformacion"
+                :item="itemInformacion"
+                @close="closeViewInformacion"
+                @generate-pdf=""
+            />
         </div>
     </AppLayout>
 </template>

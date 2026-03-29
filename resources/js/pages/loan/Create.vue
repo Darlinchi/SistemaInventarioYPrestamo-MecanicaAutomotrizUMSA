@@ -6,9 +6,10 @@ import InputError from '@/components/InputError.vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import SearchInput from '@/components/shared/SearchInput.vue';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import loanRoutes from '@/routes/loans';
-import { ArrowLeft, Save, Loader2, Cog, Package, Search, ClipboardPen, XCircle, User, Calendar, Clock,
+import { ArrowLeft, Save, Loader2, Cog, Package, Image, Search, ClipboardPen, XCircle, User, Calendar, Clock,
     ClockAlert, CalendarClock, CalendarCheck2, ClipboardCheck, BookMarked } from 'lucide-vue-next';
 
 const props = defineProps<{
@@ -18,10 +19,8 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Nuevo Préstamo',
-        href: loanRoutes.create.url(),
-    },
+    { title: 'Préstamos', href: loanRoutes.index.url() },
+    { title: 'Registrar Préstamo', href: loanRoutes.create.url() },
 ];
 
 const searchTerm = ref('');
@@ -191,6 +190,10 @@ function submit() {
     });
 }
 
+const canSubmit = computed(() => {
+    return form.borrower_id && form.subject_id && form.items.length > 0 && !form.processing;
+});
+
 </script>
 
 <template>
@@ -198,11 +201,11 @@ function submit() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-5xl mx-auto p-4 w-full">
             <div class="flex justify-between items-center mb-6">
-                <Link :href="loanRoutes.index.url()" class="inline-flex items-center text-sm text-neutral-500 hover:text-black transition-colors">
-                    <ArrowLeft class="w-4 h-4 mr-1"/> Volver a préstamos
+                <Link :href="loanRoutes.index.url()" class="inline-flex items-center text-[15px] font-medium text-neutral-500 hover:text-[#1a3a5a] transition-colors group">
+                    <ArrowLeft class="w-5 h-5 mr-1 group-hover:-translate-x-1 transition-transform"/> Volver a préstamos
                 </Link>
-                <button v-if="form.borrower_id || form.subject_id" @click="resetFilters" class="text-[12px] font-black uppercase text-red-500 flex items-center gap-1 hover:text-red-700 transition-colors">
-                    <XCircle class="w-4 h-4"/> Limpiar selección
+                <button v-if="form.borrower_id || form.subject_id" @click="resetFilters" class="text-[15px] font-black uppercase text-red-500 flex items-center gap-1 hover:text-red-700 transition-colors">
+                    <XCircle class="w-5 h-5"/> Reiniciar Formulario
                 </button>
             </div>
 
@@ -210,14 +213,16 @@ function submit() {
                 <div class="lg:col-span-1 space-y-4">
                     <div class="bg-neutral-50 p-6 rounded-3xl border border-neutral-200 space-y-2 shadow-sm">
                         <h3 class="font-bold text-lg border-b border-neutral-200 pb-3 flex items-center text-neutral-800">
-                            <ClipboardPen class="w-5 h-5 mr-2 text-blue-500"/> Información
+                            <ClipboardPen class="w-5 h-5 mr-2 text-[#1a3a5a]"/> Información
                         </h3>
 
                         <!--Logica con el seleccionador -->
-                        <div class="grid gap-2">
-                            <Label for="borrower_id" class="text-[13px] font-black uppercase text-neutral-800 tracking-wider flex items-center gap-1"><User class="w-4 h-4 text-neutral-700" /> Responsable</Label>
+                        <div class="grid gap-2 mt-3">
+                            <Label for="borrower_id" class="text-[13px] font-black uppercase text-neutral-800 tracking-wider flex items-center gap-1">
+                                <User class="w-4 h-4 text-neutral-700" /> Responsable
+                            </Label>
                             <select v-model="form.borrower_id"
-                            class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm">
+                            class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ">
                                 <option value="" disabled>Seleccione un docente/auxiliar</option>
                                 <option v-for="b in filteredBorrowers" :key="b.id" :value="b.id">
                                     {{ b.apellidosP }} {{ b.nombresP }}
@@ -226,8 +231,10 @@ function submit() {
                             <InputError :message="form.errors.borrower_id" />
                         </div>
 
-                        <div class="grid gap-2">
-                            <Label for="subject_id" class="text-[13px] font-black uppercase text-neutral-800 tracking-wider flex items-center gap-1"><BookMarked class="w-4 h-4 text-neutral-700" />Materia</Label>
+                        <div class="grid gap-2 mt-3">
+                            <Label for="subject_id" class="text-[13px] font-black uppercase text-neutral-800 tracking-wider flex items-center gap-1">
+                                <BookMarked class="w-4 h-4 text-neutral-700" />Materia
+                            </Label>
                             <select v-model="form.subject_id" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm disabled:bg-neutral-50">
                                 <option value="" disabled>Seleccione la materia</option>
                                 <option v-for="s in filteredSubjects" :key="s.id" :value="s.id">
@@ -239,53 +246,51 @@ function submit() {
 
                         <div class="grid grid-cols-2 gap-4 ">
                             <div class="space-y-2">
-                                <Label for="fecha_salida" class="flex items-center gap-1 text-[12px] font-black uppercase text-blue-500 tracking-wider">
+                                <Label for="fecha_salida" class="flex items-center gap-1 text-[12px] font-black uppercase text-blue-700 tracking-wider">
                                     <Calendar class="w-4 h-4" />
                                     <span>Fecha Salida</span>
                                 </Label>
-                                <Input v-model="form.fecha_salida" type="date" readonly class="rounded-xl border-neutral-200 bg-neutral-100 h-10 text-xs px-2 cursor-not-allowed w-full" />
+                                <Input v-model="form.fecha_salida" type="date" readonly class="rounded-xl border-neutral-200 bg-neutral-100 h-10 px-2 cursor-not-allowed w-full" />
                                 <InputError :message="form.errors.fecha_salida" />
                             </div>
                             <div class="space-y-2">
-                                <Label for="hora_inicio" class="flex items-center gap-1.5 text-[12px] font-black uppercase text-blue-500 tracking-wider">
+                                <Label for="hora_inicio" class="flex items-center gap-1.5 text-[12px] font-black uppercase text-blue-700 tracking-wider">
                                     <Clock class="w-4 h-4" />
                                     <span>Hora Inicio</span>
                                 </Label>
-                                <Input v-model="form.hora_inicio" type="time" readonly class="rounded-xl border-neutral-200 bg-neutral-100 h-10 text-xs px-2 cursor-not-allowed w-full" />
+                                <Input v-model="form.hora_inicio" type="time" readonly class="rounded-xl border-neutral-200 bg-neutral-100 h-10 px-2 cursor-not-allowed w-full" />
                                 <InputError :message="form.errors.hora_inicio" />
                             </div>
                         </div>
 
-                        <h3 class="text-[13px] font-black uppercase text-neutral-800 tracking-wider flex items-center gap-1">
-                            <CalendarClock class="w-4 h-4 text-neutral-700" /> Retorno (Opcional)
-                        </h3>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-2">
-                                <Label for="fecha_retorno_prevista" class="flex items-center gap-1 text-[12px] font-black uppercase text-orange-500 tracking-wider">
-                                    <CalendarCheck2 class="w-4 h-4" />
+                                <Label for="fecha_retorno_prevista" class="flex items-center gap-1 text-[12px] font-black uppercase text-orange-700 tracking-wider">
+                                    <CalendarClock class="w-4 h-4" />
                                     <span>F. Retorno</span>
                                 </Label>
-                                <Input v-model="form.fecha_retorno_prevista" type="date":min="form.fecha_salida" class="rounded-xl border-neutral-300 h-10 text-xs" />
+                                <Input v-model="form.fecha_retorno_prevista" type="date":min="form.fecha_salida" />
                                 <InputError :message="form.errors.fecha_retorno_prevista" />
                             </div>
                             <div class="space-y-2">
-                                <Label for="hora_fin_prevista" class="flex items-center gap-1.5 text-[12px] font-black uppercase text-orange-500 tracking-wider">
+                                <Label for="hora_fin_prevista" class="flex items-center gap-1.5 text-[12px] font-black uppercase text-orange-700 tracking-wider">
                                     <ClockAlert class="w-4 h-4" />
                                     <span>H. Retorno</span>
                                 </Label>
-                                <Input v-model="form.hora_fin_prevista" type="time":min="form.hora_inicio" class="rounded-xl border-neutral-300 h-10 text-xs" />
+                                <Input v-model="form.hora_fin_prevista" type="time":min="form.hora_inicio"  />
                                 <InputError :message="form.errors.hora_fin_prevista" />
                             </div>
                         </div>
                     </div>
                     <Button type="submit"
-                        class="w-full py-6 text-xl font-black uppercase tracking-widest shadow-xl shadow-blue-100 transition-all active:scale-[0.98]"
-                        :disabled="form.processing || form.items.length === 0">
+                        class="py-6 text-[20px] font-semibold text-white shadow-lg shadow-blue-900/20 transition-all active:scale-95 transition-all w-full"
+                        :disabled="!canSubmit">
+                        <!--:disabled="form.processing || form.items.length === 0">-->
                         <template v-if="form.processing">
                             <Loader2 class="mr-2 h-5 w-5 animate-spin" /> Procesando...
                         </template>
                         <template v-else>
-                            Finalizar Préstamo
+                            Registrar Préstamo
                         </template>
                     </Button>
                 </div>
@@ -294,17 +299,15 @@ function submit() {
                     <div class="bg-white p-6 rounded-3xl border border-neutral-200 shadow-sm min-h-[500px] flex flex-col">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-lg flex items-center">
-                                <Cog class="w-5 h-5 mr-2 text-orange-500"/> Seleccionar Equipos
+                                <Cog class="w-5 h-5 mr-2 text-[#1a3a5a]"/> Seleccionar Equipos
                             </h3>
-                            <span class="text-xs font-bold bg-blue-100 text-blue-600 px-3 py-1 rounded-full">
+                            <span class="inline-block px-2 py-0.5 rounded-md bg-[#1a3a5a]/10 text-[13px] font-black text-[#1a3a5a]">
                                 {{ form.items.length }} seleccionados
                             </span>
                         </div>
 
-                        <div class="relative mb-4">
-                            <Search class="absolute left-3 top-3 w-5 h-5 text-neutral-400" />
-                            <input v-model="searchTerm" type="text" placeholder="Buscar equipo o herramienta disponible..."
-                                class="pl-10 flex h-10 w-full rounded-md border border-input bg-neutral-50 px-3 py-2 text-sm shadow-sm transition-colors focus:bg-white" />
+                        <div class="flex flex-col md:flex-row items-center gap-3 mb-6 w-full">
+                            <SearchInput v-model="searchTerm" placeholder="Buscar equipo o herramienta disponible..." class="flex-1" />
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
@@ -317,7 +320,7 @@ function submit() {
                             >
                                 <div class="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center overflow-hidden border border-neutral-100 shadow-inner">
                                     <img v-if="item.foto" :src="'/storage/' + item.foto" class="object-cover w-full h-full" />
-                                    <Package v-else class="w-6 h-6 text-neutral-300" />
+                                    <Image v-else class="w-6 h-6 text-neutral-300" />
                                 </div>
 
                                 <div class="flex-1">
@@ -325,8 +328,10 @@ function submit() {
                                         {{ item.nombre_mostrar }}
                                     </p>
                                     <span :class="[
-                                        'px-2 py-0.5 rounded-full text-[10px] font-black uppercase border leading-none',
-                                        item.equipment ? 'bg-red-50 text-red-700 border-red-200' : 'bg-blue-50 text-blue-700 border-blue-200'
+                                        'px-2 py-0.5 rounded-full text-[10px] font-black uppercase border leading-none transition-colors',
+                                        item.tipo?.toLowerCase() === 'equipo'
+                                            ? 'bg-red-50 text-red-700 border-red-200'
+                                            : 'bg-blue-50 text-blue-700 border-blue-200'
                                     ]">
                                         {{ item.tipo }}
                                     </span>
@@ -337,7 +342,7 @@ function submit() {
                                 </div>
                             </div>
                         </div>
-                        <InputError :message="form.errors.items" class="mt-2" />
+                        <InputError :message="form.errors.items"/>
                     </div>
                 </div>
             </form>

@@ -24,7 +24,8 @@ class LoanController extends Controller
         $loans = Loan::with([
             'subject',      // Materia
             'user.staff',   // Encargado que entregó
-            'borrower',     // Docente/Auxiliar que recibió
+            'borrower.teacher',    // <--- Esto es lo que falta
+            'borrower.assistant',
             'tools',
             'equipments.accessories',     // Lista de equipos prestados
         ])->orderBy('id', 'desc')->get();
@@ -177,7 +178,7 @@ class LoanController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('loans.index')->with('message', 'Devolución guardada correctamente.');
+            return redirect()->route('loans.index')->with('success', 'Devolución registrada correctamente.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -283,8 +284,7 @@ class LoanController extends Controller
 
             DB::commit();
 
-            return redirect()->route('loans.index')
-                ->with('message', 'Préstamo actualizado y equipos sincronizados correctamente.');
+            return redirect()->route('loans.index')->with('success', 'Préstamo y equipos actualizados correctamente.');
 
         } catch (\Exception $e) {
             DB::rollBack();

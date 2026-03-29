@@ -6,6 +6,7 @@ import InputError from '@/components/InputError.vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import SearchInput from '@/components/shared/SearchInput.vue';
 import { ref, computed } from 'vue';
 import maintenancesRoutes from '@/routes/maintenances';
 import { ArrowLeft, Wrench, Building2, Search, Loader2, Save, ClipboardPen, Check, Package,
@@ -19,10 +20,8 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Registrar Nuevo',
-        href: maintenancesRoutes.create.url(),
-    },
+    { title: 'Mantenimientos', href: maintenancesRoutes.index.url() },
+    { title: 'Registrar Mantenimiento', href: maintenancesRoutes.create.url() },
 ];
 
 // Lógica de fecha y hora local que ya tenías (¡Excelente!)
@@ -88,26 +87,24 @@ const submit = () => {
 
 <template>
     <Head title="Registrar Mantenimiento" />
-
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-5xl mx-auto p-4 w-full">
             <div class="mb-6">
-                <Link :href="maintenancesRoutes.index.url()" class="inline-flex items-center text-sm text-neutral-500 hover:text-black font-medium transition">
-                    <ArrowLeft class="w-4 h-4 mr-1"/> Volver a mantenimientos
+                <Link :href="maintenancesRoutes.index.url()" class="inline-flex items-center text-[15px] font-medium text-neutral-500 hover:text-[#1a3a5a] transition-colors group">
+                    <ArrowLeft class="w-5 h-5 mr-1 group-hover:-translate-x-1 transition-transform"/> Volver a mantenimientos
                 </Link>
-                <h1 class="text-2xl font-black uppercase tracking-tight mt-2">Registrar Mantenimiento Técnico</h1>
             </div>
 
             <form @submit.prevent="submit" class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="md:col-span-1 space-y-4">
                     <div class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-4">
                         <h3 class="font-bold text-lg border-b pb-2 flex items-center">
-                            <ClipboardPen class="w-5 h-5 mr-2 text-blue-500"/> Información
+                            <ClipboardPen class="w-5 h-5 mr-2 text-[#1a3a5a]"/> Información
                         </h3>
 
                         <div class="grid gap-2">
-                            <Label>
-                                <Building2 class="w-4 h-4 text-green-500"/> Empresa Encargada
+                            <Label for="borrower_id" class="text-[13px] font-black uppercase text-neutral-800 tracking-wider flex items-center gap-1">
+                                <Building2 class="w-4 h-4 text-neutral-700" /> Empresa Encargada
                             </Label>
                             <select
                                 v-model="form.maintenance_company_id"
@@ -123,8 +120,8 @@ const submit = () => {
                         </div>
 
                         <div class="grid gap-2">
-                            <Label>
-                                <Wrench class="w-4 h-4 text-amber-500"/> Tipo de Mantenimiento
+                            <Label for="borrower_id" class="text-[13px] font-black uppercase text-neutral-800 tracking-wider flex items-center gap-1">
+                                <Wrench class="w-4 h-4 text-neutral-700" /> Tipo de Mantenimiento
                             </Label>
                             <select v-model="form.tipo_mantenimiento"
                                     :class="['flex h-10 w-full rounded-md border bg-white px-3 py-2 text-sm',
@@ -138,41 +135,38 @@ const submit = () => {
 
                         <div class="grid grid-cols-2 gap-4 ">
                             <div class="space-y-2">
-                                <Label for="fecha_mantenimiento" class="flex items-center gap-1 text-[12px] font-black uppercase text-blue-500 tracking-wider">
+                                <Label for="fecha_mantenimiento" class="flex items-center gap-1 text-[12px] font-black uppercase text-blue-700 tracking-wider">
                                     <Calendar class="w-4 h-4" />
                                     <span>Fecha Salida</span>
                                 </Label>
-                                <Input v-model="form.fecha_mantenimiento" type="date" readonly class="rounded-xl border-neutral-200 bg-neutral-100 h-10 text-xs px-2 cursor-not-allowed w-full" />
+                                <Input v-model="form.fecha_mantenimiento" type="date" readonly />
                                 <InputError :message="form.errors.fecha_mantenimiento" />
                             </div>
                             <div class="space-y-2">
-                                <Label for="hora_inicio" class="flex items-center gap-1.5 text-[12px] font-black uppercase text-blue-500 tracking-wider">
+                                <Label for="hora_inicio" class="flex items-center gap-1.5 text-[12px] font-black uppercase text-blue-700 tracking-wider">
                                     <Clock class="w-4 h-4" />
                                     <span>Hora Inicio</span>
                                 </Label>
-                                <Input v-model="form.hora_inicio" type="time" readonly class="rounded-xl border-neutral-200 bg-neutral-100 h-10 text-xs px-2 cursor-not-allowed w-full" />
+                                <Input v-model="form.hora_inicio" type="time" readonly />
                                 <InputError :message="form.errors.hora_inicio" />
                             </div>
                         </div>
 
-                        <h3 class="text-[13px] font-black uppercase text-neutral-800 tracking-wider flex items-center gap-1">
-                            <CalendarClock class="w-4 h-4 text-neutral-700" /> Retorno (Opcional)
-                        </h3>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-2">
-                                <Label for="fecha_retorno_estimado" class="flex items-center gap-1 text-[12px] font-black uppercase text-orange-500 tracking-wider">
+                                <Label for="fecha_retorno_estimado" class="flex items-center gap-1 text-[12px] font-black uppercase text-orange-700 tracking-wider">
                                     <CalendarCheck2 class="w-4 h-4" />
                                     <span>F. Retorno</span>
                                 </Label>
-                                <Input v-model="form.fecha_retorno_estimado" type="date" class="rounded-xl border-neutral-300 h-10 text-xs" />
+                                <Input v-model="form.fecha_retorno_estimado" type="date" />
                                 <InputError :message="form.errors.fecha_retorno_estimado" />
                             </div>
                             <div class="space-y-2">
-                                <Label for="hora_fin_estimado" class="flex items-center gap-1.5 text-[12px] font-black uppercase text-orange-500 tracking-wider">
+                                <Label for="hora_fin_estimado" class="flex items-center gap-1.5 text-[12px] font-black uppercase text-orange-700 tracking-wider">
                                     <ClockAlert class="w-4 h-4" />
                                     <span>H. Retorno</span>
                                 </Label>
-                                <Input v-model="form.hora_fin_estimado" type="time" class="rounded-xl border-neutral-300 h-10 text-xs" />
+                                <Input v-model="form.hora_fin_estimado" type="time"/>
                                 <InputError :message="form.errors.hora_fin_estimado" />
                             </div>
                         </div>
@@ -207,14 +201,12 @@ const submit = () => {
                     <div class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm flex-1">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-lg flex items-center">
-                                <Wrench class="w-5 h-5 mr-2 text-orange-500"/> Seleccionar Equipo para Mantenimiento
+                                <Wrench class="w-5 h-5 mr-2 text-[#1a3a5a]"/> Seleccionar Equipo para Mantenimiento
                             </h3>
                         </div>
 
-                        <div class="relative mb-4">
-                            <Search class="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
-                            <input v-model="searchTerm" type="text" placeholder="Buscar por nombre, código QR o número de serie..."
-                                class="pl-10 flex h-10 w-full rounded-md border border-input bg-neutral-50 px-3 py-2 text-sm shadow-sm transition-colors focus:bg-white" />
+                        <div class="flex flex-col md:flex-row items-center gap-3 mb-6 w-full">
+                            <SearchInput v-model="searchTerm" placeholder="Buscar por nombre, código QR o número de serie..." class="flex-1" />
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">

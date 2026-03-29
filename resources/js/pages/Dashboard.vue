@@ -5,6 +5,11 @@ import itemRoutes from '@/routes/items';
 import equipmentRoutes from '@/routes/equipments'; // Asegúrate que el nombre coincida con tus archivos de rutas
 import toolRoutes from '@/routes/tools';
 import loanRoutes from '@/routes/loans';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import DashboardStat from '@/components/DashboardStat.vue';
+import PageHeader from '@/components/PageHeader.vue';
+import CreateActionButton from '@/components/CreateActionButton.vue';
+import RecentEquipmentCard from '@/components/RecentEquipmentCard.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import {
@@ -34,6 +39,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: dashboard().url,
     },
 ];
+
 </script>
 
 <template>
@@ -42,6 +48,19 @@ const breadcrumbs: BreadcrumbItem[] = [
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-col gap-8 p-6 bg-neutral-50/40 min-h-screen">
 
+            <PageHeader
+                title="Resumen del Sistema"
+                description="Gestión de inventarios y control de préstamos"
+            >
+                <template #action>
+                    <CreateActionButton
+                        :href="loanRoutes.create.url()"
+                        :label="`Registrar Préstamo`"
+                    />
+                </template>
+            </PageHeader>
+
+            <!--
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-black text-neutral-900 tracking-tight uppercase">Resumen del Sistema</h1>
@@ -52,135 +71,118 @@ const breadcrumbs: BreadcrumbItem[] = [
                         <ClipboardCheck class="w-4 h-4" /> Nuevo Préstamo
                     </Link>
                 </div>
-            </div>
+            </div>-->
 
             <div class="grid gap-6 md:grid-cols-3">
-                <div class="bg-white p-6 rounded-[2.5rem] border border-neutral-200/60 shadow-sm flex items-center justify-between group hover:shadow-xl hover:shadow-blue-500/5 transition-all">
-                    <div>
-                        <p class="text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-1">Equipos en Inventario</p>
-                        <h3 class="text-4xl font-black text-neutral-800">{{ stats.equipos_total }}</h3>
-                    </div>
-                    <div class="p-4 bg-blue-50 rounded-2xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                        <Package class="w-8 h-8" />
-                    </div>
-                </div>
+                <DashboardStat
+                    title="Equipos en Inventario"
+                    :value="stats.equipos_total"
+                    :icon="Package"
+                    colorClass="text-[#1a3a5a] group-hover:bg-[#1a3a5a] group-hover:text-white"
+                    description="Total de activos registrados"
+                />
 
-                <div class="bg-white p-6 rounded-[2.5rem] border border-neutral-200/60 shadow-sm flex items-center justify-between group hover:shadow-xl hover:shadow-green-500/5 transition-all">
-                    <div>
-                        <p class="text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-1">Préstamos Activos</p>
-                        <h3 class="text-4xl font-black text-neutral-800">{{ stats.prestamos_activos }}</h3>
-                    </div>
-                    <div class="p-4 bg-green-50 rounded-2xl text-green-600 group-hover:bg-green-600 group-hover:text-white transition-colors">
-                        <ClipboardCheck class="w-8 h-8" />
-                    </div>
-                </div>
+                <DashboardStat
+                    title="Préstamos Activos"
+                    :value="stats.prestamos_activos"
+                    :icon="ClipboardCheck"
+                    colorClass="text-green-600 group-hover:bg-green-600 group-hover:text-white"
+                    description="Equipos fuera del taller"
+                />
 
-                <div class="bg-white p-6 rounded-[2.5rem] border border-neutral-200/60 shadow-sm flex items-center justify-between group hover:shadow-xl hover:shadow-orange-500/5 transition-all">
-                    <div>
-                        <p class="text-[11px] font-black text-neutral-400 uppercase tracking-widest mb-1">En Mantenimiento</p>
-                        <h3 class="text-4xl font-black text-neutral-800">{{ stats.mantenimientos_pendientes }}</h3>
-                    </div>
-                    <div class="p-4 bg-orange-50 rounded-2xl text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors">
-                        <Wrench class="w-8 h-8" />
-                    </div>
-                </div>
+                <DashboardStat
+                    title="Con Problemas"
+                    :value="stats.mantenimientos_pendientes"
+                    :icon="Wrench"
+                    colorClass="text-[#d90000] group-hover:bg-[#d90000] group-hover:text-white"
+                    description="Requieren mantenimiento"
+                />
             </div>
 
-            <div class="bg-white rounded-[2.5rem] border border-neutral-200/60 shadow-sm overflow-hidden">
-                <div class="p-6 border-b border-neutral-100 flex justify-between items-center">
-                    <h2 class="text-lg font-black text-neutral-800 uppercase tracking-tight flex items-center gap-2">
-                        <History class="w-5 h-5 text-blue-600" /> Últimos Préstamos
-                    </h2>
-                    <Link :href="loanRoutes.index.url()" class="text-xs font-black text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-full transition uppercase tracking-wider">
+            <Card class="rounded-[2.5rem] border-none shadow-sm overflow-hidden bg-white">
+                <CardHeader class="p-6 border-b border-neutral-100 flex flex-row items-center justify-between space-y-0">
+                    <CardTitle class="text-lg font-black uppercase tracking-tight flex items-center gap-2">
+                        <History class="w-5 h-5 text-[#1a3a5a]" /> Últimos Préstamos
+                    </CardTitle>
+                    <Link
+                        :href="loanRoutes.index.url()"
+                        class="text-xs font-black text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-full transition uppercase tracking-wider"
+                    >
                         Ver historial completo
                     </Link>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="bg-neutral-50/50 text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em]">
-                                <th class="p-4 pl-8">Solicitante</th>
-                                <th class="p-4">Materia / Unidad</th>
-                                <th class="p-4">Fecha Salida</th>
-                                <th class="p-4 text-center">Estado</th>
-                                <th class="p-4 pr-8 text-right">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-neutral-100">
-                            <tr v-for="loan in recentLoans" :key="loan.id" class="group hover:bg-neutral-50/50 transition-colors">
-                                <td class="p-4 pl-8">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-[10px] font-bold text-neutral-500 uppercase">
-                                            <template v-if="loan.borrower?.nombresP">
-                                                {{ loan.borrower.apellidosP}} {{ loan.borrower.nombresP}}
-                                            </template>
-                                            <User v-else class="w-4 h-4 text-neutral-300" />
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="p-4 text-sm text-neutral-600 font-medium">
-                                    {{ loan.subject?.nombre_materia || 'Uso General' }}
-                                </td>
-                                <td class="p-4 text-sm text-neutral-600">
-                                    {{ loan.fecha_salida }}
-                                </td>
-                                <td class="p-4 text-center">
-                                    <span :class="[
-                                        'px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter',
-                                        loan.estado_prestamo === 'En Curso' ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-500'
-                                    ]">
-                                        {{ loan.estado_prestamo }}
-                                    </span>
-                                </td>
-                                <td class="p-4 pr-8 text-right">
-                                    <Link :href="loanRoutes.index.url()" class="text-neutral-300 group-hover:text-blue-600 transition-colors">
-                                        <ChevronRight class="w-5 h-5 inline" />
-                                    </Link>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                </CardHeader>
 
-            <div class="flex flex-col gap-4">
+                <CardContent class="p-0">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-neutral-50/50 text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em]">
+                                    <th class="p-4 pl-8">Solicitante</th>
+                                    <th class="p-4">Materia / Unidad</th>
+                                    <th class="p-4">Fecha Salida</th>
+                                    <th class="p-4 text-center">Estado</th>
+                                    <th class="p-4 pr-8 text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-neutral-100">
+                                <tr v-for="loan in recentLoans" :key="loan.id" class="group hover:bg-neutral-50/50 transition-colors">
+                                    <td class="p-4 pl-8">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-[10px] font-bold text-neutral-500 uppercase">
+                                                <template v-if="loan.borrower?.nombresP">
+                                                    {{ loan.borrower.apellidosP[0] }}{{ loan.borrower.nombresP[0] }}
+                                                </template>
+                                                <User v-else class="w-4 h-4 text-neutral-300" />
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-bold text-neutral-800">
+                                                    {{ loan.borrower?.apellidosP }} {{ loan.borrower?.nombresP }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-4 text-sm text-neutral-600 font-medium">
+                                        {{ loan.subject?.nombre_materia || 'Uso General' }}
+                                    </td>
+                                    <td class="p-4 text-sm text-neutral-600">
+                                        {{ loan.fecha_salida }}
+                                    </td>
+                                    <td class="p-4 text-center">
+                                        <span :class="[
+                                            'px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border',
+                                            loan.estado_prestamo === 'Activo'
+                                                ? 'bg-green-50 text-green-700 border-green-100'
+                                                : 'bg-neutral-50 text-neutral-500 border-neutral-100'
+                                        ]">
+                                            {{ loan.estado_prestamo }}
+                                        </span>
+                                    </td>
+                                    <td class="p-4 pr-8 text-right">
+                                        <Link :href="loanRoutes.index.url()" class="text-neutral-300 group-hover:text-blue-600 transition-colors">
+                                            <ChevronRight class="w-5 h-5 inline" />
+                                        </Link>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <div class="flex flex-col gap-6">
                 <div class="flex items-center justify-between px-2">
                     <h2 class="text-lg font-black text-neutral-800 uppercase tracking-tight flex items-center gap-2">
-                        <Package class="w-5 h-5 text-blue-600" /> Equipos Agregados Recientemente
+                        <Package class="w-5 h-5 text-[#1a3a5a]" />
+                        Equipos Agregados Recientemente
                     </h2>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div v-for="equipo in recentEquipments" :key="equipo.id"
-                         class="bg-white rounded-4xl border border-neutral-200/60 p-4 shadow-sm hover:shadow-xl transition-all group overflow-hidden">
-
-                        <div class="aspect-square rounded-3xl bg-neutral-100 mb-4 overflow-hidden relative">
-                            <img v-if="equipo.foto" :src="'/storage/' + equipo.foto"
-                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                            <div v-else class="w-full h-full flex items-center justify-center bg-neutral-50">
-                                <Package class="w-12 h-12 text-neutral-200" />
-                            </div>
-
-                            <div class="absolute top-3 right-3">
-                                <span :class="[
-                                    'px-3 py-1 rounded-xl text-[10px] font-black uppercase shadow-lg',
-                                    equipo.estado_equipo === 'Disponible' ? 'bg-green-500 text-white' : 'bg-orange-500 text-white'
-                                ]">
-                                    {{ equipo.estado_equipo }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="px-2">
-                            <p class="text-[10px] font-black text-blue-500 uppercase tracking-[0.15em] mb-1">{{ equipo.marca || 'S/M' }}</p>
-                            <h3 class="font-bold text-neutral-900 truncate text-base leading-tight">{{ equipo.nombre_equipo }}</h3>
-                            <p class="text-xs text-neutral-400 font-medium mt-1">S/N: {{ equipo.serie || 'No registrado' }}</p>
-                        </div>
-
-                        <Link :href="itemRoutes.index.url()" class="mt-5 w-full py-3 bg-neutral-50 group-hover:bg-black group-hover:text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
-                            Ver Detalles
-                        </Link>
-                    </div>
+                    <RecentEquipmentCard
+                        v-for="equipo in recentEquipments"
+                        :key="equipo.id"
+                        :equipo="equipo"
+                    />
                 </div>
             </div>
         </div>

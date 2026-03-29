@@ -21,7 +21,10 @@ class ItemController extends Controller
     {
         // 1. Obtenemos los equipos con sus relaciones (si aún tienes accesorios)
         // Agregamos un campo virtual 'tipo' para diferenciar en el frontend
-        $equipment = Equipment::with(['accessories', 'maintenances'])
+        $equipment = Equipment::with(['accessories', 'maintenances' => function ($query) {
+            // Ordenamos en la base de datos para que el [0] sea siempre el último
+            $query->latest('id');
+        }])
             ->get()
             ->map(function ($item) {
                 $item->tipo = 'equipo';

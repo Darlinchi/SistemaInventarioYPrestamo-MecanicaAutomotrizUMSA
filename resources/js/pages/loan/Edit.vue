@@ -4,9 +4,9 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
 import { ref, computed } from 'vue';
-import loans from '@/routes/loans';
+import loanRoutes from '@/routes/loans';
 import { ArrowLeft, Loader2, Package, Search, CheckCircle, User, Save, Trash2, Plus, Calendar, Clock,
-    ClockAlert, CalendarCheck2, ClipboardCheck, BookMarked
+    ClockAlert, CalendarCheck2, ClipboardCheck, BookMarked, Image
  } from 'lucide-vue-next';
 
 const props = defineProps<{
@@ -16,10 +16,8 @@ const props = defineProps<{
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Editar Préstamo',
-        href: loans.edit.url(props.loan.id),
-    },
+    { title: 'Préstamos', href: loanRoutes.index.url() },
+    { title: 'Editar Préstamo', href: loanRoutes.create.url() },
 ];
 
 const searchTerm = ref('');
@@ -31,7 +29,6 @@ interface SelectedItem {
 const form = useForm({
     borrower_id: props.loan.borrower_id,
     subject_id: props.loan.subject_id,
-    // Tipamos 'i' como any para silenciar el error 7006
     selected_items: props.loan.all_items.map((i: any): SelectedItem => ({
         id: i.id,
         type: i.es_equipo ? 'App\\Models\\Equipment' : 'App\\Models\\Tool'
@@ -77,10 +74,14 @@ const toggleItemSelection = (item: any) => {
 };
 
 const submit = () => {
-    form.put(loans.update.url(props.loan.id), {
+    form.put(loanRoutes.update.url(props.loan.id), {
         preserveScroll: true,
     });
 };
+
+const canSubmit = computed(() => {
+    return form.borrower_id && form.subject_id && form.selected_items.length > 0 && !form.processing;
+});
 
 </script>
 
@@ -89,8 +90,8 @@ const submit = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-5xl mx-auto p-4 w-full">
             <div class="mb-4">
-                <Link :href="loans.index.url()" class="inline-flex items-center text-sm text-neutral-500 hover:text-black">
-                    <ArrowLeft class="w-4 h-4 mr-1"/> Volver a préstamos
+                <Link :href="loanRoutes.index.url()" class="inline-flex items-center text-[15px] font-medium text-neutral-500 hover:text-[#1a3a5a] transition-colors group">
+                    <ArrowLeft class="w-5 h-5 mr-1 group-hover:-translate-x-1 transition-transform"/> Volver a préstamos
                 </Link>
             </div>
 
@@ -99,7 +100,7 @@ const submit = () => {
                 <div class="lg:col-span-1 space-y-4">
                     <div class="bg-neutral-50 p-6 rounded-3xl border border-neutral-200 space-y-6 shadow-sm">
                         <h3 class="font-bold text-lg border-b pb-2 flex items-center">
-                            <ClipboardCheck class="w-5 h-5 mr-2 text-blue-500"/> Datos del Préstamo
+                            <ClipboardCheck class="w-5 h-5 mr-2 text-[#1a3a5a]"/> Datos del Préstamo
                         </h3>
 
                         <div class="space-y-1">
@@ -154,7 +155,10 @@ const submit = () => {
                         </div>
                     </div>
 
-                    <Button type="submit" class="w-full py-7 text-lg font-black uppercase tracking-widest" :disabled="form.processing || form.selected_items.length === 0">
+                    <Button type="submit"
+                    class="w-full py-6 text-[20px] font-semibold text-white shadow-lg shadow-blue-900/20 transition-all active:scale-95 transition-all w-full"
+                    :disabled="!canSubmit">
+                    <!--:disabled="form.processing || form.selected_items.length === 0">-->
                         <template v-if="form.processing">
                             <Loader2 class="mr-2 h-5 w-5 animate-spin" /> Guardando...
                         </template>
@@ -168,10 +172,10 @@ const submit = () => {
                     <div class="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-neutral-900 flex items-center">
-                                <CheckCircle class="w-5 h-5 mr-2 text-green-500"/> Equipos y Herramientas en el Préstamo
+                                <CheckCircle class="w-5 h-5 mr-2 text-[#1a3a5a]"/> Equipos y Herramientas en el Préstamo
                             </h3>
-                            <span class="text-[10px] font-black bg-green-100 text-green-700 px-3 py-1 rounded-full uppercase">
-                                {{ form.selected_items.length }} Items
+                            <span class="inline-block px-2 py-0.5 rounded-md bg-[#1a3a5a]/10 text-[13px] font-black text-[#1a3a5a]">
+                                {{ form.selected_items.length }} seleccionados
                             </span>
                         </div>
 
@@ -180,12 +184,12 @@ const submit = () => {
                                 class="flex items-center justify-between p-3 bg-blue-50/50 border border-blue-100 rounded-xl group">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded bg-white flex items-center justify-center border border-blue-100">
-                                        <Package class="w-4 h-4 text-blue-500" />
+                                        <Image class="w-4 h-4 text-blue-500" />
                                     </div>
                                     <div class="flex-1">
                                         <p class="text-[14px] font-bold text-neutral-800 leading-tight">{{ item.nombre_mostrar }}</p>
                                         <span :class="[
-                                            'px-2 py-0.5 rounded-full text-[9px] font-black uppercase border leading-none',
+                                            'px-2 py-0.5 rounded-full text-[10px] font-black uppercase border leading-none',
                                             item.es_equipo ? 'bg-red-50 text-red-700 border-red-200' : 'bg-blue-50 text-blue-700 border-blue-200'
                                         ]">
                                             {{ item.es_equipo ? 'Equipo' : 'Herramienta' }}
@@ -219,12 +223,12 @@ const submit = () => {
                             >
                                 <div class="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center overflow-hidden border">
                                     <img v-if="item.foto" :src="'/storage/' + item.foto" class="object-cover w-full h-full" />
-                                    <Package v-else class="w-5 h-5 text-neutral-400" />
+                                    <Image v-else class="w-5 h-5 text-neutral-400" />
                                 </div>
                                 <div class="flex-1">
                                     <p class="text-[15px] font-bold text-neutral-800 leading-tight">{{ item.nombre_mostrar }}</p>
                                     <span :class="[
-                                        'px-2 py-0.5 rounded-full text-[9px] font-black uppercase border leading-none',
+                                        'px-2 py-0.5 rounded-full text-[10px] font-black uppercase border leading-none',
                                         item.es_equipo ? 'bg-red-50 text-red-700 border-red-200' : 'bg-blue-50 text-blue-700 border-blue-200'
                                     ]">
                                         {{ item.es_equipo ? 'Equipo' : 'Herramienta' }}
