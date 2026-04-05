@@ -34,9 +34,15 @@ const emit = defineEmits(['view', 'edit', 'baja', 'toggleAccessories']);
 
                 <td class="p-4 pl-8">
                     <div class="flex items-center gap-4">
-                        <div class="h-14 w-14 rounded-2xl border border-neutral-200 overflow-hidden bg-neutral-50 shrink-0 shadow-sm">
-                            <img v-if="item.foto" :src="'/storage/' + item.foto" class="h-full w-full object-cover" />
-                            <Image v-else class="h-full w-full p-4 text-neutral-300" />
+                        <div class="h-14 w-14 rounded-2xl border border-neutral-200 overflow-hidden bg-neutral-50 shrink-0 shadow-sm flex items-center justify-center">
+                            <img
+                                v-if="item.foto_equipo || item.foto_herramienta || item.foto"
+                                :src="'/storage/' + (item.foto_equipo || item.foto_herramienta || item.foto)"
+                                class="h-full w-full object-cover transition-transform hover:scale-110 duration-300"
+                                alt="Imagen del item"
+                            />
+
+                            <Image v-else class="h-full w-full p-3 text-neutral-300" />
                         </div>
                         <div>
                             <div class="font-bold text-[#1a3a5a] leading-tight">

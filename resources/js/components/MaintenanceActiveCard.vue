@@ -20,8 +20,8 @@ defineEmits(['complete']);
                 <div class="flex gap-4">
                     <div class="w-16 h-16 rounded-2xl bg-white border border-neutral-100 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform overflow-hidden">
                         <img
-                            v-if="maint.equipment.foto"
-                            :src="'/storage/' + maint.equipment.foto"
+                            v-if="maint.equipment.foto_equipo"
+                            :src="'/storage/' + maint.equipment.foto_equipo"
                             class="w-full h-full object-cover"
                             alt="Foto del equipo"
                         />

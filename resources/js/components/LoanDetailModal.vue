@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import StatusBadge from '@/components/shared/StatusBadge.vue';
 import {
-    XIcon, NotebookText, User, BookMarked, CalendarClock,
+    XIcon, NotebookText, User, BookMarked, CalendarClock, ClockAlert, CalendarCheck, History,
     Calendar, Clock, Package, Image, CornerDownRight,
     AlignLeft, Printer
 } from 'lucide-vue-next';
@@ -98,7 +98,7 @@ const imprimirReporte = () => window.print();
                             <span class="text-[13px] font-bold text-orange-700 uppercase tracking-tighter">Retorno (Previsto)</span>
                             <div class="flex items-center gap-3">
                                 <div class="p-2 bg-white rounded-lg shadow-sm">
-                                    <Calendar class="w-4 h-4 text-orange-700" />
+                                    <CalendarClock class="w-4 h-4 text-orange-700" />
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-orange-700 uppercase tracking-widest leading-none mb-1">Fecha Limite</p>
@@ -107,7 +107,7 @@ const imprimirReporte = () => window.print();
                             </div>
                             <div class="flex items-center gap-3">
                                 <div class="p-2 bg-white rounded-lg shadow-sm">
-                                    <Clock class="w-4 h-4 text-orange-700" />
+                                    <ClockAlert class="w-4 h-4 text-orange-700" />
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-orange-700 uppercase tracking-widest leading-none mb-1">Hora Fin</p>
@@ -120,7 +120,7 @@ const imprimirReporte = () => window.print();
                             <span class="text-[13px] font-bold text-green-600 uppercase tracking-tighter">Retorno Real</span>
                             <div class="flex items-center gap-3">
                                 <div class="p-2 bg-white rounded-lg shadow-sm">
-                                    <Calendar class="w-4 h-4 text-green-600" />
+                                    <CalendarCheck class="w-4 h-4 text-green-600" />
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-green-500 uppercase tracking-widest leading-none mb-1">Fecha Retorno</p>
@@ -129,7 +129,7 @@ const imprimirReporte = () => window.print();
                             </div>
                             <div class="flex items-center gap-3">
                                 <div class="p-2 bg-white rounded-lg shadow-sm">
-                                    <Clock class="w-4 h-4 text-green-600" />
+                                    <History class="w-4 h-4 text-green-600" />
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-green-500 uppercase tracking-widest leading-none mb-1">Hora Entrada</p>
@@ -150,7 +150,7 @@ const imprimirReporte = () => window.print();
 
                         <div class="flex items-center justify-between p-4">
                             <div class="flex items-center gap-4">
-                                <div class="w-14 h-14 rounded-xl bg-neutral-50 flex items-center justify-center overflow-hidden border border-neutral-100 shrink-0 shadow-inner">
+                                <div class="w-15 h-15 rounded-xl bg-neutral-50 flex items-center justify-center overflow-hidden border border-neutral-100 shrink-0 shadow-inner">
                                     <img v-if="item.foto" :src="'/storage/' + item.foto" class="object-cover w-full h-full" />
                                     <Image v-else class="w-7 h-7 text-neutral-300" />
                                 </div>
@@ -188,7 +188,16 @@ const imprimirReporte = () => window.print();
 
                                     class="flex items-center justify-between bg-white px-3 py-1.5 rounded-lg border border-neutral-200/60 shadow-sm">
                                     <span class="text-[13px] font-medium text-neutral-800 flex items-center gap-1">
-                                        <CornerDownRight class="w-4 h-4 text-blue-400"/>  {{ acc.nombre_accesorio }}
+                                        <CornerDownRight class="w-4 h-4 text-blue-400"/>
+                                        <div class="w-15 h-15 rounded-lg bg-neutral-50 flex items-center justify-center overflow-hidden border border-neutral-100 shrink-0">
+                                            <img
+                                                v-if="acc.foto_accesorio"
+                                                :src="'/storage/' + acc.foto_accesorio"
+                                                class="object-cover w-full h-full"
+                                            />
+                                            <Image v-else class="w-3.5 h-3.5 text-neutral-300" />
+                                        </div>
+                                        {{ acc.nombre_accesorio }}
                                     </span>
                                     <StatusBadge :status="acc.estado_accesorio" />
                                 </div>

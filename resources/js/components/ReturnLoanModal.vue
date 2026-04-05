@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-    XIcon, NotebookPen, User, BookMarked, CalendarClock, Calendar, CalendarCheck2, ClockAlert,
+    XIcon, NotebookPen, User, BookMarked, CalendarClock, Calendar, CalendarCheck2, ClockAlert, History,
     Clock, Package, CornerDownRight, AlignLeft, Loader2, Image
 } from 'lucide-vue-next';
 import { Label } from '@/components/ui/label';
@@ -16,6 +16,16 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['close', 'confirm']);
+
+const handleAccessoryStatusChange = (itemIndex: number, accIndex: number) => {
+    const accessory = props.form.items[itemIndex].accessories[accIndex];
+
+    // Si el accesorio se marca como extraviado
+    if (accessory.estado_accesorio === 'Extraviado') {
+        // Cambiamos el estado del equipo padre a "Incompleto"
+        props.form.items[itemIndex].estado_devolucion = 'Incompleto';
+    }
+};
 
 </script>
 
@@ -96,7 +106,7 @@ const emit = defineEmits(['close', 'confirm']);
                             <span class="text-[13px] font-bold text-orange-700 uppercase tracking-tighter">Retorno (Opcional)</span>
                             <div class="flex items-center gap-3">
                                 <div class="p-2 bg-white rounded-lg shadow-sm">
-                                    <Calendar class="w-4 h-4 text-orange-700" />
+                                    <CalendarClock class="w-4 h-4 text-orange-700" />
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-orange-700 uppercase tracking-widest leading-none mb-1">Fecha Limite</p>
@@ -105,7 +115,7 @@ const emit = defineEmits(['close', 'confirm']);
                             </div>
                             <div class="flex items-center gap-3">
                                 <div class="p-2 bg-white rounded-lg shadow-sm">
-                                    <Clock class="w-4 h-4 text-orange-700" />
+                                    <ClockAlert class="w-4 h-4 text-orange-700" />
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-orange-700 uppercase tracking-widest leading-none mb-1">Hora Fin</p>
@@ -128,7 +138,7 @@ const emit = defineEmits(['close', 'confirm']);
                             </div>
                             <div class="flex items-center gap-3">
                                 <div class="p-2 bg-white rounded-lg shadow-sm">
-                                    <ClockAlert class="w-4 h-4 text-green-700" />
+                                    <History class="w-4 h-4 text-green-700" />
                                 </div>
                                 <div>
                                     <Label for="hora_fin" class="text-[11px] font-black text-green-700 uppercase tracking-widest leading-none mb-1">Hora Entrada</Label>
@@ -148,8 +158,12 @@ const emit = defineEmits(['close', 'confirm']);
                     <div v-for="(item, index) in form.items" :key="item.id" class="border border-neutral-200 bg-neutral-50 rounded-3xl overflow-hidden shadow-sm">
                         <div class="flex items-center justify-between p-4 bg-white">
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center overflow-hidden border border-neutral-100 shadow-inner">
-                                    <img v-if="item.foto" :src="'/storage/' + item.foto" class="object-cover w-full h-full" />
+                                <div class="w-15 h-15 rounded-xl bg-neutral-100 flex items-center justify-center overflow-hidden border border-neutral-100 shadow-inner shrink-0">
+                                    <img
+                                        v-if="item.foto_equipo || item.foto_herramienta || item.foto"
+                                        :src="'/storage/' + (item.foto_equipo || item.foto_herramienta || item.foto)"
+                                        class="object-cover w-full h-full"
+                                    />
                                     <Image v-else class="w-6 h-6 text-neutral-300" />
                                 </div>
 
@@ -183,9 +197,19 @@ const emit = defineEmits(['close', 'confirm']);
                                 <div v-for="(acc, accIndex) in item.accessories" :key="acc.id"
                                     class="flex items-center justify-between bg-white p-2.5 rounded-xl border border-neutral-200/60 shadow-sm">
                                     <span class="text-[13px] font-semibold text-neutral-800 flex items-center gap-1">
-                                        <CornerDownRight class="w-4 h-4 text-blue-400"/> {{ acc.nombre_accesorio }}
+                                        <CornerDownRight class="w-4 h-4 text-blue-400"/>
+                                        <div class="w-15 h-15 rounded-lg bg-neutral-50 flex items-center justify-center overflow-hidden border border-neutral-100 shrink-0">
+                                            <img
+                                                v-if="acc.foto_accesorio"
+                                                :src="'/storage/' + acc.foto_accesorio"
+                                                class="object-cover w-full h-full"
+                                            />
+                                            <Image v-else class="w-3.5 h-3.5 text-neutral-300" />
+                                        </div>
+                                        {{ acc.nombre_accesorio }}
                                     </span>
                                     <select v-model="form.items[index].accessories[accIndex].estado_accesorio"
+                                        @change="handleAccessoryStatusChange(Number(index), Number(accIndex))"
                                         class="text-[13px] py-1 px-2 border-neutral-100 rounded-lg bg-neutral-50 font-bold focus:ring-black outline-none">
                                         <option value="Bueno">Bueno</option>
                                         <option value="Dañado">Dañado</option>

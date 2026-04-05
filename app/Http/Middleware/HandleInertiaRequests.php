@@ -5,6 +5,8 @@ namespace App\Http\Middleware;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use App\Models\Loan;
+use Carbon\Carbon;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -60,5 +62,20 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
-    }
+
+        $now = Carbon::now();
+
+        return array_merge(parent::share($request), [
+            'notifications' => [
+                'vencidos_count' => Loan::where('estado_prestamo', '!=', 'Devuelto')
+                    ->where(function ($query) use ($now) {
+                        $query->where('fecha_retorno_prevista', '<', $now->toDateString())
+                            ->orWhere(function ($q) use ($now) {
+                                $q->where('fecha_retorno_prevista', '=', $now->toDateString())
+                                    ->where('hora_fin_prevista', '<', $now->toTimeString());
+                            });
+                    })->count(),
+            ],
+        ]);
+        }
 }

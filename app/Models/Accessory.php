@@ -7,9 +7,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Accessory extends Model
 {
-    protected $fillable = ['equipment_id', 'nombre_accesorio', 'estado_accesorio'];
+    protected $fillable = [
+        'equipment_id',
+        'nombre_accesorio',
+        'foto_accesorio',
+        'estado_accesorio',
+    ];
 
-    public function equipment(): BelongsTo
+    public function equipment()
     {
         return $this->belongsTo(Equipment::class);
     }

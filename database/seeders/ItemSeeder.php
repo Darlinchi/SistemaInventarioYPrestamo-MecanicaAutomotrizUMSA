@@ -5,14 +5,13 @@ namespace Database\Seeders;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Seeder;
 use App\Models\Equipment;
-use App\Models\Accessory;
 use App\Models\Tool;
 
 class ItemSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Limpieza de tablas para evitar duplicados
+        // 1. Limpieza de seguridad para evitar errores de duplicados
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('accessories')->truncate();
         DB::table('equipment')->truncate();
@@ -21,127 +20,59 @@ class ItemSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | 1. MOTOR (EQUIPMENT)
+        | 2. HERRAMIENTAS (Tools) - 10 Registros
         |--------------------------------------------------------------------------
         */
-        $motor = Equipment::create([
-            'codigo_qr'          => 'QR-MOTOR-2JZ-001',
-            'nombre_equipo'      => 'Motor Toyota 2JZ-GE',
-            'foto'               => null,
-            'ubicacion_equipo'   => 'Taller Mecánico - Zona Motores',
-            'descripcion_equipo' => 'Motor de práctica para medición.',
-            'observacion_equipo' => null,
-            'estado_equipo'      => 'Disponible',
-            'color'              => 'Plateado',
-            'marca'              => 'Toyota',
-            'modelo'             => '2JZ-GE',
-            'serie'              => 'MOT-' . rand(10000, 99999),
-            'rubro'              => 'Motor',
-            'fecha_adquisicion'  => '2023-05-10',
-        ]);
-
-        // Accesorios del Motor
-        $motor->accessories()->createMany([
-            [
-                'nombre_accesorio' => 'Arnés de sensores',
-                'estado_accesorio' => 'Bueno',
-            ],
-            [
-                'nombre_accesorio' => 'ECU original',
-                'estado_accesorio' => 'Dañado',
-            ],
+        DB::table('tools')->insert([
+            ['codigo_qr' => 'HER-001', 'nombre_herramienta' => 'Juego de llaves combinadas', 'ubicacion_herramienta' => 'Estante A-1', 'marca_modelo' => 'Snap-on / SO-12', 'cantidad_piezas' => 12, 'estado_herramienta' => 'Disponible', 'descripcion_herramienta' => '8mm a 19mm cromadas.', 'created_at' => now()],
+            ['codigo_qr' => 'HER-002', 'nombre_herramienta' => 'Torquímetro de Click 1/2', 'ubicacion_herramienta' => 'Gaveta Precisión', 'marca_modelo' => 'Truper / TORQ-12', 'cantidad_piezas' => 1, 'estado_herramienta' => 'Disponible', 'descripcion_herramienta' => 'Rango 20-150 lb-ft.', 'created_at' => now()],
+            ['codigo_qr' => 'HER-003', 'nombre_herramienta' => 'Alicate de presión 10"', 'ubicacion_herramienta' => 'Estante A-2', 'marca_modelo' => 'Vise-Grip', 'cantidad_piezas' => 1, 'estado_herramienta' => 'Prestado', 'descripcion_herramienta' => 'Mordaza curva ajustable.', 'created_at' => now()],
+            ['codigo_qr' => 'HER-004', 'nombre_herramienta' => 'Destornillador de impacto', 'ubicacion_herramienta' => 'Estante B-1', 'marca_modelo' => 'Stanley / ST-90', 'cantidad_piezas' => 6, 'estado_herramienta' => 'Disponible', 'descripcion_herramienta' => 'Puntas planas y phillips.', 'created_at' => now()],
+            ['codigo_qr' => 'HER-005', 'nombre_herramienta' => 'Multímetro Automotriz', 'ubicacion_herramienta' => 'Lab. Eléctrico', 'marca_modelo' => 'Fluke / 88V', 'cantidad_piezas' => 1, 'estado_herramienta' => 'Disponible', 'descripcion_herramienta' => 'Medición de RPM y Dwell.', 'created_at' => now()],
+            ['codigo_qr' => 'HER-006', 'nombre_herramienta' => 'Extractor de poleas 3 quijadas', 'ubicacion_herramienta' => 'Estante C-3', 'marca_modelo' => 'Urrea / EX-33', 'cantidad_piezas' => 1, 'estado_herramienta' => 'Dañado', 'descripcion_herramienta' => 'Tornillo central con rosca barrida.', 'created_at' => now()],
+            ['codigo_qr' => 'HER-007', 'nombre_herramienta' => 'Juego de dados Encastre 1/2', 'ubicacion_herramienta' => 'Caja Móvil 1', 'marca_modelo' => 'Bahco / S240', 'cantidad_piezas' => 24, 'estado_herramienta' => 'Disponible', 'descripcion_herramienta' => 'Dados hexagonales cortos.', 'created_at' => now()],
+            ['codigo_qr' => 'HER-008', 'nombre_herramienta' => 'Pistola Neumática 1/2', 'ubicacion_herramienta' => 'Área Neumática', 'marca_modelo' => 'Ingersoll Rand', 'cantidad_piezas' => 1, 'estado_herramienta' => 'Disponible', 'descripcion_herramienta' => '600 Nm de torque máximo.', 'created_at' => now()],
+            ['codigo_qr' => 'HER-009', 'nombre_herramienta' => 'Calibrador de láminas', 'ubicacion_herramienta' => 'Gaveta Precisión', 'marca_modelo' => 'Mitutoyo', 'cantidad_piezas' => 1, 'estado_herramienta' => 'Disponible', 'descripcion_herramienta' => 'Ajuste de punterías.', 'created_at' => now()],
+            ['codigo_qr' => 'HER-010', 'nombre_herramienta' => 'Compresímetro de Motor', 'ubicacion_herramienta' => 'Estante B-2', 'marca_modelo' => 'OTC / 5020', 'cantidad_piezas' => 1, 'estado_herramienta' => 'Disponible', 'descripcion_herramienta' => 'Adaptadores para bujías.', 'created_at' => now()],
         ]);
 
         /*
         |--------------------------------------------------------------------------
-        | 2. JUEGO DE LLAVES (TOOL)
+        | 3. EQUIPOS (Equipment) - 10 Registros con Accesorios
         |--------------------------------------------------------------------------
         */
-        Tool::create([
-            'codigo_qr'               => null,
-            'nombre_herramienta'      => 'Juego de Llaves Mixtas',
-            'foto'                    => null,
-            'ubicacion_herramienta'   => 'Caja Herramientas',
-            'descripcion_herramienta' => 'Set 8mm - 22mm marca Truper',
-            'observacion_herramienta' => null,
-            'marca_modelo'            => 'Truper',
-            'estado_herramienta'      => 'Disponible',
-        ]);
+        $equipos = [
+            ['qr' => 'EQ-001', 'nom' => 'Escáner Launch X431', 'ubi' => 'Gabinete Técnico', 'est' => 'Disponible', 'mar' => 'Launch', 'mod' => 'PRO V', 'rub' => 'Diagnóstico'],
+            ['qr' => 'EQ-002', 'nom' => 'Analizador de Gases', 'ubi' => 'Área Emisiones', 'est' => 'Mantenimiento', 'mar' => 'Bosch', 'mod' => 'BEA 050', 'rub' => 'Diagnóstico'],
+            ['qr' => 'EQ-003', 'nom' => 'Elevador de 2 Columnas', 'ubi' => 'Bahía 1', 'est' => 'Disponible', 'mar' => 'Rotary', 'mod' => 'SPOA10', 'rub' => 'Elevación'],
+            ['qr' => 'EQ-004', 'nom' => 'Osciloscopio Automotriz', 'ubi' => 'Lab. Eléctrico', 'est' => 'Disponible', 'mar' => 'Hantek', 'mod' => 'DSO5102', 'rub' => 'Medición'],
+            ['qr' => 'EQ-005', 'nom' => 'Alineadora de Dirección 3D', 'ubi' => 'Fosa 1', 'est' => 'Disponible', 'mar' => 'John Bean', 'mod' => 'V2200', 'rub' => 'Dirección'],
+            ['qr' => 'EQ-006', 'nom' => 'Compresor de Aire 20HP', 'ubi' => 'Cuarto Máquinas', 'est' => 'Disponible', 'mar' => 'Schulz', 'mod' => 'MSV 20', 'rub' => 'Neumática'],
+            ['qr' => 'EQ-007', 'nom' => 'Banco de Inyectores', 'ubi' => 'Lab. Inyección', 'est' => 'Disponible', 'mar' => 'Launch', 'mod' => 'CNC-602A', 'rub' => 'Inyección'],
+            ['qr' => 'EQ-008', 'nom' => 'Rectificadora de Discos', 'ubi' => 'Zona Frenos', 'est' => 'Dañado', 'mar' => 'Ammco', 'mod' => '4000B', 'rub' => 'Frenos'],
+            ['qr' => 'EQ-009', 'nom' => 'Cargador de Baterías Pro', 'ubi' => 'Zona Carga', 'est' => 'Incompleto', 'mar' => 'Schumacher', 'mod' => 'INC-700', 'rub' => 'Electrónica'],
+            ['qr' => 'EQ-010', 'nom' => 'Motor Toyota 2JZ (Práctica)', 'ubi' => 'Zona Motores', 'est' => 'Disponible', 'mar' => 'Toyota', 'mod' => '2JZ-GE', 'rub' => 'Motores'],
+        ];
 
-        /*
-        |--------------------------------------------------------------------------
-        | 3. ESCÁNER AUTOMOTRIZ (EQUIPMENT)
-        |--------------------------------------------------------------------------
-        */
-        $scanner = Equipment::create([
-            'codigo_qr'          => 'QR-SCAN-X431-002',
-            'nombre_equipo'      => 'Escáner Launch X431',
-            'foto'               => null,
-            'ubicacion_equipo'   => 'Laboratorio Electrónica',
-            'descripcion_equipo' => 'Escáner profesional multimarca.',
-            'observacion_equipo' => null,
-            'estado_equipo'      => 'Disponible',
-            'color'              => 'Rojo/Negro',
-            'marca'              => 'Launch',
-            'modelo'             => 'X431 PRO',
-            'serie'              => 'SN-' . rand(10000, 99999),
-            'rubro'              => 'Scanner',
-            'fecha_adquisicion'  => '2024-02-18',
-        ]);
+        foreach ($equipos as $e) {
+            $eq = Equipment::create([
+                'codigo_qr' => $e['qr'],
+                'nombre_equipo' => $e['nom'],
+                'ubicacion_equipo' => $e['ubi'],
+                'estado_equipo' => $e['est'],
+                'marca' => $e['mar'],
+                'modelo' => $e['mod'],
+                'rubro' => $e['rub'],
+                'serie' => 'SN-' . rand(100000, 999999),
+                'fecha_adquisicion' => now()->subMonths(rand(12, 48)),
+                'color' => 'Gris Institucional',
+            ]);
 
-        // Accesorios del Escáner
-        $scanner->accessories()->createMany([
-            [
-                'nombre_accesorio' => 'Cable OBDII',
-                'estado_accesorio' => 'Bueno',
-            ],
-            [
-                'nombre_accesorio' => 'Cargador',
-                'estado_accesorio' => 'Bueno',
-            ],
-        ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | 4. MULTÍMETRO (EQUIPMENT)
-        |--------------------------------------------------------------------------
-        */
-        $multimetro = Equipment::create([
-            'codigo_qr'          => 'QR-MULT-550',
-            'nombre_equipo'      => 'Multímetro Digital',
-            'foto'               => null,
-            'ubicacion_equipo'   => 'Laboratorio Electricidad',
-            'descripcion_equipo' => 'Multímetro profesional.',
-            'observacion_equipo' => null,
-            'estado_equipo'      => 'Disponible',
-            'color'              => 'Amarillo',
-            'marca'              => 'Fluke',
-            'modelo'             => '88V',
-            'serie'              => 'FLK-' . rand(10000, 99999),
-            'rubro'              => 'Electrónica',
-            'fecha_adquisicion'  => '2024-01-15',
-        ]);
-
-        // Accesorios del Multímetro
-        $multimetro->accessories()->create([
-            'nombre_accesorio' => 'Puntas de prueba',
-            'estado_accesorio' => 'Bueno',
-        ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | 5. CALIBRADOR VERNIER (TOOL)
-        |--------------------------------------------------------------------------
-        */
-        Tool::create([
-            'codigo_qr'               => null,
-            'nombre_herramienta'      => 'Calibrador Vernier Digital',
-            'foto'                    => null,
-            'ubicacion_herramienta'   => 'Caja Instrumentos',
-            'descripcion_herramienta' => 'Rango 0-150mm',
-            'observacion_herramienta' => null,
-            'marca_modelo'            => 'Mitutoyo 150mm',
-            'estado_herramienta'      => 'Disponible',
-        ]);
+            // Generar 2 accesorios por cada equipo
+            $eq->accessories()->createMany([
+                ['nombre_accesorio' => 'Manual Técnico Original', 'estado_accesorio' => 'Bueno'],
+                ['nombre_accesorio' => 'Cable de Alimentación / Conexión', 'estado_accesorio' => 'Bueno'],
+            ]);
+        }
     }
 }

@@ -18,7 +18,7 @@ class Equipment extends Model
 
     // Campos que se pueden llenar
     protected $fillable = [
-        'codigo_qr', 'nombre_equipo', 'foto', 'ubicacion_equipo',
+        'codigo_qr', 'nombre_equipo', 'foto_equipo', 'ubicacion_equipo',
         'descripcion_equipo', 'observacion_equipo', 'estado_equipo',
         'color', 'marca', 'modelo', 'serie', 'rubro', 'fecha_adquisicion'
     ];

@@ -53,7 +53,8 @@ class Loan extends Model
                 'id' => $item->id,
                 'nombre_mostrar' => $item->nombre_equipo, // Ajusta al nombre real de tu columna
                 'codigo_qr' => $item->codigo_qr,
-                'foto' => $item->foto,
+                'foto_equipo' => $item->foto_equipo, // <-- CRÍTICO: Asegúrate de que esté aquí
+                'foto' => $item->foto_equipo,
                 'tipo_personalizado' => 'Equipo',
                 'es_equipo' => true,
                 'accessories' => $item->accessories, // Por si los necesitas
@@ -65,7 +66,8 @@ class Loan extends Model
             return [
                 'id' => $item->id,
                 'nombre_mostrar' => $item->nombre_herramienta, // Ajusta al nombre real de tu columna
-                'foto' => $item->foto,
+                'foto_herramienta' => $item->foto_herramienta, // <-- CRÍTICO
+                'foto' => $item->foto_herramienta,
                 'codigo_qr' => $item->codigo_qr,
                 'tipo_personalizado' => 'Herramienta',
                 'es_equipo' => false,

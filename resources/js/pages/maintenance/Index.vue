@@ -24,6 +24,7 @@ import { Package } from 'lucide-vue-next';
 interface Maintenance {
     id: number;
     fecha_mantenimiento: string;
+    fecha_proximo_mantenimiento?: string;
     fecha_retorno?: string;
     fecha_retorno_estimado?: string ;
     estado_mantenimiento: string;
@@ -168,10 +169,25 @@ const currentTime = ref(new Date().toLocaleTimeString('es-BO', {
 }));
 // --- FORMULARIO DE FINALIZACIÓN ---
 const returnForm = useForm({
+    fecha_proximo_mantenimiento: new Date().toISOString().split('T')[0],
     fecha_retorno: new Date().toISOString().split('T')[0],
     hora_fin: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
-    estado_equipo: 'Disponible',
+    estado_equipo: 'Reparado',
     observacion: '',
+});
+
+// Observador para calcular automáticamente 1 año después
+watch(() => returnForm.fecha_retorno, (newDate) => {
+    if (newDate) {
+        const date = new Date(newDate);
+        // Sumamos un año
+        date.setFullYear(date.getFullYear() + 1);
+
+        // Formateamos a YYYY-MM-DD para el input date
+        const nextYear = date.toISOString().split('T')[0];
+
+        returnForm.fecha_proximo_mantenimiento = nextYear;
+    }
 });
 
 // Funcion para abrir el modal (preguntar si le gustaria si un accesorio esta mal el equipo completo marcarse como dañado)
@@ -179,9 +195,17 @@ const returnForm = useForm({
 const openReturnModal = (maint: any) => {
     selectedMaint.value = maint;
     const now = new Date();
-    returnForm.fecha_retorno = now.toISOString().split('T')[0];
+    const today = now.toISOString().split('T')[0];
+
+    // Calculamos el año siguiente para el valor inicial
+    const nextYearDate = new Date();
+    nextYearDate.setFullYear(nextYearDate.getFullYear() + 1);
+    const nextYear = nextYearDate.toISOString().split('T')[0];
+
+    returnForm.fecha_retorno = today;
+    returnForm.fecha_proximo_mantenimiento = nextYear;
     returnForm.hora_fin = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-    returnForm.estado_equipo = 'Disponible';
+    returnForm.estado_equipo = 'Reparado';
     returnForm.observacion = '';
     isReturnModalOpen.value = true;
 };

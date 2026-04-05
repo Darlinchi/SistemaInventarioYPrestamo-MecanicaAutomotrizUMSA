@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import itemRoutes from '@/routes/items';
 import { Link } from '@inertiajs/vue3';
 import { Image } from 'lucide-vue-next';
 import { Card, CardContent } from '@/components/ui/card';
+import StatusBadge from '@/components/shared/StatusBadge.vue';
+import itemRoutes from '@/routes/items';
 
 defineProps<{
     equipo: {
@@ -10,7 +11,7 @@ defineProps<{
         nombre_equipo: string;
         marca?: string;
         serie?: string;
-        foto?: string;
+        foto_equipo?: string;
         estado_equipo: string;
     }
 }>();
@@ -21,21 +22,14 @@ defineProps<{
     <Card class="rounded-4xl border border-neutral-200/60 p-4 shadow-sm hover:shadow-xl transition-all group overflow-hidden bg-white">
         <CardContent class="p-0 flex flex-col h-full">
             <div class="aspect-square rounded-3xl bg-neutral-100 mb-4 overflow-hidden relative">
-                <img v-if="equipo.foto" :src="'/storage/' + equipo.foto"
+                <img v-if="equipo.foto_equipo" :src="'/storage/' + equipo.foto_equipo"
                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 <div v-else class="w-full h-full flex items-center justify-center bg-neutral-50">
                     <Image class="w-12 h-12 text-neutral-200" />
                 </div>
 
                 <div class="absolute top-3 right-3">
-                    <span :class="[
-                        'px-3 py-1 rounded-xl text-[10px] font-black uppercase shadow-lg border',
-                        equipo.estado_equipo === 'Disponible'
-                            ? 'bg-green-500 text-white border-green-400'
-                            : 'bg-orange-500 text-white border-orange-400'
-                    ]">
-                        {{ equipo.estado_equipo }}
-                    </span>
+                    <StatusBadge :status="equipo.estado_equipo" class="text-[11px]"/>
                 </div>
             </div>
 

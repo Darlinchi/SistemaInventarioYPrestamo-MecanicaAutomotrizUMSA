@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import StatusBadge from '@/components/shared/StatusBadge.vue';
 import {
-    XIcon, ClipboardList, Package, Building2, Wrench,
+    XIcon, ClipboardList, Package, Building2, Wrench, CalendarCheck, ClockAlert, History,
     CalendarClock, Calendar, Clock, AlignLeft, Printer, Image
 } from 'lucide-vue-next';
 
@@ -40,11 +40,11 @@ const emit = defineEmits(['close']);
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-neutral-50 rounded-3xl border border-neutral-200 shadow-sm">
                     <div class="space-y-1">
                         <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
-                            <Package class="w-4 h-4" /> Información del Equipo
+                            <Cog class="w-4 h-4" /> Información del Equipo
                         </p>
                         <div class="flex items-center gap-4">
                             <div class="w-16 h-16 rounded-2xl bg-neutral-50 flex items-center justify-center overflow-hidden border border-neutral-100 shrink-0 shadow-inner">
-                                <img v-if="maint?.equipment.foto" :src="'/storage/' + maint.equipment.foto" class="w-full h-full object-cover" />
+                                <img v-if="maint?.equipment.foto_equipo" :src="'/storage/' + maint.equipment.foto_equipo" class="w-full h-full object-cover" />
                                 <Image v-else class="w-7 h-7 text-neutral-200" />
                             </div>
                             <div class="min-w-0">
@@ -100,7 +100,7 @@ const emit = defineEmits(['close']);
                             <span class="text-[13px] font-bold text-orange-700 uppercase tracking-tighter">Retorno (Opcional)</span>
                             <div class="flex items-center gap-3">
                                 <div class="p-2 bg-white rounded-lg shadow-sm">
-                                    <Calendar class="w-4 h-4 text-orange-700" />
+                                    <CalendarClock class="w-4 h-4 text-orange-700" />
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-orange-700 uppercase tracking-widest leading-none mb-1">Fecha Limite</p>
@@ -109,7 +109,7 @@ const emit = defineEmits(['close']);
                             </div>
                             <div class="flex items-center gap-3">
                                 <div class="p-2 bg-white rounded-lg shadow-sm">
-                                    <Clock class="w-4 h-4 text-orange-700" />
+                                    <ClockAlert class="w-4 h-4 text-orange-700" />
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-orange-700 uppercase tracking-widest leading-none mb-1">Hora Fin</p>
@@ -122,7 +122,7 @@ const emit = defineEmits(['close']);
                             <span class="text-[13px] font-bold text-green-700 uppercase tracking-tighter">Retorno Real</span>
                             <div class="flex items-center gap-3">
                                 <div class="p-2 bg-white rounded-lg shadow-sm">
-                                    <Calendar class="w-4 h-4 text-green-700" />
+                                    <CalendarCheck class="w-4 h-4 text-green-700" />
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-green-700 uppercase tracking-widest leading-none mb-1">Fecha Retorno</p>
@@ -131,7 +131,7 @@ const emit = defineEmits(['close']);
                             </div>
                             <div class="flex items-center gap-3">
                                 <div class="p-2 bg-white rounded-lg shadow-sm">
-                                    <Clock class="w-4 h-4 text-green-700" />
+                                    <History class="w-4 h-4 text-green-700" />
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-green-700 uppercase tracking-widest leading-none mb-1">Hora Entrada</p>

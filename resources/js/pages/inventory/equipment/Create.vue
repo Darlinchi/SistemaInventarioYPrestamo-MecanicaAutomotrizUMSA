@@ -41,7 +41,7 @@ const form = useForm({
     serie: "",
     rubro: "",
     fecha_adquisicion: "",
-    accesorios: [] as { nombre: string; estado: string }[],
+    accesorios: [] as { nombre: string; estado: string; foto: File | null; preview: string | null }[],
 });
 
 const handleFileChange = (e: Event) => {
@@ -55,14 +55,49 @@ const handleFileChange = (e: Event) => {
     }
 };
 
-const addAccesorio = () => form.accesorios.push({ nombre: '', estado: 'Bueno' });
+// NUEVA función para manejar fotos de accesorios individuales
+const handleAccFileChange = (e: Event, index: number) => {
+    const target = e.target as HTMLInputElement;
+    if (target.files && target.files[0]) {
+        const file = target.files[0];
+        form.accesorios[index].foto = file;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            form.accesorios[index].preview = event.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+    }
+};
+
+const addAccesorio = () => {
+    form.accesorios.push({
+        nombre: '',
+        estado: 'Bueno',
+        foto: null,
+        preview: null
+    });
+};
+
 const removeAccesorio = (index: number) => form.accesorios.splice(index, 1);
 
 function submit() {
+    // Creamos una copia para no alterar el formulario original en la vista
     form.post(equipmentRoutes.store.url(), {
         forceFormData: true,
         preserveScroll: true,
-        onSuccess: () => form.reset(),
+        onSuccess: () => {
+            form.reset();
+            photoPreview.value = null;
+        },
+        onError: (errors) => {
+            console.error("Errores detectados:", errors);
+            // Esto forzará a que el botón deje de decir "Guardando..."
+        },
+        onFinish: () => {
+            // Esto se ejecuta siempre, falle o gane
+            form.processing = false;
+        }
     });
 }
 </script>
@@ -215,20 +250,55 @@ function submit() {
                         </Button>
                     </div>
 
-                    <div v-for="(acc, index) in form.accesorios" :key="index" class="flex gap-2 p-3 bg-neutral-50 rounded-lg border">
-                        <div class="flex-1">
-                            <Label :for="'acc_nombre_' + index" class="text-s text-neutral-800">Nombre del accesorio</Label>
-                            <Input :id="'acc_nombre_' + index" v-model="acc.nombre" class="mt-1.5" type="text" placeholder="Ej. Cable de poder"/>
+                    <div v-for="(acc, index) in form.accesorios" :key="index" class="flex flex-col gap-4 p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+                        <div class="flex gap-4 items-start">
+                            <div class="flex flex-col items-center gap-2">
+                                <div v-if="acc.preview" class="relative">
+                                    <img :src="acc.preview" class="w-20 h-20 object-cover rounded-xl border border-neutral-300 shadow-sm" />
+                                    <button
+                                        type="button"
+                                        @click="acc.preview = null; acc.foto = null"
+                                        class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors"
+                                    >
+                                        <Trash2 class="w-3 h-3"/>
+                                    </button>
+                                </div>
+                                <div v-else class="w-20 h-20 rounded-xl bg-white border-2 border-dashed border-neutral-200 flex items-center justify-center text-neutral-300">
+                                    <ImageUp class="w-6 h-6" />
+                                </div>
+
+                                <label :for="'acc_foto_' + index" class="text-[10px] font-bold text-[#1a3a5a] cursor-pointer hover:underline">
+                                    SUBIR FOTO
+                                </label>
+                                <input
+                                    :id="'acc_foto_' + index"
+                                    type="file"
+                                    accept="image/*"
+                                    class="hidden"
+                                    @change="handleAccFileChange($event, index)"
+                                />
+                            </div>
+
+                            <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="grid gap-1.5">
+                                    <Label :for="'acc_nombre_' + index" class="text-xs font-semibold text-neutral-700">Nombre</Label>
+                                    <Input :id="'acc_nombre_' + index" v-model="acc.nombre" placeholder="Ej. Cargador" />
+                                </div>
+                                <div class="grid gap-1.5">
+                                    <Label class="text-xs font-semibold text-neutral-700">Estado</Label>
+                                    <select v-model="acc.estado" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm">
+                                        <option value="Bueno">Bueno</option>
+                                        <option value="Dañado">Dañado</option>
+                                        <option value="Extraviado">Extraviado</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <Button type="button" variant="destructive" size="icon" class="mt-6" @click="removeAccesorio(index)">
+                                <Trash2 class="w-4 h-4" />
+                            </Button>
                         </div>
-                        <div class="w-32">
-                            <Label class="text-s text-neutral-800">Estado</Label>
-                            <select v-model="acc.estado" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm mt-1.5">
-                                <option value="Bueno">Bueno</option>
-                            </select>
-                        </div>
-                        <Button type="button" variant="destructive" size="icon" @click="removeAccesorio(index)">
-                            <Trash2 class="w-4 h-4" />
-                        </Button>
+                        <InputError :message="form.errors[`accesorios.${index}.foto`]" />
                     </div>
 
                     <div v-if="form.accesorios.length === 0"

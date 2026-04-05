@@ -10,7 +10,7 @@ class Tool extends Model
 
     // Campos que se pueden llenar
     protected $fillable = [
-        'codigo_qr', 'nombre_herramienta', 'foto', 'ubicacion_herramienta', 'cantidad_piezas',
+        'codigo_qr', 'nombre_herramienta', 'foto_herramienta', 'ubicacion_herramienta', 'cantidad_piezas',
         'descripcion_herramienta', 'observacion_herramienta', 'marca_modelo', 'estado_herramienta'
     ];
 

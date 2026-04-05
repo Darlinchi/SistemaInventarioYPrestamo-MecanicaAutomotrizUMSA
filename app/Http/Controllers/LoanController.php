@@ -46,6 +46,7 @@ class LoanController extends Controller
                 $e->tipo = 'equipo';
                 $e->nombre_mostrar = $e->nombre_equipo;
                 $e->estado_mostrar = $e->estado_equipo;
+                $e->foto = $e->foto_equipo;
                 return $e;
             });
 
@@ -55,6 +56,7 @@ class LoanController extends Controller
                 $t->tipo = 'herramienta';
                 $t->nombre_mostrar = $t->nombre_herramienta;
                 $t->estado_mostrar = $t->estado_herramienta;
+                $t->foto = $t->foto_herramienta;
                 return $t;
             });
 
@@ -213,7 +215,7 @@ class LoanController extends Controller
                     'nombre_mostrar' => $e->nombre_equipo,
                     'tipo' => 'App\Models\Equipment', // Importante para el update
                     'es_equipo' => true,
-                    'foto' => $e->foto
+                    'foto' => $e->foto_equipo
                 ];
             });
 
@@ -227,7 +229,7 @@ class LoanController extends Controller
                     'nombre_mostrar' => $t->nombre_herramienta,
                     'tipo' => 'App\Models\Tool',
                     'es_equipo' => false,
-                    'foto' => $t->foto
+                    'foto' => $t->foto_herramienta
                 ];
             });
 

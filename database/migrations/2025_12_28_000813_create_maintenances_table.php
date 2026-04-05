@@ -24,6 +24,7 @@ return new class extends Migration
                 ->default('Preventivo');
 
             // Atributos de tiempo y actividad
+            $table->date('fecha_proximo_mantenimiento')->nullable();
             $table->date('fecha_mantenimiento');
             $table->date('fecha_retorno')->nullable();
             $table->date('fecha_retorno_estimado')->nullable();

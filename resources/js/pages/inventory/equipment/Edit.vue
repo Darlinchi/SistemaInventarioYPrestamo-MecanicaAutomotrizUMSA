@@ -20,13 +20,12 @@ import { ref } from 'vue';
 
 // Recibe el equipo con sus accesorios cargados desde el controlador
 const props = defineProps<{ equipment: any }>();
+const photoPreview = ref<string | null>(props.equipment.foto ? `/storage/${props.equipment.foto}` : null);
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Inventario', href: equipmentsRoutes.index.url() },
     { title: 'Editar Equipo', href: equipmentsRoutes.edit.url(props.equipment.id) },
 ];
-
-const photoPreview = ref<string | null>(props.equipment.foto ? `/storage/${props.equipment.foto}` : null);
 
 const form = useForm({
     _method: 'put',
@@ -50,7 +49,9 @@ const form = useForm({
     accesorios: props.equipment.accessories?.map((a: any) => ({
         id: a.id,
         nombre: a.nombre_accesorio,
-        estado: a.estado_accesorio
+        estado: a.estado_accesorio,
+        foto: null as File | null,
+        preview: a.foto_accesorio ? `/storage/${a.foto_accesorio}` : null
     })) || [],
 });
 
@@ -65,12 +66,24 @@ const handleFileChange = (e: Event) => {
     }
 };
 
-const resetFoto = () => {
-    form.foto = null;
-    photoPreview.value = props.equipment.foto_equipo ? `/storage/${props.equipment.foto_equipo }` : null;
+// Función para fotos de accesorios
+const handleAccFileChange = (e: Event, index: number) => {
+    const target = e.target as HTMLInputElement;
+    if (target.files && target.files[0]) {
+        const file = target.files[0];
+        form.accesorios[index].foto = file;
+        const reader = new FileReader();
+        reader.onload = (e) => form.accesorios[index].preview = e.target?.result as string;
+        reader.readAsDataURL(file);
+    }
 };
 
-const addAccesorio = () => form.accesorios.push({ id: null, nombre: '', estado: 'Bueno' });
+const resetFoto = () => {
+    form.foto = null;
+    photoPreview.value = props.equipment.foto_equipo ? `/storage/${props.equipment.foto_equipo}` : null;
+};
+
+const addAccesorio = () => form.accesorios.push({ id: null, nombre: '', estado: 'Bueno', foto: null, preview: null });
 const removeAccesorio = (index: number) => form.accesorios.splice(index, 1);
 
 function submit() {
@@ -233,7 +246,7 @@ function submit() {
 
                         <div class="grid gap-2">
                             <Label for="observacion"><AlignLeft class="w-5 h-5 text-[#1a3a5a]"/> Observación del Equipo</Label>
-                            <Textarea id="observacion" v-model="form.descripcion" />
+                            <Textarea id="observacion" v-model="form.observacion" />
                             <InputError :message="form.errors.observacion" />
                         </div>
                     </div>
@@ -249,22 +262,38 @@ function submit() {
                         </Button>
                     </div>
 
-                    <div v-for="(acc, index) in form.accesorios" :key="index" class="flex flex-col md:flex-row gap-2 p-3 bg-neutral-50 rounded-lg border relative group">
-                        <div class="flex-1">
-                            <Label :for="'acc_nombre_' + index" class="text-s text-neutral-800">Nombre del accesorio</Label>
-                            <Input v-model="acc.nombre" class="mt-1.5" placeholder="Nombre..." />
-                        </div>
-                        <div class="w-full md:w-40">
-                            <Label :for="'acc_estado_' + index" class="text-s text-neutral-800">Estado</Label>
-                            <select id="acc.estado" v-model="acc.estado" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-[#1a3a5a] outline-none mt-1.5">
-                                <option value="Bueno">Bueno</option>
-                                <option value="Dañado">Dañado</option>
-                                <option value="Extraviado">Extraviado</option>
-                            </select>
-                        </div>
-                        <div class="flex items-end">
-                            <Button type="button" variant="destructive" size="icon" @click="removeAccesorio(Number(index))">
-                                <Trash2 class="w-4 h-4"/>
+                    <div v-for="(acc, index) in form.accesorios" :key="index" class="flex flex-col gap-4 p-4 bg-neutral-50 rounded-xl border border-neutral-200">
+                        <div class="flex gap-4 items-start">
+                            <div class="flex flex-col items-center gap-2">
+                                <div v-if="acc.preview" class="relative">
+                                    <img :src="acc.preview" class="w-16 h-16 object-cover rounded-xl border shadow-sm" />
+                                    <button type="button" @click="acc.preview = null; acc.foto = null" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 shadow-md">
+                                        <Trash2 class="w-3 h-3"/>
+                                    </button>
+                                </div>
+                                <div v-else class="w-16 h-16 rounded-xl bg-white border-2 border-dashed flex items-center justify-center text-neutral-300">
+                                    <ImageUp class="w-6 h-6" />
+                                </div>
+                                <label :for="'acc_foto_' + index" class="text-[10px] font-bold text-[#1a3a5a] cursor-pointer hover:underline">FOTO</label>
+                                <input :id="'acc_foto_' + index" type="file" class="hidden" @change="handleAccFileChange($event, Number(index))" />
+                            </div>
+
+                            <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="grid gap-1.5">
+                                    <Label class="text-xs">Nombre</Label>
+                                    <Input v-model="acc.nombre" placeholder="Nombre..." />
+                                </div>
+                                <div class="grid gap-1.5">
+                                    <Label class="text-xs">Estado</Label>
+                                    <select v-model="acc.estado" class="flex h-10 w-full rounded-md border bg-white px-3 py-2 text-sm">
+                                        <option value="Bueno">Bueno</option>
+                                        <option value="Dañado">Dañado</option>
+                                        <option value="Extraviado">Extraviado</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <Button type="button" variant="destructive" size="icon" class="mt-6" @click="removeAccesorio(Number(index))">
+                                <Trash2 class="w-4 h-4" />
                             </Button>
                         </div>
                     </div>

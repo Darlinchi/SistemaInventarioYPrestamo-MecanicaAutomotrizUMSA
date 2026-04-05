@@ -25,7 +25,7 @@ return new class extends Migration
                 ->onDelete('restrict');
 
             // Para qué materia
-            $table->foreignId('subject_id')
+            $table->foreignId('subject_id')->nullable()
                 ->constrained('subjects')
                 ->onDelete('restrict');
 

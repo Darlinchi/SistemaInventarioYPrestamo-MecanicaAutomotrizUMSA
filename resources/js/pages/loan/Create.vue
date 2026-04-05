@@ -263,13 +263,13 @@ const canSubmit = computed(() => {
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-6">
                             <div class="space-y-2">
                                 <Label for="fecha_retorno_prevista" class="flex items-center gap-1 text-[12px] font-black uppercase text-orange-700 tracking-wider">
                                     <CalendarClock class="w-4 h-4" />
                                     <span>F. Retorno</span>
                                 </Label>
-                                <Input v-model="form.fecha_retorno_prevista" type="date":min="form.fecha_salida" />
+                                <Input v-model="form.fecha_retorno_prevista" type="date":min="form.fecha_salida" class="w-fit min-w-[120px] px-1"/>
                                 <InputError :message="form.errors.fecha_retorno_prevista" />
                             </div>
                             <div class="space-y-2">
@@ -277,13 +277,14 @@ const canSubmit = computed(() => {
                                     <ClockAlert class="w-4 h-4" />
                                     <span>H. Retorno</span>
                                 </Label>
-                                <Input v-model="form.hora_fin_prevista" type="time":min="form.hora_inicio"  />
+                                <Input v-model="form.hora_fin_prevista" type="time":min="form.hora_inicio"/>
                                 <InputError :message="form.errors.hora_fin_prevista" />
                             </div>
                         </div>
                     </div>
+
                     <Button type="submit"
-                        class="py-6 text-[20px] font-semibold text-white shadow-lg shadow-blue-900/20 transition-all active:scale-95 transition-all w-full"
+                        class="py-6 text-[20px] font-semibold text-white shadow-lg shadow-blue-900/20 active:scale-95 transition-all w-full"
                         :disabled="!canSubmit">
                         <!--:disabled="form.processing || form.items.length === 0">-->
                         <template v-if="form.processing">
@@ -310,7 +311,7 @@ const canSubmit = computed(() => {
                             <SearchInput v-model="searchTerm" placeholder="Buscar equipo o herramienta disponible..." class="flex-1" />
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[330px] overflow-y-auto pr-2 custom-scrollbar">
                             <div
                                 v-for="item in filteredItems" :key="item.id + (item.equipment ? 'e' : 't')"
                                 @click="toggleItemSelection(item)"
@@ -319,7 +320,12 @@ const canSubmit = computed(() => {
                                     !isAvailable(item) ? 'opacity-50 grayscale cursor-not-allowed' : '']"
                             >
                                 <div class="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center overflow-hidden border border-neutral-100 shadow-inner">
-                                    <img v-if="item.foto" :src="'/storage/' + item.foto" class="object-cover w-full h-full" />
+                                    <img
+                                        v-if="item.foto_equipo || item.foto_herramienta || item.foto"
+                                        :src="'/storage/' + (item.foto_equipo || item.foto_herramienta || item.foto)"
+                                        class="object-cover w-full h-full"
+                                        alt="Foto del item"
+                                    />
                                     <Image v-else class="w-6 h-6 text-neutral-300" />
                                 </div>
 

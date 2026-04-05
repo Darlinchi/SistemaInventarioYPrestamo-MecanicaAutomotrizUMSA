@@ -20,6 +20,7 @@ return new class extends Migration
                 ->onUpdate('cascade');
 
             $table->string('nombre_accesorio', 100);
+            $table->string('foto_accesorio', 255)->nullable();
             $table->enum('estado_accesorio', [
                 'Bueno',
                 'Dañado',

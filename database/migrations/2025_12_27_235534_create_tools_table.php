@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('codigo_qr', 100)->unique()->nullable();
             $table->string('nombre_herramienta', 100);
-            $table->string('foto', 255)->nullable();
+            $table->string('foto_herramienta', 255)->nullable();
             $table->string('ubicacion_herramienta', 100)->nullable();
             $table->text('descripcion_herramienta')->nullable();
             $table->text('observacion_herramienta')->nullable();

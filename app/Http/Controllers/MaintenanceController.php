@@ -112,6 +112,7 @@ class MaintenanceController extends Controller
     {
         // Validamos los campos que vienen de tu returnForm en Vue
         $request->validate([
+            'fecha_proximo_mantenimiento' => 'required|date',
             'fecha_retorno' => 'required|date',
             'hora_fin'      => 'required|date_format:H:i:s',
             'estado_equipo' => 'required|in:Disponible,Reparado,Dañado,Incompleto,Baja',
@@ -123,7 +124,8 @@ class MaintenanceController extends Controller
 
             // 1. Finalizamos el mantenimiento
             $maintenance->update([
-                'fecha_retorno' => $request->fecha_retorno,
+                'fecha_proximo_mantenimiento' => $request->fecha_proximo_mantenimiento,
+                'fecha_retorno'        => $request->fecha_retorno,
                 'hora_fin'             => $request->hora_fin,
                 'actividad'            => $request->observacion,
                 'estado_mantenimiento' => 'Completado',

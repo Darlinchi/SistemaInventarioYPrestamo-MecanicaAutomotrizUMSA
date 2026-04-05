@@ -216,7 +216,10 @@ const openReturnModal = (loan: any) => {
     returnForm.items = itemsToProcess.map((i: any) => ({
         id: i.id,
         nombre_mostrar: i.nombre_mostrar,
-        foto: i.foto,
+        foto_equipo: i.foto_equipo,
+        foto_equipo: i.foto_equipo || i.foto_herramienta || i.foto,
+        foto_herramienta: i.foto_herramienta || i.foto_equipo || i.foto,
+        foto: i.foto || i.foto_equipo || i.foto_herramienta,
         // El 'type' debe ser exacto para el controlador
         type: i.es_equipo ? 'App\\Models\\Equipment' : 'App\\Models\\Tool',
         es_equipo: i.es_equipo,
@@ -224,6 +227,7 @@ const openReturnModal = (loan: any) => {
         accessories: (i.accessories || []).map((acc: any) => ({
             id: acc.id,
             nombre_accesorio: acc.nombre_accesorio,
+            foto_accesorio: acc.foto_accesorio,
             estado_accesorio: 'Bueno'
         }))
     }));

@@ -58,7 +58,7 @@ class ToolController extends Controller
                     'descripcion_herramienta' => $validated['descripcion'],
                     'ubicacion_herramienta'   => $validated['ubicacion'],
                     'observacion_herramienta' => $validated['observacion'],
-                    'foto'                    => $fotoPath,
+                    'foto_herramienta'                    => $fotoPath,
                     'marca_modelo'            => $validated['marca_modelo'],
                     'cantidad_piezas'         => $validated['cantidad_piezas'],
                     'estado_herramienta'      => $validated['estado_herramienta'],
@@ -124,8 +124,8 @@ class ToolController extends Controller
                 // Si el usuario sube una nueva foto
                 if ($request->hasFile('foto')) {
                     // Eliminamos la anterior si existe
-                    if ($tool->foto) {
-                        Storage::disk('public')->delete($tool->foto);
+                    if ($tool->foto_herramienta) {
+                        Storage::disk('public')->delete($tool->foto_herramienta);
                     }
                     $fotoPath = $request->file('foto')->store('inventario/tools', 'public');
                 }
@@ -133,7 +133,7 @@ class ToolController extends Controller
                 $tool->update([
                     'codigo_qr'               => $validated['codigo_qr'],
                     'nombre_herramienta'      => $validated['nombre'],
-                    'foto'                    => $fotoPath,
+                    'foto_herramienta'        => $fotoPath,
                     'descripcion_herramienta' => $validated['descripcion'],
                     'ubicacion_herramienta'   => $validated['ubicacion'],
                     'observacion_herramienta' => $validated['observacion'],

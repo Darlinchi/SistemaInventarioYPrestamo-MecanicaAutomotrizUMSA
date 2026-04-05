@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {
     XIcon, Image, FileText, List, AlignLeft, Eye,
-    Wrench, Calendar
+    Wrench, Calendar, Package
 } from 'lucide-vue-next';
 
 import { computed } from 'vue';
@@ -47,7 +47,11 @@ const formatDate = (date: string) => {
             <div class="p-8 overflow-y-auto custom-scrollbar">
                 <div class="flex flex-col md:flex-row gap-6 items-start mb-8 border-b border-neutral-100">
                     <div class="shrink-0 mx-auto md:mx-0">
-                        <img v-if="item?.foto" :src="'/storage/' + item.foto" class="w-40 h-40 rounded-3xl object-cover shadow-xl border-4 border-white" />
+                        <template v-if="item?.equipment?.foto_equipo || item?.tool?.foto_herramienta">
+                            <img :src="'/storage/' + (item.equipment?.foto_equipo || item.tool?.foto_herramienta)"
+                                class="w-40 h-40 rounded-3xl object-cover shadow-xl border-4 border-white ring-1 ring-neutral-200" />
+                        </template>
+
                         <div v-else class="w-40 h-40 rounded-3xl bg-neutral-50 flex items-center justify-center border-2 border-dashed border-neutral-200">
                             <Image class="w-16 h-16 text-neutral-200" />
                         </div>
@@ -103,13 +107,29 @@ const formatDate = (date: string) => {
                                 <List class="w-4 h-4" /> Accesorios del Equipo
                             </h4>
 
-                            <div v-if="item.equipment.accessories?.length" class="space-y-2">
-                                <div v-for="acc in item.equipment.accessories" :key="acc.id"
-                                    class="flex items-center justify-between p-3 bg-neutral-50 rounded-xl border border-neutral-100">
-                                    <span class="text-sm font-semibold text-neutral-700">{{ acc.nombre_accesorio }}</span>
-                                    <StatusBadge :status="acc.estado_accesorio" />
-                                </div>
-                            </div>
+                            <div v-if="item.equipment.accessories?.length" class="space-y-3">
+    <div v-for="acc in item.equipment.accessories" :key="acc.id"
+        class="flex items-center gap-3 p-2 bg-neutral-50 rounded-2xl border border-neutral-100 hover:bg-white transition-colors">
+
+        <div class="shrink-0">
+            <img v-if="acc.foto_accesorio"
+                 :src="'/storage/' + acc.foto_accesorio"
+                 class="w-12 h-12 rounded-xl object-cover border border-neutral-200 shadow-sm" />
+            <div v-else class="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center border border-neutral-200">
+                <Package class="w-5 h-5 text-neutral-300" />
+            </div>
+        </div>
+
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-bold text-neutral-800 truncate">{{ acc.nombre_accesorio }}</p>
+            <p class="text-[10px] text-neutral-400 uppercase font-black tracking-widest">Accesorio</p>
+        </div>
+
+        <div class="pr-2">
+            <StatusBadge :status="acc.estado_accesorio" />
+        </div>
+    </div>
+</div>
                             <div v-else class="p-6 bg-neutral-50 rounded-2xl border-2 border-dashed border-neutral-100 text-center mb-6">
                                 <p class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">Sin accesorios registrados</p>
                             </div>

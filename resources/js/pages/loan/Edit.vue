@@ -156,7 +156,7 @@ const canSubmit = computed(() => {
                     </div>
 
                     <Button type="submit"
-                    class="w-full py-6 text-[20px] font-semibold text-white shadow-lg shadow-blue-900/20 transition-all active:scale-95 transition-all w-full"
+                    class="w-full py-6 text-[20px] font-semibold text-white shadow-lg shadow-blue-900/20 transition-all active:scale-95"
                     :disabled="!canSubmit">
                     <!--:disabled="form.processing || form.selected_items.length === 0">-->
                         <template v-if="form.processing">
@@ -183,9 +183,14 @@ const canSubmit = computed(() => {
                             <div v-for="item in selectedItemsList" :key="item.id"
                                 class="flex items-center justify-between p-3 bg-blue-50/50 border border-blue-100 rounded-xl group">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded bg-white flex items-center justify-center border border-blue-100">
-                                        <Image class="w-4 h-4 text-blue-500" />
-                                    </div>
+                                    <div class="w-8 h-8 rounded bg-white flex items-center justify-center border border-blue-100 overflow-hidden">
+    <img
+        v-if="item.foto_equipo || item.foto_herramienta || item.foto"
+        :src="'/storage/' + (item.foto_equipo || item.foto_herramienta || item.foto)"
+        class="object-cover w-full h-full"
+    />
+    <Image v-else class="w-4 h-4 text-blue-500" />
+</div>
                                     <div class="flex-1">
                                         <p class="text-[14px] font-bold text-neutral-800 leading-tight">{{ item.nombre_mostrar }}</p>
                                         <span :class="[
@@ -222,9 +227,13 @@ const canSubmit = computed(() => {
                                 class="p-3 border border-neutral-100 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all flex items-center gap-3"
                             >
                                 <div class="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center overflow-hidden border">
-                                    <img v-if="item.foto" :src="'/storage/' + item.foto" class="object-cover w-full h-full" />
-                                    <Image v-else class="w-5 h-5 text-neutral-400" />
-                                </div>
+    <img
+        v-if="item.foto_equipo || item.foto_herramienta || item.foto"
+        :src="'/storage/' + (item.foto_equipo || item.foto_herramienta || item.foto)"
+        class="object-cover w-full h-full"
+    />
+    <Image v-else class="w-5 h-5 text-neutral-400" />
+</div>
                                 <div class="flex-1">
                                     <p class="text-[15px] font-bold text-neutral-800 leading-tight">{{ item.nombre_mostrar }}</p>
                                     <span :class="[
