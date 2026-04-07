@@ -15,7 +15,6 @@ import { CardTitle } from '@/components/ui/card';
 import itemsRoutes from '@/routes/items';
 import toolsRoutes from '@/routes/tools';
 
-// Recibe la herramienta desde el controlador
 const props = defineProps<{ tool: any }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
