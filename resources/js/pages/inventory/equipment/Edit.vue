@@ -20,7 +20,7 @@ import { ref } from 'vue';
 
 // Recibe el equipo con sus accesorios cargados desde el controlador
 const props = defineProps<{ equipment: any }>();
-const photoPreview = ref<string | null>(props.equipment.foto ? `/storage/${props.equipment.foto}` : null);
+const photoPreview = ref<string | null>(props.equipment.foto_equipo ? `/storage/${props.equipment.foto_equipo}` : null);
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Inventario', href: equipmentsRoutes.index.url() },
@@ -146,6 +146,8 @@ function submit() {
                                 <option value="Disponible">Disponible</option>
                                 <option value="Prestado">Prestado</option>
                                 <option value="Dañado">Dañado</option>
+                                <option value="Reparado">Reparado</option>
+                                <option value="Incompleto">Incompleto</option>
                                 <option value="Extraviado">Extraviado</option>
                                 <option value="Baja">Baja</option>
                             </select>

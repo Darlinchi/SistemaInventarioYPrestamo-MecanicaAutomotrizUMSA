@@ -82,7 +82,7 @@ const mainNavItems = computed(() => {
         });
 
         items.push({
-            title: 'Usuarios',
+            title: 'Prestamistas',
             href: borrowersRoutes.index.url(),
             icon: UsersIcon,
         });

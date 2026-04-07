@@ -259,7 +259,6 @@ const closeViewInformacion = () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
             <PageHeader
-                title="Control de Mantenimiento"
                 description="Gestione el mantenimiento de equipos"
             >
                 <template #action>

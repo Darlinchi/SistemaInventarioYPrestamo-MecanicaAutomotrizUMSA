@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Ban, AlertTriangle, Info, Trash2 } from 'lucide-vue-next';
+import { ref, watch } from 'vue';
+import { Ban, AlertTriangle, Info, Trash2, AlignLeft } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 
-defineProps<{
+const props = defineProps<{
     show: boolean;
     title: string;
     message?: string;
@@ -12,6 +13,24 @@ defineProps<{
 }>();
 
 const emit = defineEmits(['close', 'confirm']);
+
+// Ref para el motivo de la baja
+const motivoBaja = ref('');
+
+// Limpiar el texto cada vez que se cierra/abre el modal
+watch(() => props.show, (newVal) => {
+    if (!newVal) motivoBaja.value = '';
+});
+
+const handleConfirm = () => {
+    if (motivoBaja.value.trim().length < 5) {
+        alert("Por favor, ingresa un motivo válido (mínimo 5 caracteres).");
+        return;
+    }
+    // Enviamos el texto al componente padre
+    emit('confirm', motivoBaja.value);
+};
+
 </script>
 
 <template>
@@ -40,6 +59,17 @@ const emit = defineEmits(['close', 'confirm']);
                 </p>
             </div>
 
+            <div class="space-y-2 mt-2 mb-6">
+                <label class="text-[13px] font-black text-neutral-700 uppercase tracking-widest flex items-center gap-2">
+                    <AlignLeft class="w-4 h-4" /> Motivo de la baja
+                </label>
+                <textarea
+                    v-model="motivoBaja"
+                    placeholder="Ej: El equipo presenta daños irreparables en el motor..."
+                    class="w-full rounded-2xl border-neutral-200 bg-neutral-50 text-sm focus:ring-[#d90000] focus:border-[#d90000] min-h-[100px] p-4 resize-none transition-all"
+                ></textarea>
+            </div>
+
             <div class="mt-8 flex flex-col sm:flex-row gap-3">
                 <Button
                     variant="outline"
@@ -51,7 +81,7 @@ const emit = defineEmits(['close', 'confirm']);
                 <Button
                     :variant="variant === 'danger' ? 'destructive' : 'default'"
                     class="flex-1 rounded-2xl font-semibold shadow-lg transition-transform active:scale-95"
-                    @click="$emit('confirm')"
+                    @click="handleConfirm"
                 >
                     {{ confirmLabel || 'Confirmar' }}
                 </Button>

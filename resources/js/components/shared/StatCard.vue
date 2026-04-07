@@ -1,29 +1,31 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const props = defineProps<{
+defineProps<{
     title: string;
-    value: string | number;
-    variant?: 'blue' | 'green' | 'orange' | 'neutral';
+    value: number | string;
+    icon: any;
+    colorClass?: string;
+    description?: string;
 }>();
-
-const colorClass = computed(() => {
-    switch (props.variant) {
-        case 'blue': return 'text-blue-600';
-        case 'green': return 'text-emerald-600';
-        case 'orange': return 'text-orange-500';
-        default: return 'text-neutral-900';
-    }
-});
 </script>
 
 <template>
-    <div class="bg-white p-6 rounded-4xl border border-neutral-200 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between min-h-[140px]">
-        <h3 class="text-[13px] font-black uppercase tracking-widest text-neutral-500">
-            {{ title }}
-        </h3>
-        <div :class="['text-4xl font-black tracking-tighter mt-2', colorClass]">
-            {{ value }}
-        </div>
-    </div>
+    <Card class="rounded-[2.5rem] border-none shadow-sm hover:shadow-xl transition-all group overflow-hidden relative bg-white">
+        <CardHeader class="flex flex-row items-center justify-between">
+            <CardTitle class="text-[11px] font-black text-neutral-500 uppercase tracking-widest">
+                {{ title }}
+            </CardTitle>
+            <div :class="['p-3 rounded-2xl transition-colors bg-neutral-50', colorClass]">
+                <component :is="icon" class="w-5 h-5" />
+            </div>
+        </CardHeader>
+        <CardContent>
+            <div class="text-4xl font-black text-neutral-800">{{ value }}</div>
+            <p v-if="description" class="text-[11px] text-neutral-500 font-bold mt-1">
+                {{ description }}
+            </p>
+        </CardContent>
+        <div class="absolute bottom-0 left-0 right-0 h-1.5 bg-current opacity-20" :class="colorClass?.split(' ')[0]"></div>
+    </Card>
 </template>

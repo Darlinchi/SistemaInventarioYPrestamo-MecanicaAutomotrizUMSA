@@ -68,10 +68,18 @@ const page = usePage();
 const flashSuccess = computed(() => (page.props.flash as any)?.success);
 
 // --- LÓGICA DE TABLA ---
-const activeTab = ref<'equipos' | 'herramientas'>('equipos');
+const activeTab = ref<'equipos' | 'herramientas' | 'bajas'>('equipos');
 const searchQuery = ref('');
 const selectedStatus = ref('');
+const selectedLocation = ref('');
 const openAccessoryId = ref<number | null>(null);
+
+// Helper para saber si un item está de baja
+const isBaja = (item: Item) => {
+    return item.tipo === 'equipo'
+        ? item.estado_equipo === 'Baja'
+        : item.estado_herramienta === 'Baja';
+};
 
 // Limpiamos el filtro de estado cada vez que cambiamos de pestaña (Opcional, pero recomendado)
 watch(activeTab, () => {
@@ -79,29 +87,53 @@ watch(activeTab, () => {
 });
 // Dependiendo de la pestaña, pasamos los estados correspondientes
 const currentOptions = computed(() => {
+    if (activeTab.value === 'bajas') return ['Baja']; // Solo opción de baja
     return activeTab.value === 'equipos'
-        ? props.estados_equipo
-        : props.estados_herramienta;
+        ? props.estados_equipo.filter(e => e !== 'Baja') // Quitamos 'Baja' de la pestaña normal
+        : props.estados_herramienta.filter(e => e !== 'Baja');
 });
+// Extraemos ubicaciones únicas DEPENDIENDO de la pestaña activa
+const locationOptions = computed(() => {
+    const itemsFiltradosPorPestaña = props.items.filter(item => {
+        if (activeTab.value === 'bajas') return isBaja(item);
+        if (activeTab.value === 'equipos') return item.tipo === 'equipo' && !isBaja(item);
+        return item.tipo === 'herramienta' && !isBaja(item);
+    });
+    const locations = itemsFiltradosPorPestaña.map(item =>
+        item.tipo === 'equipo' ? item.ubicacion_equipo : item.ubicacion_herramienta
+    );
+    const unique = [...new Set(locations.filter(l => l && l.trim() !== ''))].sort();
+
+    return unique;
+});
+
 // Contadores basados en el campo 'tipo'
 const countEquipos = computed(() => props.items.filter(i => i.tipo === 'equipo').length);
 const countHerramientas = computed(() => props.items.filter(i => i.tipo === 'herramienta').length);
+const countBajas = computed(() => props.items.filter(i => isBaja(i)).length);
 
 // En tu <script setup> de Index.vue
 const inventoryTabs = computed(() => [
     { id: 'equipos', label: 'Equipos', count: countEquipos.value, icon: 'Package' },
-    { id: 'herramientas', label: 'Herramientas', count: countHerramientas.value, icon: 'Wrench' }
+    { id: 'herramientas', label: 'Herramientas', count: countHerramientas.value, icon: 'Wrench' },
+    { id: 'bajas', label: 'Bajas', count: countBajas.value, icon: 'Ban' }
 ]);
 
 // --- FILTRADO INTELIGENTE ---
 const filteredItems = computed(() => {
     const query = searchQuery.value.toLowerCase().trim();
     const currentStatus = selectedStatus.value;
+    const currentLocation = selectedLocation.value;
 
     return props.items.filter(item => {
         // 1. Filtro por Pestaña
-        if (activeTab.value === 'equipos' && item.tipo !== 'equipo') return false;
-        if (activeTab.value === 'herramientas' && item.tipo !== 'herramienta') return false;
+        if (activeTab.value === 'bajas') {
+            if (!isBaja(item)) return false;
+        } else if (activeTab.value === 'equipos') {
+            if (item.tipo !== 'equipo' || isBaja(item)) return false;
+        } else if (activeTab.value === 'herramientas') {
+            if (item.tipo !== 'herramienta' || isBaja(item)) return false;
+        }
 
         // 2. Filtro por Estado (Simplificado)
         if (currentStatus) {
@@ -109,7 +141,13 @@ const filteredItems = computed(() => {
             if (estadoItem !== currentStatus) return false;
         }
 
-        // 3. Buscador
+        // 3. Filtro por Ubicación
+        if (currentLocation) {
+            const ubicacionItem = item.tipo === 'equipo' ? item.ubicacion_equipo : item.ubicacion_herramienta;
+            if (ubicacionItem !== currentLocation) return false;
+        }
+
+        // 4. Buscador
         if (!query) return true;
         const nombre = (item.nombre_equipo || item.nombre_herramienta || '').toLowerCase();
         const qr = (item.codigo_qr || '').toLowerCase();
@@ -125,7 +163,7 @@ const toggleAccessories = (id: number) => {
 };
 
 // Lógica de ejecución (Conectada al botón "Sí, dar de baja")
-const executeBaja = () => {
+const executeBaja = (motivo: string) => {
     const item = itemToBaja.value;
     if (!item) return;
 
@@ -140,8 +178,10 @@ const executeBaja = () => {
 
     if (item.tipo === 'equipo') {
         payload.estado_equipo = 'Baja';
+        payload.observacion_equipo = motivo;
     } else {
         payload.estado_herramienta = 'Baja';
+        payload.observacion_herramienta = motivo;
     }
 
     router.post(url, payload, {
@@ -196,23 +236,6 @@ const closeViewInformacion = () => {
     itemInformacion.value = null;
 };
 
-const formatDate = (date: string) => {
-    if (!date) return 'N/A';
-    return new Date(date).toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-};
-
-// Si tienes lógica de mantenimientos, puedes computar el último aquí
-const ultimoMantenimiento = computed(() => {
-    if (itemInformacion.value?.equipment?.mantenimientos?.length > 0) {
-        return itemInformacion.value.equipment.mantenimientos[0];
-    }
-    return null;
-});
-
 </script>
 
 <template>
@@ -222,12 +245,13 @@ const ultimoMantenimiento = computed(() => {
             <AlertNotification :message="flashSuccess" />
 
             <PageHeader
-                title="Gestión de Inventario"
                 description="Administre equipos y herramientas del taller"
             >
                 <template #action>
                     <CreateActionButton
-                        type="button" :href="activeTab === 'equipos' ? equipmentRoutes.create.url() : toolRoutes.create.url()"
+                        v-if="activeTab !== 'bajas'"
+                        type="button"
+                        :href="activeTab === 'equipos' ? equipmentRoutes.create.url() : toolRoutes.create.url()"
                         :label="`Agregar ${activeTab === 'equipos' ? 'Equipo' : 'Herramienta'}`"
                     />
                 </template>
@@ -242,7 +266,8 @@ const ultimoMantenimiento = computed(() => {
             <div class="flex flex-col md:flex-row items-center gap-3 mb-4 w-full">
                 <SearchInput v-model="searchQuery" placeholder="Buscar por nombre, marca o QR..." />
                 <SelectFilter v-model="selectedStatus" label="Estados" :options="currentOptions" />
-                <ClearFiltersButton @clear="() => { selectedStatus=''; searchQuery='' }" />
+                <SelectFilter v-model="selectedLocation" label="Ubicaciones" :options="locationOptions" icon="Rows3" />
+                <ClearFiltersButton @clear="() => { selectedStatus=''; selectedLocation=''; searchQuery='' }" />
             </div>
             <InventoryTable
                 :items="filteredItems"
@@ -251,6 +276,24 @@ const ultimoMantenimiento = computed(() => {
                 @view="openViewInformacion"
                 @baja="openConfirmBaja"
                 @toggleAccessories="toggleAccessories"
+            />
+
+            <ConfirmDialog
+                :show="isConfirmingBaja"
+                variant="danger"
+                title="¿Confirmar Baja?"
+                message="Estás a punto de dar de baja el siguiente ítem del sistema:"
+                :item-name="itemToBaja?.nombre_equipo || itemToBaja?.nombre_herramienta"
+                confirm-label="Sí, dar de baja"
+                @close="closeConfirmBaja"
+                @confirm="executeBaja"
+            />
+
+            <InventoryDetailModal
+                :show="viewInformacion"
+                :item="itemInformacion"
+                @close="closeViewInformacion"
+                @generate-pdf=""
             />
 
             <!--<div class="space-y-4">
@@ -384,17 +427,6 @@ const ultimoMantenimiento = computed(() => {
                 </div>
             </div>
             -->
-
-            <ConfirmDialog
-                :show="isConfirmingBaja"
-                variant="danger"
-                title="¿Confirmar Baja?"
-                message="Estás a punto de dar de baja el siguiente ítem del sistema:"
-                :item-name="itemToBaja?.nombre_equipo || itemToBaja?.nombre_herramienta"
-                confirm-label="Sí, dar de baja"
-                @close="closeConfirmBaja"
-                @confirm="executeBaja"
-            />
 
             <!--
             <div v-if="viewInformacion" class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -577,13 +609,6 @@ const ultimoMantenimiento = computed(() => {
                     </div>
                 </div>
             </div>-->
-
-            <InventoryDetailModal
-                :show="viewInformacion"
-                :item="itemInformacion"
-                @close="closeViewInformacion"
-                @generate-pdf=""
-            />
         </div>
     </AppLayout>
 </template>

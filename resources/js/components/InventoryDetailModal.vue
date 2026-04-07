@@ -108,28 +108,29 @@ const formatDate = (date: string) => {
                             </h4>
 
                             <div v-if="item.equipment.accessories?.length" class="space-y-3">
-    <div v-for="acc in item.equipment.accessories" :key="acc.id"
-        class="flex items-center gap-3 p-2 bg-neutral-50 rounded-2xl border border-neutral-100 hover:bg-white transition-colors">
+                                <div v-for="acc in item.equipment.accessories" :key="acc.id"
+                                    class="flex items-center gap-3 p-2 bg-neutral-50 rounded-2xl border border-neutral-100 hover:bg-white transition-colors">
 
-        <div class="shrink-0">
-            <img v-if="acc.foto_accesorio"
-                 :src="'/storage/' + acc.foto_accesorio"
-                 class="w-12 h-12 rounded-xl object-cover border border-neutral-200 shadow-sm" />
-            <div v-else class="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center border border-neutral-200">
-                <Package class="w-5 h-5 text-neutral-300" />
-            </div>
-        </div>
+                                    <div class="shrink-0">
+                                        <img v-if="acc.foto_accesorio"
+                                            :src="'/storage/' + acc.foto_accesorio"
+                                            class="w-12 h-12 rounded-xl object-cover border border-neutral-200 shadow-sm" />
+                                        <div v-else class="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center border border-neutral-200">
+                                            <Image class="w-5 h-5 text-neutral-300" />
+                                        </div>
+                                    </div>
 
-        <div class="flex-1 min-w-0">
-            <p class="text-sm font-bold text-neutral-800 truncate">{{ acc.nombre_accesorio }}</p>
-            <p class="text-[10px] text-neutral-400 uppercase font-black tracking-widest">Accesorio</p>
-        </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-bold text-neutral-800 truncate">{{ acc.nombre_accesorio }}</p>
+                                        <p class="text-[10px] text-neutral-400 uppercase font-black tracking-widest">Accesorio</p>
+                                    </div>
 
-        <div class="pr-2">
-            <StatusBadge :status="acc.estado_accesorio" />
-        </div>
-    </div>
-</div>
+                                    <div class="pr-2">
+                                        <StatusBadge :status="acc.estado_accesorio" />
+                                    </div>
+                                </div>
+                            </div>
+
                             <div v-else class="p-6 bg-neutral-50 rounded-2xl border-2 border-dashed border-neutral-100 text-center mb-6">
                                 <p class="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">Sin accesorios registrados</p>
                             </div>

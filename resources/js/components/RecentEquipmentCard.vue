@@ -40,7 +40,7 @@ defineProps<{
                 <h3 class="font-bold text-neutral-900 truncate text-base leading-tight">
                     {{ equipo.nombre_equipo }}
                 </h3>
-                <p class="text-xs text-neutral-400 font-medium mt-1">
+                <p class="text-xs text-neutral-500 font-medium mt-1">
                     S/N: {{ equipo.serie || 'No registrado' }}
                 </p>
             </div>

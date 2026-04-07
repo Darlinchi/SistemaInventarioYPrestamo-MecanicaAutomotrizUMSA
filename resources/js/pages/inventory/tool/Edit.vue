@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useffffffffffffffffffffffform } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import InputError from '@/components/InputError.vue';
@@ -9,13 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { FileInput } from '@/components/ui/file-input';
 import { Button } from '@/components/ui/button';
 import { CardTitle } from '@/components/ui/card';
-import {
     Save, ArrowLeft, Trash2, Loader2, AlignLeft, PencilLine, Layers, Hash,
     Rows3, Image, QrCode, Package, ImageUp, Wrench
 } from 'lucide-vue-next';
 import itemsRoutes from '@/routes/items';
 import toolsRoutes from '@/routes/tools';
-import { ref } from 'vue';
 
 // Recibe la herramienta desde el controlador
 const props = defineProps<{ tool: any }>();
@@ -25,7 +23,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Editar Herramienta', href: toolsRoutes.edit.url(props.tool.id) },
 ];
 // Previsualización de la foto existente
-const photoPreview = ref<string | null>(props.tool.foto ? `/storage/${props.tool.foto}` : null);
+const photoPreview = ref<string | null>(props.tool.foto_herramienta ? `/storage/${props.tool.foto_herramienta}` : null);
 
 const form = useForm({
     _method: 'put', // Spoofing para que Laravel procese el archivo con PUT

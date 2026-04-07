@@ -18,12 +18,28 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'confirm']);
 
 const handleAccessoryStatusChange = (itemIndex: number, accIndex: number) => {
-    const accessory = props.form.items[itemIndex].accessories[accIndex];
+    const item = props.form.items[itemIndex];
+    const accessory = item.accessories[accIndex];
+    const nombreAcc = accessory.nombre_accesorio;
 
-    // Si el accesorio se marca como extraviado
+    // 1. Si el accesorio se marca como extraviado -> Equipo Incompleto
     if (accessory.estado_accesorio === 'Extraviado') {
-        // Cambiamos el estado del equipo padre a "Incompleto"
-        props.form.items[itemIndex].estado_devolucion = 'Incompleto';
+        item.estado_devolucion = 'Incompleto';
+
+        const nota = `[AUTO]: El equipo "${item.nombre_mostrar}" se marca como INCOMPLETO porque el accesorio "${nombreAcc}" fue reportado como EXTRAVIADO. `;
+        if (!props.form.observacion.includes(nota)) {
+            props.form.observacion += nota;
+        }
+    }
+
+    // 2. Si el accesorio se marca como dañado -> Equipo Dañado
+    else if (accessory.estado_accesorio === 'Dañado') {
+        item.estado_devolucion = 'Dañado';
+
+        const nota = `[AUTO]: El equipo "${item.nombre_mostrar}" se marca como DAÑADO porque el accesorio "${nombreAcc}" presenta DAÑOS. `;
+        if (!props.form.observacion.includes(nota)) {
+            props.form.observacion += nota;
+        }
     }
 };
 
@@ -225,9 +241,11 @@ const handleAccessoryStatusChange = (itemIndex: number, accIndex: number) => {
                     <Label class="text-[13px] font-black uppercase text-neutral-700 tracking-widest">
                         <AlignLeft class="w-4 h-4 inline mr-1" /> Notas adicionales de recepción
                     </Label>
-                    <Textarea v-model="form.observacion"
+                    <Textarea
+                        v-model="form.observacion"
                         placeholder="Escriba aquí si hubo algún incidente..."
-                        class="bg-white border-neutral-200 text-sm rounded-3xl min-h-[100px] focus:ring-[#1a3a5a]/10" />
+                        class="bg-white border-neutral-200 text-sm rounded-3xl min-h-[120px] focus:ring-[#1a3a5a]/10 font-medium italic text-neutral-600"
+                    />
                 </div>
             </div>
 

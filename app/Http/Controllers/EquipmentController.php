@@ -115,6 +115,9 @@ class EquipmentController extends Controller
      */
     public function edit(Equipment $equipment)
     {
+        if (in_array($equipment->estado_equipo, ['Mantenimiento', 'Préstamo'])) {
+            return redirect()->back()->with('error', 'No se puede editar un equipo en este estado.');
+        }
         $equipment->load('accessories');
         // Formateamos la fecha para que el input de HTML la entienda
         if ($equipment->fecha_adquisicion) {
@@ -132,7 +135,10 @@ class EquipmentController extends Controller
     {
         // 1. Caso especial: Baja rápida (solo cambia el estado)
         if ($request->has('solo_estado')) {
-            $equipment->update(['estado_equipo' => 'Baja']);
+            $equipment->update([
+                'estado_equipo' => $request->estado_equipo,
+                'observacion_equipo' => $request->observacion_equipo,
+            ]);
             return redirect()->route('items.index')
                 ->with('success', 'El equipo ' . $equipment->nombre_equipo . ' ha sido dado de baja.');
         }

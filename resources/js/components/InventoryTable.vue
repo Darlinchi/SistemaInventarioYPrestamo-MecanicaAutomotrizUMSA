@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Image, List, Rows3, Eye, SquarePen, Ban } from 'lucide-vue-next';
+import { Image, List, Rows3, Eye, SquarePen, Ban, AlignLeft } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
 import BaseTable from '@/components/ui/table/BaseTable.vue';
 import TableHeader from '@/components/table/TableHeader.vue';
@@ -11,11 +11,18 @@ import toolRoutes from '@/routes/tools';
 // Definimos las propiedades que recibe del Index
 const props = defineProps<{
     items: any[];
-    activeTab: 'equipos' | 'herramientas';
+    activeTab: 'equipos' | 'herramientas' | 'bajas'; // <--- Ahora sí coincide
     openAccessoryId: number | null;
 }>();
 
 const emit = defineEmits(['view', 'edit', 'baja', 'toggleAccessories']);
+
+const canEdit = (item: any) => {
+    const estado = item.estado_equipo || item.estado_herramienta;
+    // No se puede editar si está en Mantenimiento o Préstamo
+    const estadosBloqueados = ['Mantenimiento', 'Prestado'];
+    return !estadosBloqueados.includes(estado);
+};
 
 </script>
 
@@ -25,12 +32,14 @@ const emit = defineEmits(['view', 'edit', 'baja', 'toggleAccessories']);
             'ITEM / INFORMACIÓN',
             'ESTADO',
             'UBICACIÓN',
-            activeTab === 'equipos' ? 'ACCESORIOS' : 'MARCA / MODELO',
+            activeTab === 'bajas'
+                ? 'MOTIVO DE BAJA'
+                : (activeTab === 'equipos' ? 'ACCESORIOS' : 'MARCA / MODELO'),
             'ACCIONES'
         ]" />
 
         <tbody class="divide-y divide-neutral-100">
-            <tr v-for="item in items" :key="item.id" class="hover:bg-neutral-50/50 group transition-colors">
+            <tr v-for="item in items" :key="`${item.tipo}-${item.id}`" class="hover:bg-neutral-50/50 group transition-colors">
 
                 <td class="p-4 pl-8">
                     <div class="flex items-center gap-4">
@@ -67,7 +76,16 @@ const emit = defineEmits(['view', 'edit', 'baja', 'toggleAccessories']);
                 </td>
 
                 <td class="p-4">
-                    <div v-if="activeTab === 'equipos'" class="relative">
+                    <div v-if="activeTab === 'bajas'" class="max-w-xs">
+                        <div class="flex items-start gap-2">
+                            <AlignLeft class="w-3.5 h-3.5 text-red-400 mt-1 shrink-0" />
+                            <p class="text-[12px] font-medium text-neutral-600 italic leading-snug line-clamp-2" :title="item.observacion_equipo || item.observacion_herramienta">
+                                {{ item.observacion_equipo || item.observacion_herramienta || 'Sin motivo registrado' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div v-else-if="activeTab === 'equipos'" class="relative">
                         <button v-if="item.accessories?.length > 0"
                             @click.stop="$emit('toggleAccessories', item.id)"
                             class="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 border border-neutral-200 rounded-xl hover:bg-white transition-all shadow-sm active:scale-95"
@@ -87,6 +105,7 @@ const emit = defineEmits(['view', 'edit', 'baja', 'toggleAccessories']);
                             </div>
                         </div>
                     </div>
+
                     <div v-else class="text-[12px] font-bold text-neutral-600 uppercase tracking-tight">
                         {{ item.marca_modelo || '-' }}
                     </div>
@@ -95,12 +114,35 @@ const emit = defineEmits(['view', 'edit', 'baja', 'toggleAccessories']);
                 <td class="p-4 pr-8 text-right">
                     <div class="flex justify-end gap-2">
                         <TableAction :icon="Eye" variant="view" title="Ver detalles" @click="$emit('view', item)" />
+                        <template v-if="activeTab !== 'bajas'">
+                            <template v-if="canEdit(item)">
+                                <Link :href="item.tipo === 'equipo' ? equipmentRoutes.edit.url(item.id) : toolRoutes.edit.url(item.id)">
+                                    <TableAction :icon="SquarePen" variant="edit" title="Editar" />
+                                </Link>
+                            </template>
 
-                        <Link :href="item.tipo === 'equipo' ? equipmentRoutes.edit.url(item.id) : toolRoutes.edit.url(item.id)">
-                            <TableAction :icon="SquarePen" variant="edit" title="Editar" />
-                        </Link>
+                            <template v-else>
+                                <div title="No se puede editar: El ítem está en mantenimiento o préstamo">
+                                    <TableAction
+                                        :icon="SquarePen"
+                                        variant="edit"
+                                        class="opacity-30 cursor-not-allowed grayscale"
+                                        @click.prevent
+                                    />
+                                </div>
+                            </template>
 
-                        <TableAction :icon="Ban" variant="delete" title="Dar de baja" @click="$emit('baja', item)" />
+                            <template v-if="canEdit(item)">
+                                <TableAction :icon="Ban" variant="delete" title="Dar de baja" @click="$emit('baja', item)" />
+                            </template>
+                            <template v-else>
+                                <div title="No se puede editar: El ítem está en mantenimiento o préstamo">
+                                    <TableAction :icon="Ban" variant="delete" title="Dar de baja"
+                                        class="opacity-30 cursor-not-allowed grayscale"
+                                        @click.prevent />
+                                </div>
+                            </template>
+                        </template>
                     </div>
                 </td>
             </tr>

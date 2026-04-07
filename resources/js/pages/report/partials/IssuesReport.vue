@@ -22,7 +22,7 @@ const props = defineProps<{
 
             <button
                 v-if="issues.length > 0"
-                class="bg-red-600 text-white px-6 py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 hover:bg-red-700 transition-all shadow-lg shadow-red-900/10 active:scale-95 whitespace-nowrap"
+                class="bg-[#1a3a5a] text-white px-6 py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 hover:bg-[#1a3a5a] transition-all shadow-lg shadow-red-900/10 active:scale-95 whitespace-nowrap"
             >
                 <FileDown class="w-4 h-4" /> Exportar Incidencias
             </button>
@@ -54,7 +54,7 @@ const props = defineProps<{
                                 <div class="font-bold text-neutral-800 leading-tight text-sm">
                                     {{ issue.nombre_item }}
                                 </div>
-                                <div class="text-[10px] font-black text-red-600 mt-1 tracking-tighter uppercase font-mono">
+                                <div class="text-[11px] font-black text-red-600 mt-1 tracking-tighter uppercase font-mono">
                                     QR: {{ issue.codigo_qr }}
                                 </div>
                             </div>
@@ -79,7 +79,7 @@ const props = defineProps<{
 
         <div v-if="issues.length > 0" class="flex items-center gap-3 px-4 py-3 bg-red-50/30 rounded-2xl border border-red-100">
             <div class="w-2 h-2 rounded-full bg-red-500 animate-ping"></div>
-            <p class="text-[10px] font-black text-red-700 uppercase tracking-widest">
+            <p class="text-[11px] font-black text-red-700 uppercase tracking-widest">
                 Atención crítica: Se requiere gestión para {{ issues.length }} ítems fuera de servicio
             </p>
         </div>

@@ -11,7 +11,7 @@ import InventoryReport from './partials/InventoryReport.vue';
 import HistoryReport from './partials/HistoryReport.vue';
 import IssuesReport from './partials/IssuesReport.vue';
 import {
-    Package, History, AlertTriangle, FileDown,
+    Package, History, AlertTriangle, FileDown, ClipboardCheck,
     Search, Filter, Download
 } from 'lucide-vue-next';
 
@@ -53,30 +53,37 @@ const reportTabs = computed(() => [
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
             <PageHeader
-                title="Reportes y Consultas"
                 description="Genere reportes detallados y analice las estadísticas del sistema"
             />
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
                     title="Total Préstamos"
                     :value="totalPrestamos"
-                    variant="neutral"
+                    :icon="ClipboardCheck"
+                    colorClass="text-[#1a3a5a] group-hover:bg-[#1a3a5a] group-hover:text-white"
+                    description="Total de préstamos"
                 />
                 <StatCard
-                    title="Activos"
+                    title="Préstamos Activos"
                     :value="activos"
-                    variant="blue"
+                    :icon="ClipboardCheck"
+                    colorClass="text-[#1a3a5a] group-hover:bg-[#1a3a5a] group-hover:text-white"
+                    description="Total de préstamos activos"
                 />
                 <StatCard
-                    title="Devueltos"
+                    title="Préstamos Devueltos"
                     :value="devueltos"
-                    variant="green"
+                    :icon="ClipboardCheck"
+                    colorClass="text-[#1a3a5a] group-hover:bg-[#1a3a5a] group-hover:text-white"
+                    description="Total préstamos devueltos"
                 />
                 <StatCard
                     title="Tasa Devolución"
                     :value="tasaDevolucion"
-                    variant="neutral"
+                    :icon="ClipboardCheck"
+                    colorClass="text-[#1a3a5a] group-hover:bg-[#1a3a5a] group-hover:text-white"
+                    description="Tasa devolucion de préstamos"
                 />
             </div>
 

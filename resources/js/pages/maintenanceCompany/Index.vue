@@ -51,7 +51,6 @@ const deleteCompany = (id: number) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
             <PageHeader
-                title="Empresas de Mantenimiento"
                 description="Información sobre las empresas que realizan mantenimiento de equipos y herramientas del taller"
             >
                 <template #action>

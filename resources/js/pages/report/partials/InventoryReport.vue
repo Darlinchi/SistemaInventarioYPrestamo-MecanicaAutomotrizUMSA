@@ -25,7 +25,10 @@ const filtered = computed(() => {
     <div class="space-y-6">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
             <div class="space-y-4 flex-1 w-full">
-                <h3 class="text-2xl font-black text-neutral-800 tracking-tighter">Reporte de Inventario</h3>
+                <h3 class="text-2xl font-black text-neutral-800 tracking-tighter flex items-center gap-3">
+                    <Package class="w-7 h-7 text-[#1a3a5a]" />
+                    Reporte de Inventario
+                </h3>
 
                 <div class="relative w-full md:w-[280px] group">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none z-10">
@@ -103,7 +106,7 @@ const filtered = computed(() => {
 
         <div class="flex items-center gap-2 px-2">
             <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-            <p class="text-[10px] font-black text-neutral-400 uppercase tracking-widest">
+            <p class="text-[11px] font-black text-neutral-500 uppercase tracking-widest">
                 Total de registros: {{ filtered.length }}
             </p>
         </div>

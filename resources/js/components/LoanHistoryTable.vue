@@ -38,7 +38,7 @@ const emit = defineEmits(['view', 'generateReport', 'toggleItems']);
                 </td>
 
                 <td class="p-4">
-                    <div class="text-[15px] text-[#1a3a5a] font-mono tracking-tighter">
+                    <div class="text-[14px] text-[#1a3a5a] font-bold tracking-tighter">
                         {{ loan.subject.sigla }}
                     </div>
                 </td>

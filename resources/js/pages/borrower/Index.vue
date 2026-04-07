@@ -6,6 +6,8 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { List, UserCog, UserCheck, UserCheck2 } from 'lucide-vue-next';
 import PageHeader from '@/components/PageHeader.vue';
 import TabSelector from '@/components/shared/TabSelector.vue';
+import BaseTable from '@/components/ui/table/BaseTable.vue';
+import TableHeader from '@/components/table/TableHeader.vue';
 import borrower from '@/routes/borrowers';
 import { router } from '@inertiajs/vue3';
 
@@ -15,7 +17,7 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Usuarios',
+        title: 'Prestamistas',
         href: borrower.index.url(), // Usa la función de tu archivo de rutas
     },
 ];
@@ -65,11 +67,10 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
 </script>
 
 <template>
-    <Head title="Usuarios" />
+    <Head title="Prestamistas" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
             <PageHeader
-                title="Prestamístas"
                 description="Información sobre los docentes y auxiliares que realizan préstamos de equipos y herramientas del taller"
             />
 
@@ -79,59 +80,79 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                 @update:activeTab="val => activeTab = val"
             />
 
-            <div class="relative bg-white border border-neutral-200 rounded-xl shadow-sm overflow-x-auto">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-separate border-spacing-0">
-                        <thead class="bg-neutral-200 text-xs font-bold uppercase text-neutral-800">
-                            <tr>
-                                <!--<th class="p-4 w-20 text-center mx-auto">Índice</th> -->
+            <!-- Uso de BaseTable -->
+            <BaseTable :items="filteredUsers" :emptyText="`No se encontraron ${activeTab}`">
+                <!-- Uso de TableHeader con columnas dinámicas -->
+                <TableHeader :columns="[
+                    'CÉDULA',
+                    ...(activeTab === 'auxiliares' ? ['R.U.'] : []),
+                    'NOMBRE (S)',
+                    'APELLIDOS',
+                    'MATERIAS'
+                ]" />
 
-                                <th class="p-4 text-center mx-auto">Cédula</th>
-                                <th v-if="activeTab === 'auxiliares'" class="p-4">R.U.</th>
-                                <th class="p-4">Nombre (s)</th>
-                                <th class="p-4">Apellidos</th>
-                                <th class="p-4">Materias</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-neutral-100 text-sm">
-                            <tr v-for="borrower in filteredUsers" :key="borrower.id" class="hover:bg-neutral-50 transition-colors">
-                                <!-- <td class="p-4 text-center mx-auto">{{ borrower.id }}</td>-->
+                <tbody class="divide-y divide-neutral-100 text-sm">
+                    <tr v-for="borrower in filteredUsers" :key="borrower.id" class="hover:bg-neutral-50/50 transition-colors group">
 
-                                <td class="p-4 text-center mx-auto">{{ borrower.cedula_identidad }}</td>
-                                <td v-if="activeTab === 'auxiliares'" class="p-4 font-mono text-blue-600">
-                                    {{ borrower.assistant?.registro_universitario }}
-                                </td>
-                                <td class="p-4 font-bold">{{ borrower.nombresP }}</td>
-                                <td class="p-4 font-bold"> {{ borrower.apellidosP }}</td>
-                                <td class="p-4 relative inline-block">
-                                    <div v-if="getSubjects(borrower).length > 0">
-                                        <button
-                                            @click.stop="toggleSubjects(borrower.id)"
-                                            class="flex items-center gap-2 px-3 py-1 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-100 transition"
-                                        >
-                                            <List class="w-4 h-4"/>
-                                            <span class="font-bold">{{ getSubjects(borrower).length }}</span>
-                                        </button>
+                        <!-- Cédula -->
+                        <td class="p-4 pl-8 text-neutral-700 font-medium">
+                            {{ borrower.cedula_identidad }}
+                        </td>
 
-                                        <div v-if="openSubjectId === borrower.id"
-                                            class="absolute left-0 z-50 mt-2 w-64 bg-white border border-neutral-200 rounded-xl shadow-xl p-3">
-                                            <p class="text-[10px] uppercase text-neutral-400 font-bold mb-2">Materias Asignadas</p>
-                                            <div class="space-y-1 max-h-48 overflow-y-auto">
-                                                <div v-for="sub in getSubjects(borrower)" :key="sub.id"
-                                                    class="p-2 bg-neutral-50 rounded-lg border border-neutral-100">
-                                                    <p class="text-xs font-black text-black">{{ sub.sigla }}</p>
-                                                    <p class="text-[11px] text-neutral-600">{{ sub.nombre_materia }}</p>
-                                                </div>
+                        <!-- Registro Universitario (Solo Auxiliares) -->
+                        <td v-if="activeTab === 'auxiliares'" class="p-4">
+                            <span class="font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded-md text-xs border border-blue-100">
+                                {{ borrower.assistant?.registro_universitario }}
+                            </span>
+                        </td>
+
+                        <!-- Nombres -->
+                        <td class="p-4 font-bold text-[#1a3a5a]">
+                            {{ borrower.nombresP }}
+                        </td>
+
+                        <!-- Apellidos -->
+                        <td class="p-4 font-bold text-[#1a3a5a]">
+                            {{ borrower.apellidosP }}
+                        </td>
+
+                        <!-- Materias (Popover) -->
+                        <td class="p-4 relative">
+                            <div v-if="getSubjects(borrower).length > 0">
+                                <button
+                                    @click.stop="toggleSubjects(borrower.id)"
+                                    class="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 border border-neutral-200 rounded-xl hover:bg-white transition-all shadow-sm active:scale-95 group/btn"
+                                >
+                                    <List class="w-4 h-4 text-[#1a3a5a] group-hover/btn:scale-110 transition-transform"/>
+                                    <span class="font-black text-[#1a3a5a]">{{ getSubjects(borrower).length }}</span>
+                                </button>
+
+                                <!-- Popover de Materias -->
+                                <div v-if="openSubjectId === borrower.id"
+                                    class="absolute left-0 z-50 mt-2 w-72 bg-white border border-neutral-200 rounded-2xl shadow-xl p-4 animate-in fade-in zoom-in-95 duration-200">
+                                    <p class="text-[11px] uppercase text-neutral-400 font-black mb-3 tracking-widest border-b pb-2">
+                                        Materias Asignadas
+                                    </p>
+                                    <div class="space-y-2 max-h-56 overflow-y-auto pr-1 custom-scrollbar">
+                                        <div v-for="sub in getSubjects(borrower)" :key="sub.id"
+                                            class="p-3 bg-neutral-50 rounded-xl border border-neutral-100 hover:border-blue-200 transition-colors">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <p class="text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-tighter">
+                                                    {{ sub.sigla }}
+                                                </p>
                                             </div>
+                                            <p class="text-[12px] font-bold text-neutral-800 leading-tight">
+                                                {{ sub.nombre_materia }}
+                                            </p>
                                         </div>
                                     </div>
-                                    <span v-else class="text-neutral-400 italic text-xs">Sin materias</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                                </div>
+                            </div>
+                            <span v-else class="text-neutral-400 italic text-xs px-2">Sin materias</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </BaseTable>
         </div>
     </AppLayout>
 </template>

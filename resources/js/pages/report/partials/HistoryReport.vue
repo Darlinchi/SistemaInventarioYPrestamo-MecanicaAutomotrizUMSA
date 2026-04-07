@@ -34,6 +34,7 @@ const formatSafeDate = (dateString: string) => {
         <div class="flex justify-between items-center px-2">
             <div class="space-y-1">
                 <h3 class="text-2xl font-black text-neutral-800 tracking-tighter flex items-center gap-3">
+                    <History class="w-7 h-7 text-[#1a3a5a]" />
                     Historial de Movimientos
                 </h3>
                 <p class="text-sm text-neutral-500 font-medium">Registro cronológico de préstamos y devoluciones</p>
@@ -47,7 +48,7 @@ const formatSafeDate = (dateString: string) => {
             class="p-7 bg-white border border-neutral-100 rounded-[2.5rem] shadow-sm flex flex-col gap-6 relative group hover:border-blue-200 transition-all border-l-4 border-l-[#1a3a5a]">
 
             <div class="flex flex-col md:flex-row justify-between items-center ">
-                <div class="flex items-start gap-4 min-w-[240px] w-full md:w-auto">
+                <div class="flex items-start gap-4 min-w-60 w-full md:w-auto">
                     <div class="p-3.5 bg-neutral-50 rounded-2xl text-[#1a3a5a] group-hover:bg-blue-50 transition-colors">
                         <History class="w-6 h-6" />
                     </div>
@@ -110,10 +111,10 @@ const formatSafeDate = (dateString: string) => {
                                     class="flex items-center justify-between p-2.5 bg-neutral-50 border border-neutral-100 rounded-xl">
                                     <span class="text-[12px] font-bold text-neutral-800 leading-tight flex-1">{{ item.nombre_mostrar }}</span>
                                     <span :class="[
-                                        'ml-2 px-2 py-0.5 rounded-lg text-[9px] font-black uppercase border',
+                                        'ml-2 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase border',
                                         item.es_equipo ? 'bg-red-50 text-red-700 border-red-100' : 'bg-blue-50 text-blue-700 border-blue-100'
                                     ]">
-                                        {{ item.es_equipo ? 'EQP' : 'HER' }}
+                                        {{ item.es_equipo ? 'EQUIPO' : 'HERRAMIENTA' }}
                                     </span>
                                 </div>
                             </div>

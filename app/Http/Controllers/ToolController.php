@@ -85,6 +85,9 @@ class ToolController extends Controller
      */
     public function edit(Tool $tool)
     {
+        if (in_array($tool->estado_herramienta, ['Mantenimiento', 'Préstamo'])) {
+            return redirect()->back()->with('error', 'No se puede editar una herramienta en este estado.');
+        }
         // Como Tool es un modelo independiente ahora, solo lo pasamos
         return Inertia::render('inventory/tool/Edit', [
             'tool' => $tool
@@ -99,7 +102,8 @@ class ToolController extends Controller
         // Lógica para cambio rápido de estado (Baja)
         if ($request->has('solo_estado')) {
             $tool->update([
-                'estado_herramienta' => 'Baja'
+                'estado_herramienta' => $request->estado_herramienta,
+                'observacion_herramienta' => $request->observacion_herramienta,
             ]);
 
             return redirect()->route('items.index')->with('success', 'La herramienta ' . $tool->nombre_herramienta . ' ha sido dada de baja con éxito!');

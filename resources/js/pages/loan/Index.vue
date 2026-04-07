@@ -293,7 +293,6 @@ const imprimirReporte = () => {
             <AlertNotification :message="flashSuccess" />
 
             <PageHeader
-                title="Gestión de Préstamos"
                 description="Administre préstamos y devoluciones de equipos y herramientas del taller"
             >
                 <template #action>
