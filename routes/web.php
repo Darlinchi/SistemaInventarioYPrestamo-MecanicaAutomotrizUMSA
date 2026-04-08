@@ -39,6 +39,8 @@ Route::middleware(['auth', 'verified'])
     Route::middleware(['role:admin|encargado'])->group(function () {
         // Esta línea genera automáticamente: index, create, store, show, edit, update, destroy
         // Rutas del Inventario
+        Route::get('items/{id}/pdf', [ItemController::class, 'generateFicha'])->name('items.pdf');
+
         Route::resource('items', ItemController::class);
         Route::resource('tools', ToolController::class);
         Route::resource('equipments', EquipmentController::class);

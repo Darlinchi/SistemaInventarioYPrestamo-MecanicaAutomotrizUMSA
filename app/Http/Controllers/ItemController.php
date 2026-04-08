@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect; // Para el redireccionamiento
 use Illuminate\Support\Facades\Storage;  // Para las fotos
 use Inertia\Inertia;                     // Para renderizar las vistas
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ItemController extends Controller
 {
@@ -53,6 +54,46 @@ class ItemController extends Controller
                 'Nuevo', 'Disponible', 'Prestado', 'Dañado', 'Extraviado', 'Baja'
             ],
         ]);
+    }
+
+    public function generateFicha(Request $request, $id)
+    {
+        $tipo = $request->query('tipo');
+
+        // 1. Si el tipo es equipo o no se especificó (por seguridad buscamos primero equipo)
+        if ($tipo === 'equipo') {
+            $equipment = \App\Models\Equipment::with(['accessories'])->findOrFail($id);
+
+            $itemData = $equipment;
+            $itemData->nombre_item = $equipment->nombre_equipo;
+            $itemData->ubicacion_item = $equipment->ubicacion_equipo;
+            $itemData->descripcion_item = $equipment->descripcion_equipo;
+            $itemData->observacion_item = $equipment->observacion_equipo;
+            $itemData->codigo_qr = $equipment->codigo_qr;
+
+            $itemData->equipment = $equipment;
+            $itemData->tool = null;
+        }
+        // 2. Si el tipo es herramienta
+        else {
+            $tool = \App\Models\Tool::findOrFail($id);
+
+            $itemData = $tool;
+            $itemData->nombre_item = $tool->nombre_herramienta;
+            $itemData->ubicacion_item = $tool->ubicacion_herramienta;
+            $itemData->descripcion_item = $tool->descripcion_herramienta;
+            $itemData->observacion_item = $tool->observacion_herramienta;
+            $itemData->codigo_qr = $tool->codigo_qr;
+
+            $itemData->tool = $tool;
+            $itemData->equipment = null;
+        }
+
+        // 3. Generar el PDF
+        $pdf = Pdf::loadView('pdf.inventory-ficha', ['item' => $itemData]);
+        $pdf->setPaper('letter', 'portrait');
+
+        return $pdf->stream("FICHA_{$itemData->nombre_item}.pdf");
     }
 
     /**

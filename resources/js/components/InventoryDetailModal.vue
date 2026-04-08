@@ -33,6 +33,13 @@ const formatDate = (date: string) => {
     });
 };
 
+const generatePdf = () => {
+    // Agregamos el parámetro 'tipo' a la URL
+    // props.item.tipo debe ser 'equipo' o 'herramienta' (como lo definiste en el index)
+    const url = `/dashboard/items/${props.item.id}/pdf?tipo=${props.item.tipo}`;
+    window.open(url, '_blank');
+};
+
 </script>
 
 <template>
@@ -194,7 +201,7 @@ const formatDate = (date: string) => {
                 <button @click="$emit('close')" class="flex-1 py-3.5 bg-white border border-neutral-200 text-neutral-600 rounded-2xl font-bold text-sm hover:bg-neutral-100 transition-all shadow-sm">
                     Cerrar
                 </button>
-                <button @click="$emit('generatePdf')" class="flex-1 py-3.5 bg-[#1a3a5a] text-white rounded-2xl font-bold text-sm hover:bg-[#122a42] transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20 active:scale-95">
+                <button @click="generatePdf" class="flex-1 py-3.5 bg-[#1a3a5a] text-white rounded-2xl font-bold text-sm hover:bg-[#122a42] transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20 active:scale-95">
                     <FileText class="w-5 h-5" /> Generar Ficha PDF
                 </button>
             </div>
