@@ -2,7 +2,7 @@
 import StatusBadge from '@/components/shared/StatusBadge.vue';
 import {
     XIcon, ClipboardList, Package, Building2, Wrench, CalendarCheck, ClockAlert, History,
-    CalendarClock, Calendar, Clock, AlignLeft, Printer, Image
+    CalendarClock, Calendar, Clock, AlignLeft, Printer, Image, Cog
 } from 'lucide-vue-next';
 
 const props = defineProps<{
@@ -11,6 +11,11 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['close']);
+
+const imprimirComprobante = () => {
+    const url = `/dashboard/maintenances/${props.maint.id}/report`;
+    window.open(url, '_blank');
+};
 
 </script>
 
@@ -156,7 +161,7 @@ const emit = defineEmits(['close']);
                 <button @click="$emit('close')" class="flex-1 py-3.5 bg-white border border-neutral-200 text-neutral-600 rounded-2xl font-bold text-sm hover:bg-neutral-100 transition-all shadow-sm">
                     Cerrar
                 </button>
-                <button @click="" class="flex-1 py-3.5 bg-[#1a3a5a] text-white rounded-2xl font-bold text-sm hover:bg-[#122a42] transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20 active:scale-95">
+                <button @click="imprimirComprobante" class="flex-1 py-3.5 bg-[#1a3a5a] text-white rounded-2xl font-bold text-sm hover:bg-[#122a42] transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20 active:scale-95">
                     <Printer class="w-4 h-4 mr-2" />
                     Imprimir Comprobante
                 </button>

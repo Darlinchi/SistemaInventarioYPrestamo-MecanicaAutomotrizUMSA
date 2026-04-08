@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class MaintenanceController extends Controller
 {
@@ -25,6 +26,17 @@ class MaintenanceController extends Controller
         return Inertia::render('maintenance/Index', [
             'maintenances' => $maintenances,
         ]);
+    }
+
+    public function generateReport($id)
+    {
+        // Cambiamos 'company' por 'companies'
+        $maint = Maintenance::with(['equipment', 'companies'])->findOrFail($id);
+
+        $pdf = Pdf::loadView('pdf.maintenance-report', compact('maint'));
+        $pdf->setPaper('letter', 'portrait');
+
+        return $pdf->stream("REPORTE_TECNICO_{$maint->id}.pdf");
     }
 
     /**

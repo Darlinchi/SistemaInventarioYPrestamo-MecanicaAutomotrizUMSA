@@ -6,6 +6,8 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import StatusBadge from '@/components/shared/StatusBadge.vue';
+import InputError from '@/components/InputError.vue';
 
 const props = defineProps<{
     show: boolean;

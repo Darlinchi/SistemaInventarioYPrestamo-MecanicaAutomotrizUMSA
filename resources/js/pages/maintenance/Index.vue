@@ -251,6 +251,10 @@ const closeViewInformacion = () => {
     maintenanceInformacion.value = null;
 };
 
+const handleGenerateReport = (id: number) => {
+    window.open(`/dashboard/maintenances/${id}/report`, '_blank');
+};
+
 </script>
 
 <template>
@@ -461,7 +465,7 @@ const closeViewInformacion = () => {
                     <MaintenanceTable
                         :maintenances="filteredMaintenances"
                         @view="openViewInformacion"
-                        @generateReport=""
+                        @generateReport="handleGenerateReport"
                     />
                 </div>
                 <!--<div v-if="activeTab === 'completados' && filteredMaintenances.length > 0"
