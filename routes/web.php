@@ -46,6 +46,8 @@ Route::middleware(['auth', 'verified'])
         Route::resource('equipments', EquipmentController::class);
 
         // Rutas de prestamos
+        Route::get('loans/{id}/report', [LoanController::class, 'generateReport'])->name('loans.report');
+
         Route::resource('loans', LoanController::class);
         Route::post('loans/{loan}/return', [LoanController::class, 'returnLoan'])->name('loans.return');
 

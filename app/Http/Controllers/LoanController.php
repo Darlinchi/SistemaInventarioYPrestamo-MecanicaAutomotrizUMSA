@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect; // Para el redireccionamiento
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;                     // Para renderizar las vistas
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LoanController extends Controller
 {
@@ -33,6 +34,25 @@ class LoanController extends Controller
         return Inertia::render('loan/Index', [
             'loans' => $loans,
         ]);
+    }
+
+    public function generateReport($id)
+    {
+        // 1. Cargamos el préstamo con las relaciones de la DB
+        // Importante: Cargamos accessories dentro de equipments para que tu accesor los encuentre
+        $loan = Loan::with([
+            'borrower',
+            'subject',
+            'equipments.accessories',
+            'tools'
+        ])->findOrFail($id);
+
+        // 2. Generar el PDF
+        // Al pasar $loan, el Blade ya podrá acceder a $loan->all_items automáticamente
+        $pdf = Pdf::loadView('pdf.loan-report', compact('loan'));
+        $pdf->setPaper('letter', 'portrait');
+
+        return $pdf->stream("COMPROBANTE_DEVOLUCION_{$id}.pdf");
     }
 
     /**
