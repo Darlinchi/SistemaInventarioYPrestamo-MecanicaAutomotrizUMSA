@@ -9,9 +9,12 @@ defineProps<{
     loan: any;
     isOpen: boolean;
     loanRoutes: any;
+    canReturn: boolean;
+    canEdit: boolean;
 }>();
 
 defineEmits(['toggleItems', 'return', 'edit']);
+
 </script>
 
 <template>
@@ -107,17 +110,21 @@ defineEmits(['toggleItems', 'return', 'edit']);
         </div>
 
         <div class="flex flex-row md:flex-col gap-3 mt-6 md:mt-0 md:ml-8 w-full md:w-auto">
-            <Link :href="loanRoutes.edit.url(loan.id)" class="flex-1">
+
+            <Link v-if="canEdit" :href="loanRoutes.edit.url(loan.id)" class="flex-1">
                 <button class="w-full flex items-center justify-center gap-2 bg-white border border-neutral-200 px-5 py-2.5 rounded-xl text-xs font-black text-neutral-700 hover:bg-neutral-100 transition shadow-sm uppercase tracking-wider">
                     <Edit class="w-3.5 h-3.5" /> Editar
                 </button>
             </Link>
+
             <button
+                v-if="canReturn"
                 @click="$emit('return', loan)"
                 class="flex-1 flex items-center justify-center gap-2 bg-[#1a3a5a] border border-[#1a3a5a] px-5 py-2.5 rounded-xl text-xs font-black text-white hover:bg-[#122a42] transition shadow-md uppercase tracking-wider active:scale-95"
             >
                 <CheckCircle class="w-3.5 h-3.5" /> Devolver
             </button>
+
         </div>
     </div>
 </template>

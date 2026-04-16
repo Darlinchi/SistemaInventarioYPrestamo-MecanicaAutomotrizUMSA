@@ -35,7 +35,13 @@ import reportRoutes from '@/routes/reports';
 
 const page = usePage();
 
-const mainNavItems = computed(() => {
+// Helper: verifica si el usuario tiene alguno de los roles indicados
+const hasRole = (...roles: string[]): boolean => {
+    const userRoles = (page.props.auth as any)?.user?.roles ?? [];
+    return roles.some(r => userRoles.includes(r));
+};
+
+const mainNavItems = computed((): NavItem[] => {
     const items: NavItem[] = [
         {
             title: 'Panel Principal',
@@ -55,20 +61,37 @@ const mainNavItems = computed(() => {
         });
     }
 
-    // Se agrego inventario para ambos
-    if (userRoles.includes('encargado')) {
+    // Gestionar Personal — solo super-admin
+    if (hasRole('super-admin')) {
+        items.push({
+            title: 'Gestionar Personal',
+            href: '/dashboard/usuarios',
+            icon: Users,
+        });
+    }
+
+    // Inventario — super-admin, director (lectura) y encargado (completo)
+    // El director ve el mismo enlace pero las acciones de crear/editar
+    // están bloqueadas en el backend por los permisos de Spatie.
+    if (hasRole('super-admin', 'director', 'encargado')) {
         items.push({
             title: 'Inventario',
             href: itemsRoutes.index.url(),
             icon: Package,
         });
+    }
 
+    // Préstamos — super-admin, director (lectura) y encargado (completo)
+    if (hasRole('super-admin', 'director', 'encargado')) {
         items.push({
             title: 'Préstamos',
             href: loansRoutes.index.url(),
             icon: ClipboardList,
         });
+    }
 
+    // Mantenimiento — super-admin y encargado (el director no opera esto)
+    if (hasRole('super-admin', 'encargado')) {
         items.push({
             title: 'Mantenimiento',
             href: maintenancesRoutes.index.url(),
@@ -80,13 +103,19 @@ const mainNavItems = computed(() => {
             href: maintenanceCompanyRoutes.index.url(),
             icon: Building2,
         });
+    }
 
+    // Prestamistas — super-admin, director (lectura) y encargado (completo)
+    if (hasRole('super-admin', 'director', 'encargado')) {
         items.push({
             title: 'Prestamistas',
             href: borrowersRoutes.index.url(),
             icon: UsersIcon,
         });
+    }
 
+    // Reportes — todos los roles los ven
+    if (hasRole('super-admin', 'director', 'encargado')) {
         items.push({
             title: 'Reportes',
             href: reportRoutes.index.url(),

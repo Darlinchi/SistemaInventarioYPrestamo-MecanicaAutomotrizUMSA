@@ -22,11 +22,16 @@ class DashboardController extends Controller
 
         // 2. Opcional: Obtener los últimos 5 préstamos para mostrar en la sección grande
         // En DashboardController.php
-        $recentLoans = Loan::with(['borrower', 'subject'])
-            ->has('borrower') // <--- Agrega esto para evitar préstamos "huérfanos"
-            ->orderBy('created_at', 'desc')
-            ->take(5)
-            ->get();
+        $recentLoans = Loan::with([
+            'borrower',
+            'subject',
+            'equipments.accessories', // Importante para los checkboxes de accesorios
+            'tools'
+        ])
+        ->where('estado_prestamo', 'Activo')
+        ->orderBy('created_at', 'desc')
+        ->take(5)
+        ->get();
 
         $recentEquipments = Equipment::orderBy('created_at', 'desc')
             ->take(4) // Tomamos los últimos 4 para que quepan bien en una fila

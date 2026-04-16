@@ -12,4 +12,9 @@ class Staff extends Model
     // No tiene un campo 'id' autoincremental propio
     protected $primaryKey = 'user_id';
     public $incrementing = false;
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

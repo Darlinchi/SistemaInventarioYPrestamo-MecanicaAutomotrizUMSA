@@ -5,16 +5,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import StatusBadge from '@/components/shared/StatusBadge.vue';
 import itemRoutes from '@/routes/items';
 
-defineProps<{
-    equipo: {
-        id: number;
-        nombre_equipo: string;
-        marca?: string;
-        serie?: string;
-        foto_equipo?: string;
-        estado_equipo: string;
-    }
-}>();
+
+defineProps<{ equipo: any }>();
+const emit = defineEmits(['ver-detalle']);
 
 </script>
 
@@ -45,14 +38,13 @@ defineProps<{
                 </p>
             </div>
 
-            <Link :href="itemRoutes.index.url()"
-                  class="mt-5 w-full py-3 bg-neutral-50 group-hover:bg-[#1a3a5a] group-hover:text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+            <button
+                type="button"
+                @click="emit('ver-detalle', equipo)"
+                class="mt-5 w-full py-3 bg-neutral-50 group-hover:bg-[#1a3a5a] group-hover:text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+            >
                 Ver Detalles
-            </Link>
-            <!--<Link :href="route('equipments.show', equipo.id)"
-                  class="mt-5 w-full py-3 bg-neutral-50 group-hover:bg-[#1a3a5a] group-hover:text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
-                Ver Detalles
-            </Link>-->
+            </button>
         </CardContent>
     </Card>
 </template>

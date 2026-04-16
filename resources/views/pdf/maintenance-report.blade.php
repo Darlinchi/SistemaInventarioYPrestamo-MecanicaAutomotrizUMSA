@@ -96,7 +96,7 @@
     </table>
 
     <div style="margin-top: 30px; font-size: 8pt; text-align: center; color: #666; font-style: italic;">
-        Documento generado por el Sistema de Gestión de Inventarios - Carrera de Mecánica Automotriz
+        Sistema de Gestión de Inventarios - Carrera de Mecánica Automotriz
     </div>
 
 </body>

@@ -63,8 +63,11 @@ const breadcrumbs: BreadcrumbItem[] = [{
     href: itemRoutes.index.url()
 }];
 
-// --- NOTIFICACIONES FLASH ---
 const page = usePage();
+const can = (permission: string) =>
+    (page.props.auth.user?.permissions ?? []).includes(permission);
+
+// --- NOTIFICACIONES FLASH ---
 const flashSuccess = computed(() => (page.props.flash as any)?.success);
 
 // --- LÓGICA DE TABLA ---
@@ -249,7 +252,7 @@ const closeViewInformacion = () => {
             >
                 <template #action>
                     <CreateActionButton
-                        v-if="activeTab !== 'bajas'"
+                        v-if="activeTab !== 'bajas' && can(activeTab === 'equipos' ? 'equipos.crear' : 'herramientas.crear')"
                         type="button"
                         :href="activeTab === 'equipos' ? equipmentRoutes.create.url() : toolRoutes.create.url()"
                         :label="`Agregar ${activeTab === 'equipos' ? 'Equipo' : 'Herramienta'}`"
@@ -269,10 +272,13 @@ const closeViewInformacion = () => {
                 <SelectFilter v-model="selectedLocation" label="Ubicaciones" :options="locationOptions" icon="Rows3" />
                 <ClearFiltersButton @clear="() => { selectedStatus=''; selectedLocation=''; searchQuery='' }" />
             </div>
+
             <InventoryTable
                 :items="filteredItems"
                 :activeTab="activeTab"
                 :openAccessoryId="openAccessoryId"
+                :can-edit="can('equipos.editar') || can('herramientas.editar')"
+                :can-baja="can('equipos.editar') || can('herramientas.editar')"
                 @view="openViewInformacion"
                 @baja="openConfirmBaja"
                 @toggleAccessories="toggleAccessories"

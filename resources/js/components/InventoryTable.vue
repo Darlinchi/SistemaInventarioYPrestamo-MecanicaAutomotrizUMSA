@@ -13,13 +13,14 @@ const props = defineProps<{
     items: any[];
     activeTab: 'equipos' | 'herramientas' | 'bajas'; // <--- Ahora sí coincide
     openAccessoryId: number | null;
+    canEdit: boolean;
+    canBaja: boolean;
 }>();
 
 const emit = defineEmits(['view', 'edit', 'baja', 'toggleAccessories']);
 
-const canEdit = (item: any) => {
+const itemEditable = (item: any) => {
     const estado = item.estado_equipo || item.estado_herramienta;
-    // No se puede editar si está en Mantenimiento o Préstamo
     const estadosBloqueados = ['Mantenimiento', 'Prestado'];
     return !estadosBloqueados.includes(estado);
 };
@@ -113,35 +114,37 @@ const canEdit = (item: any) => {
 
                 <td class="p-4 pr-8 text-right">
                     <div class="flex justify-end gap-2">
+                        <!-- Ver: todos los roles -->
                         <TableAction :icon="Eye" variant="view" title="Ver detalles" @click="$emit('view', item)" />
+
                         <template v-if="activeTab !== 'bajas'">
-                            <template v-if="canEdit(item)">
-                                <Link :href="item.tipo === 'equipo' ? equipmentRoutes.edit.url(item.id) : toolRoutes.edit.url(item.id)">
-                                    <TableAction :icon="SquarePen" variant="edit" title="Editar" />
-                                </Link>
+
+                            <!-- Editar: solo si tiene permiso -->
+                            <template v-if="canEdit">
+                                <template v-if="itemEditable(item)">
+                                    <Link :href="item.tipo === 'equipo' ? equipmentRoutes.edit.url(item.id) : toolRoutes.edit.url(item.id)">
+                                        <TableAction :icon="SquarePen" variant="edit" title="Editar" />
+                                    </Link>
+                                </template>
+                                <template v-else>
+                                    <div title="No se puede editar: El ítem está en mantenimiento o préstamo">
+                                        <TableAction :icon="SquarePen" variant="edit" class="opacity-30 cursor-not-allowed grayscale" @click.prevent />
+                                    </div>
+                                </template>
                             </template>
 
-                            <template v-else>
-                                <div title="No se puede editar: El ítem está en mantenimiento o préstamo">
-                                    <TableAction
-                                        :icon="SquarePen"
-                                        variant="edit"
-                                        class="opacity-30 cursor-not-allowed grayscale"
-                                        @click.prevent
-                                    />
-                                </div>
+                            <!-- Dar de baja: solo si tiene permiso -->
+                            <template v-if="canBaja">
+                                <template v-if="itemEditable(item)">
+                                    <TableAction :icon="Ban" variant="delete" title="Dar de baja" @click="$emit('baja', item)" />
+                                </template>
+                                <template v-else>
+                                    <div title="No se puede editar: El ítem está en mantenimiento o préstamo">
+                                        <TableAction :icon="Ban" variant="delete" class="opacity-30 cursor-not-allowed grayscale" @click.prevent />
+                                    </div>
+                                </template>
                             </template>
 
-                            <template v-if="canEdit(item)">
-                                <TableAction :icon="Ban" variant="delete" title="Dar de baja" @click="$emit('baja', item)" />
-                            </template>
-                            <template v-else>
-                                <div title="No se puede editar: El ítem está en mantenimiento o préstamo">
-                                    <TableAction :icon="Ban" variant="delete" title="Dar de baja"
-                                        class="opacity-30 cursor-not-allowed grayscale"
-                                        @click.prevent />
-                                </div>
-                            </template>
                         </template>
                     </div>
                 </td>

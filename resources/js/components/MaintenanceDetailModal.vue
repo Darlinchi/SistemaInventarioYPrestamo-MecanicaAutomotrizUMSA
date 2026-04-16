@@ -2,7 +2,7 @@
 import StatusBadge from '@/components/shared/StatusBadge.vue';
 import {
     XIcon, ClipboardList, Package, Building2, Wrench, CalendarCheck, ClockAlert, History,
-    CalendarClock, Calendar, Clock, AlignLeft, Printer, Image, Cog
+    CalendarClock, Calendar, Clock, AlignLeft, FileText, Image, Cog
 } from 'lucide-vue-next';
 
 const props = defineProps<{
@@ -162,8 +162,8 @@ const imprimirComprobante = () => {
                     Cerrar
                 </button>
                 <button @click="imprimirComprobante" class="flex-1 py-3.5 bg-[#1a3a5a] text-white rounded-2xl font-bold text-sm hover:bg-[#122a42] transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20 active:scale-95">
-                    <Printer class="w-4 h-4 mr-2" />
-                    Imprimir Comprobante
+                    <FileText class="w-4 h-4 mr-2" />
+                    Generar Reporte
                 </button>
             </div>
         </div>

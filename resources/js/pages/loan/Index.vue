@@ -38,6 +38,9 @@ const props = defineProps<{
     loans: Loan[];
 }>();
 
+const can = (permission: string) =>
+    (page.props.auth.user?.permissions ?? []).includes(permission);
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Préstamos',
@@ -284,6 +287,7 @@ const handleGenerateReport = (id: number | string) => {
     const url = `/dashboard/loans/${id}/report`;
     window.open(url, '_blank');
 };
+
 </script>
 
 <template>
@@ -298,6 +302,7 @@ const handleGenerateReport = (id: number | string) => {
             >
                 <template #action>
                     <CreateActionButton
+                        v-if="can('prestamos.crear')"
                         :href="loanRoutes.create.url()"
                         :label="`Registrar Préstamo`"
                     />
@@ -332,6 +337,8 @@ const handleGenerateReport = (id: number | string) => {
                         :loan="loan"
                         :isOpen="openLoanId === loan.id"
                         :loanRoutes="loanRoutes"
+                        :can-return="can('prestamos.devolver')"
+                        :can-edit="can('prestamos.editar')"
                         @toggleItems="toggleItems"
                         @return="openReturnModal"
                     />
@@ -342,6 +349,8 @@ const handleGenerateReport = (id: number | string) => {
                     <LoanHistoryTable
                         :loans="filteredLoans"
                         :openLoanId="openLoanId"
+                        :can-edit="can('prestamos.editar')"
+                        :can-delete="can('prestamos.eliminar')"
                         @view="openViewInformacion"
                         @toggleItems="toggleItems"
                         @generateReport="handleGenerateReport"

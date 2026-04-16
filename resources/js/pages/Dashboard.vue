@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import { useForm, usePage } from '@inertiajs/vue3';
 import { dashboard } from '@/routes';
+import { ref } from 'vue';
+import DashboardEquipmentModal from '@/components/DashboardEquipmentModal.vue';
 import itemRoutes from '@/routes/items';
 import equipmentRoutes from '@/routes/equipments';
 import toolRoutes from '@/routes/tools';
@@ -10,17 +13,12 @@ import StatCard from '@/components/shared/StatCard.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import CreateActionButton from '@/components/CreateActionButton.vue';
 import RecentEquipmentCard from '@/components/RecentEquipmentCard.vue';
+import ReturnLoanModal from '@/components/ReturnLoanModal.vue';
 import StatusBadge from '@/components/shared/StatusBadge.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import {
-    Package, User,
-    ClipboardCheck,
-    Wrench,
-    LayoutDashboard,
-    History,
-    ChevronRight,
-    Search
+import { Package, User, ClipboardCheck, Wrench, Edit, CheckCircle, History,
+    ChevronRight, Search
 } from 'lucide-vue-next';
 
 // Recibimos los datos del controlador
@@ -41,6 +39,74 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+const page = usePage();
+const can = (permission: string) =>
+    (page.props.auth.user?.permissions ?? []).includes(permission);
+
+// 3. Variables para el estado del modal
+const isModalOpen = ref(false);
+const selectedEquipo = ref(null);
+
+// 4. Función que recibe los datos de la tarjeta
+const handleVerDetalle = (equipo: any) => {
+    selectedEquipo.value = equipo;
+    isModalOpen.value = true;
+};
+
+// --- LÓGICA DE DEVOLUCIÓN ---
+const isReturnModalOpen = ref(false);
+const selectedLoan = ref<any>(null);
+
+const returnForm = useForm({
+    items: [] as any[],
+    observacion: '',
+    fecha_retorno: new Date().toISOString().split('T')[0], // Por defecto hoy
+    hora_fin: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
+});
+
+const openReturnModal = (loan: any) => {
+    if (!loan) return;
+    selectedLoan.value = loan;
+
+    // Usamos el accessor polimórfico que definiste en el modelo Loan.php
+    const itemsToProcess = loan.all_items || [];
+
+    // CORRECCIÓN: Usar itemsToProcess.map
+    returnForm.items = itemsToProcess.map((i: any) => ({
+        id: i.id,
+        nombre_mostrar: i.nombre_mostrar,
+        foto_equipo: i.foto_equipo || i.foto_herramienta || i.foto,
+        foto_herramienta: i.foto_herramienta || i.foto_equipo || i.foto,
+        foto: i.foto || i.foto_equipo || i.foto_herramienta,
+        // El 'type' debe ser exacto para el controlador
+        type: i.es_equipo ? 'App\\Models\\Equipment' : 'App\\Models\\Tool',
+        es_equipo: i.es_equipo,
+        estado_devolucion: 'Disponible',
+        accessories: (i.accessories || []).map((acc: any) => ({
+            id: acc.id,
+            nombre_accesorio: acc.nombre_accesorio,
+            foto_accesorio: acc.foto_accesorio,
+            estado_accesorio: 'Bueno'
+        }))
+    }));
+
+    const now = new Date();
+    returnForm.fecha_retorno = now.toISOString().split('T')[0];
+    returnForm.hora_fin = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    isReturnModalOpen.value = true;
+};
+
+const processReturn = () => {
+    returnForm.post(`/dashboard/loans/${selectedLoan.value.id}/return`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            isReturnModalOpen.value = false;
+            selectedLoan.value = null;
+            returnForm.reset();
+        }
+    });
+};
+
 </script>
 
 <template>
@@ -54,6 +120,7 @@ const breadcrumbs: BreadcrumbItem[] = [
             >
                 <template #action>
                     <CreateActionButton
+                        v-if="can('prestamos.crear')"
                         :href="loanRoutes.create.url()"
                         :label="`Registrar Préstamo`"
                     />
@@ -87,7 +154,8 @@ const breadcrumbs: BreadcrumbItem[] = [
             <Card class="rounded-[2.5rem] border-none shadow-sm overflow-hidden bg-white">
                 <CardHeader class="p-6 border-b border-neutral-100 flex flex-row items-center justify-between space-y-0">
                     <CardTitle class="text-lg font-black uppercase tracking-tight flex items-center gap-2">
-                        <History class="w-5 h-5 text-[#1a3a5a]" /> Últimos Préstamos
+                        <History class="w-5 h-5 text-[#1a3a5a]" />
+                        Préstamos Vigentes en Taller
                     </CardTitle>
                     <Link
                         :href="loanRoutes.index.url()"
@@ -106,7 +174,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                                     <th class="p-4">Materia / Unidad</th>
                                     <th class="p-4">Fecha Salida</th>
                                     <th class="p-4 text-center">Estado</th>
-                                    <th class="p-4 pr-8 text-right">Acción</th>
+                                    <th class="p-4 pr-8 text-right">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-neutral-100">
@@ -135,10 +203,28 @@ const breadcrumbs: BreadcrumbItem[] = [
                                     <td class="p-4 text-center">
                                         <StatusBadge :status="loan.estado_prestamo" class="text-[11px]" />
                                     </td>
-                                    <td class="p-4 pr-8 text-right">
-                                        <Link :href="loanRoutes.index.url()" class="text-neutral-300 group-hover:text-blue-600 transition-colors">
-                                            <ChevronRight class="w-5 h-5 inline" />
+                                    <td class="p-4 pr-8 text-right flex items-center justify-end gap-3">
+                                        <Link :href="loanRoutes.index.url()" class="text-neutral-300 hover:text-[#1a3a5a] transition-colors">
+                                            <ChevronRight class="w-5 h-5" />
                                         </Link>
+
+                                        <Link
+                                            v-if="can('prestamos.editar')"
+                                            :href="`/dashboard/loans/${loan.id}/edit`"
+                                            class="text-neutral-300 hover:text-blue-600 transition-colors"
+                                            title="Editar Préstamo"
+                                        >
+                                            <Edit class="w-5 h-5" />
+                                        </Link>
+
+                                        <button
+                                            v-if="can('prestamos.devolver') && loan.estado_prestamo === 'Activo'"
+                                            @click="openReturnModal(loan)"
+                                            class="text-neutral-300 hover:text-green-600 transition-colors"
+                                            title="Registrar Devolución"
+                                        >
+                                            <CheckCircle class="w-5 h-5" />
+                                        </button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -160,8 +246,22 @@ const breadcrumbs: BreadcrumbItem[] = [
                         v-for="equipo in recentEquipments"
                         :key="equipo.id"
                         :equipo="equipo"
+                        @ver-detalle="handleVerDetalle"
                     />
                 </div>
+                <DashboardEquipmentModal
+                    :show="isModalOpen"
+                    :equipo="selectedEquipo"
+                    @close="isModalOpen = false"
+                />
+                <ReturnLoanModal
+                    v-if="selectedLoan"
+                    :show="isReturnModalOpen"
+                    :loan="selectedLoan"
+                    :form="returnForm"
+                    @close="isReturnModalOpen = false"
+                    @confirm="processReturn"
+                />
             </div>
         </div>
     </AppLayout>

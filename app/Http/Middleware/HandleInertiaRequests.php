@@ -40,42 +40,43 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        // Conteo de préstamos vencidos (solo si hay usuario autenticado)
+        $vencidosCount = 0;
+        if ($request->user()) {
+            $now = Carbon::now();
+            $vencidosCount = Loan::where('estado_prestamo', '!=', 'Devuelto')
+                ->where(function ($query) use ($now) {
+                    $query->where('fecha_retorno_prevista', '<', $now->toDateString())
+                        ->orWhere(function ($q) use ($now) {
+                            $q->where('fecha_retorno_prevista', '=', $now->toDateString())
+                              ->where('hora_fin_prevista', '<', $now->toTimeString());
+                        });
+                })->count();
+        }
+
         return [
             ...parent::share($request),
-            'name' => 'SISTEMA WEB DE GESTIÓN DE INVENTARIOS Y CONTROL DE PRÉSTAMOS DE EQUIPOS', // El nombre de tu sistema
+            'name'  => 'SISTEMA WEB DE GESTIÓN DE INVENTARIOS Y CONTROL DE PRÉSTAMOS DE EQUIPOS',
             'quote' => ['message' => 'Carrera de Mecánica Automotriz - UMSA'],
-            //'name' => config('app.name'),
-            //'quote' => ['message' => trim($message), 'author' => trim($author)],
-            'auth' => [
+            'auth'  => [
                 'user' => $request->user() ? [
                     'id'       => $request->user()->id,
-                    'name'     => $request->user()->name,
                     'username' => $request->user()->username,
-                    // Esta es la parte clave: enviamos los nombres de los roles a Vue
-                    'roles'    => $request->user()->getRoleNames(),
+                    // getRoleNames() devuelve una Collection, se convierte a array para Vue
+                    'roles'    => $request->user()->getRoleNames()->toArray(),
+                    // Agrega esta línea:
+                    'permissions' => $request->user()->getAllPermissions()->pluck('name')->toArray(),
                 ] : null,
             ],
-            // CONFIGURACION PARA LOS MENSAJES FLASH
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error'   => fn () => $request->session()->get('error'),
             ],
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'sidebarOpen'   => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'notifications' => [
+                'vencidos_count' => $vencidosCount,
+            ],
         ];
 
-        $now = Carbon::now();
-
-        return array_merge(parent::share($request), [
-            'notifications' => [
-                'vencidos_count' => Loan::where('estado_prestamo', '!=', 'Devuelto')
-                    ->where(function ($query) use ($now) {
-                        $query->where('fecha_retorno_prevista', '<', $now->toDateString())
-                            ->orWhere(function ($q) use ($now) {
-                                $q->where('fecha_retorno_prevista', '=', $now->toDateString())
-                                    ->where('hora_fin_prevista', '<', $now->toTimeString());
-                            });
-                    })->count(),
-            ],
-        ]);
-        }
+    }
 }

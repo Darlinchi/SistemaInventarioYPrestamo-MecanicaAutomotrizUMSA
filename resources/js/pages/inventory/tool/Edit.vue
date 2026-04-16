@@ -107,6 +107,11 @@ function submit() {
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid gap-2">
+                            <Label for="ubicacion"><Rows3 class="w-5 h-5 text-[#1a3a5a]"/> Ubicación en Taller</Label>
+                            <Input id="ubicacion" v-model="form.ubicacion" />
+                            <InputError :message="form.errors.ubicacion" />
+                        </div>
+                        <div class="grid gap-2">
                             <Label for="estado_herramienta"><Hash class="w-5 h-5 text-[#1a3a5a]"/> Estado de la Herramienta</Label>
                             <select
                                 id="estado_herramienta"
@@ -120,11 +125,6 @@ function submit() {
                                 <option value="Baja">Baja</option>
                             </select>
                             <InputError :message="form.errors.estado_herramienta" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="ubicacion"><Rows3 class="w-5 h-5 text-[#1a3a5a]"/> Ubicación en Taller</Label>
-                            <Input id="ubicacion" v-model="form.ubicacion" />
-                            <InputError :message="form.errors.ubicacion" />
                         </div>
                     </div>
 

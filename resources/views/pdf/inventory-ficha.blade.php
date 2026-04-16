@@ -127,7 +127,7 @@
     <!-- ACCESORIOS -->
     @if($item->equipment && count($item->equipment->accessories) > 0)
     <table class="table">
-        <tr><td class="section-header">ACCESORIOS QUE DISPONE EL EQUIPO</td></tr>
+        <tr><td class="section-title">ACCESORIOS QUE DISPONE EL EQUIPO</td></tr>
         @foreach($item->equipment->accessories as $acc)
         <tr>
             <td>• {{ $acc->nombre_accesorio }} (Estado: {{ $acc->estado_accesorio }})</td>
@@ -150,19 +150,23 @@
     </table>
 
     <!-- FIRMAS -->
-    <table style="width: 100%; margin-top: 60px;">
+    <table style="width: 100%; margin-top: 60px; border: none;">
         <tr>
-            <td style="text-align: center; width: 45%; border-top: 1px solid #000;">
+            <td style="text-align: center; width: 45%; border: none; border-top: 1px solid #000;">
                 <br><strong>ELABORADO POR</strong><br>
                 {{ auth()->user()->name }}
             </td>
             <td style="width: 10%;"></td>
-            <td style="text-align: center; width: 45%; border-top: 1px solid #000;">
-                <br><strong>VISTO BUENO</strong><br>
-                Responsable de Taller
+            <td style="text-align: center; width: 45%; border: none; border-top: 1px solid #000;">
+                <br><strong>ENCARGADO DE TALLER</strong><br>
+                {{ auth()->user()->name }}
             </td>
+            <td style="width: 10%; border: none;"></td>
         </tr>
     </table>
 
+    <div style="margin-top: 30px; font-size: 8pt; text-align: center; color: #666; font-style: italic;">
+        Sistema de Gestión de Inventarios - Carrera de Mecánica Automotriz
+    </div>
 </body>
 </html>

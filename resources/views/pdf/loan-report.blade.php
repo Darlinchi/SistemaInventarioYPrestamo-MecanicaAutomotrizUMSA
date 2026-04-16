@@ -115,7 +115,7 @@
 
     <!-- OBSERVACIONES -->
     <table class="table">
-        <tr><td class="header-bg">NOTAS DE RECEPCIÓN FINAL:</td></tr>
+    <div style="font-weight: bold; margin-bottom: 5px; text-transform: uppercase;">Notasde recepción final:</div>
         <tr>
             <td style="height: 60px; vertical-align: top; font-style: italic;">
                 {{ $loan->observacion ?? 'El préstamo fue devuelto sin observaciones adicionales registradas.' }}
@@ -137,5 +137,8 @@
         </div>
     </div>
 
+    <div style="margin-top: 30px; font-size: 8pt; text-align: center; color: #666; font-style: italic;">
+        Sistema de Gestión de Inventarios - Carrera de Mecánica Automotriz
+    </div>
 </body>
 </html>

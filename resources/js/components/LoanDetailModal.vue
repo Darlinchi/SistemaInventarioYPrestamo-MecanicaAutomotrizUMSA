@@ -2,8 +2,8 @@
 import StatusBadge from '@/components/shared/StatusBadge.vue';
 import {
     XIcon, NotebookText, User, BookMarked, CalendarClock, ClockAlert, CalendarCheck, History,
-    Calendar, Clock, Package, Image, CornerDownRight,
-    AlignLeft, Printer
+    Calendar, Clock, Package, Image, CornerDownRight, FileText,
+    AlignLeft
 } from 'lucide-vue-next';
 
 const props = defineProps<{
@@ -13,7 +13,13 @@ const props = defineProps<{
 
 const emit = defineEmits(['close']);
 
-const imprimirReporte = () => window.print();
+
+// Define la función para evitar el error de "window" en el template
+const handleGenerateReport = (id: number | string) => {
+    // Usamos la cadena de texto exacta de tu ruta de Wayfinder
+    const url = `/dashboard/loans/${id}/report`;
+    window.open(url, '_blank');
+};
 
 </script>
 
@@ -220,9 +226,9 @@ const imprimirReporte = () => window.print();
                 <button @click="$emit('close')" class="flex-1 py-3.5 bg-white border border-neutral-200 text-neutral-600 rounded-2xl font-bold text-sm hover:bg-neutral-100 transition-all shadow-sm">
                     Cerrar
                 </button>
-                <button @click="imprimirReporte" class="flex-1 py-3.5 bg-[#1a3a5a] text-white rounded-2xl font-bold text-sm hover:bg-[#122a42] transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20 active:scale-95">
-                    <Printer class="w-4 h-4 mr-2" />
-                    Imprimir Comprobante
+                <button @click="handleGenerateReport(loan.id)" class="flex-1 py-3.5 bg-[#1a3a5a] text-white rounded-2xl font-bold text-sm hover:bg-[#122a42] transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20 active:scale-95">
+                    <FileText class="w-4 h-4 mr-2" />
+                    Generar Reporte
                 </button>
             </div>
         </div>

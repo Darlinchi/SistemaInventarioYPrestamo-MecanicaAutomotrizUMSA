@@ -96,7 +96,6 @@ class EquipmentController extends Controller
                 return redirect()->route('items.index')->with('success', 'Equipo registrado con éxito');
             });
         } catch (\Exception $e) {
-            // Esto te ayudará a ver el error real en los logs de Laravel (storage/logs/laravel.log)
             \Log::error("Error al guardar equipo: " . $e->getMessage());
             return back()->withErrors(['error' => 'Error interno: ' . $e->getMessage()])->withInput();
         }
@@ -108,6 +107,35 @@ class EquipmentController extends Controller
     public function show(Equipment $equipment)
     {
         //
+        // 1. Cargamos las relaciones necesarias para la ficha técnica
+        // 'accessories' para la lista de partes
+        // 'maintenances' para el historial que se muestra en el modal
+        $equipment->load(['accessories', 'maintenances' => function($query) {
+            $query->orderBy('fecha_retorno', 'desc'); // Traemos el último mantenimiento primero
+        }]);
+
+        // 2. Normalizamos los datos (mapeo)
+        // Esto es vital para que el modal genérico funcione sin errores
+        $equipment->nombre_item = $equipment->nombre_equipo;
+        $equipment->ubicacion_item = $equipment->ubicacion_equipo;
+        $equipment->descripcion_item = $equipment->descripcion_equipo;
+        $equipment->observacion_item = $equipment->observacion_equipo;
+
+        // Agregamos propiedades virtuales necesarias para el frontend
+        $equipment->tipo = 'equipo';
+        $equipment->equipment = $equipment; // Para que el @if(item.equipment) del modal sea true
+
+        // 3. Retornamos los datos
+        // Si lo llamas desde Inertia (navegación directa)
+        if (request()->wantsJson()) {
+            return response()->json($equipment);
+        }
+
+        // Si prefieres que redirija al inventario con el modal abierto (opcional)
+        return Inertia::render('inventory/Index', [
+            'selectedItem' => $equipment,
+            'openModal' => true
+        ]);
     }
 
     /**
