@@ -157,6 +157,9 @@ Route::middleware(['auth', 'verified'])
 
         // Reports
         Route::resource('reports', ReportController::class);
+        Route::get('reports/inventory/pdf', [ReportController::class, 'exportInventory']);
+        Route::get('reports/history/pdf', [ReportController::class, 'exportHistory'])->name('reports.history.pdf');
+        Route::get('reports/issues/pdf', [ReportController::class, 'exportIssues'])->name('reports.issues.pdf');
     });
 
     ////////////////////////////////////////////////////

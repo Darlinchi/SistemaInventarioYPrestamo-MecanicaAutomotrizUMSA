@@ -122,7 +122,9 @@ const itemEditable = (item: any) => {
                             <!-- Editar: solo si tiene permiso -->
                             <template v-if="canEdit">
                                 <template v-if="itemEditable(item)">
-                                    <Link :href="item.tipo === 'equipo' ? equipmentRoutes.edit.url(item.id) : toolRoutes.edit.url(item.id)">
+                                    <Link :href="item.tipo === 'equipo'
+                                        ? equipmentRoutes.edit.url(item.id) + '?tab=equipos'
+                                        : toolRoutes.edit.url(item.id) + '?tab=herramientas'">
                                         <TableAction :icon="SquarePen" variant="edit" title="Editar" />
                                     </Link>
                                 </template>

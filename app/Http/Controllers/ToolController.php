@@ -106,7 +106,8 @@ class ToolController extends Controller
                 'observacion_herramienta' => $request->observacion_herramienta,
             ]);
 
-            return redirect()->route('items.index')->with('success', 'La herramienta ' . $tool->nombre_herramienta . ' ha sido dada de baja con éxito!');
+            return redirect()->route('items.index', ['tab' => 'bajas'])
+                     ->with('success', 'La herramienta ' . $tool->nombre_herramienta . ' ha sido dada de baja con éxito!');
         }
 
         $validated = $request->validate([
@@ -146,7 +147,8 @@ class ToolController extends Controller
                     'estado_herramienta'      => $validated['estado_herramienta'],
                 ]);
 
-                return redirect()->route('items.index')->with('success', '¡Registro de ' . $tool->nombre_herramienta . ' actualizado con éxito!');
+                return redirect()->route('items.index', ['tab' => 'herramientas'])
+                     ->with('success', '¡Registro de ' . $tool->nombre_herramienta . ' actualizado con éxito!');
             });
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Error al actualizar: ' . $e->getMessage()])->withInput();

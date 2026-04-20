@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
-    {
-        Schema::create('item_loan', function (Blueprint $table) {
+    /**Schema::create('item_loan', function (Blueprint $table) {
             $table->foreignId('loan_id')->constrained('loans')->onDelete('cascade');
             // Campos polimórficos
             // loanable_id: guardará el ID del equipo o herramienta
@@ -28,6 +23,11 @@ return new class extends Migration
             ])->default('Prestado');
             $table->timestamps();
         });
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+
     }
 
     /**

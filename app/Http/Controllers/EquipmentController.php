@@ -167,7 +167,8 @@ class EquipmentController extends Controller
                 'estado_equipo' => $request->estado_equipo,
                 'observacion_equipo' => $request->observacion_equipo,
             ]);
-            return redirect()->route('items.index')
+
+            return redirect()->route('items.index', ['tab' => 'bajas'])
                 ->with('success', 'El equipo ' . $equipment->nombre_equipo . ' ha sido dado de baja.');
         }
 
@@ -274,7 +275,7 @@ class EquipmentController extends Controller
                     }
                 }
 
-                return redirect()->route('items.index')
+                return redirect()->route('items.index', ['tab' => 'equipos'])
                     ->with('success', "¡El equipo {$equipment->nombre_equipo} fue actualizado con éxito!");
             });
         } catch (\Exception $e) {

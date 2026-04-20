@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import SearchInput from '@/components/shared/SearchInput.vue';
+import StatusBadge from '@/components/shared/StatusBadge.vue';
 import { ref, computed } from 'vue';
 import maintenancesRoutes from '@/routes/maintenances';
 import { ArrowLeft, Wrench, Building2, Cog, Loader2, Save, ClipboardPen, Check, Package,
@@ -47,16 +48,20 @@ const form = useForm({
 
 const filteredItems = computed(() => {
     const search = searchTerm.value.toLowerCase();
-    return props.equipment.filter(unit => {
-        // Filtro de disponibilidad
-        const isAvailable = unit.estado_equipo === 'Disponible' || form.equipment_id === unit.id;
-        if (!isAvailable) return false;
 
-        // CORRECCIÓN AQUÍ: Quitamos el ".item"
-        // Asegúrate de usar el nombre de la columna real (ej. nombre_equipo)
-        const nameMatch = unit.nombre_equipo ? unit.nombre_equipo.toLowerCase().includes(search) : false;
-        const serieMatch = unit.serie ? unit.serie.toLowerCase().includes(search) : false;
-        const codeMatch = unit.codigo_qr ? unit.codigo_qr.toLowerCase().includes(search) : false;
+    return props.equipment.filter(unit => {
+        // 1. Filtro de estados permitidos para mantenimiento
+        const estadosPermitidos = ['Disponible', 'Incompleto', 'Dañado'];
+
+        // Es elegible si está en la lista de permitidos O si ya es el equipo seleccionado actualmente en el form
+        const isEligible = estadosPermitidos.includes(unit.estado_equipo) || form.equipment_id === unit.id;
+
+        if (!isEligible) return false;
+
+        // 2. Filtro de búsqueda por texto
+        const nameMatch = unit.nombre_equipo?.toLowerCase().includes(search) ?? false;
+        const serieMatch = unit.serie?.toLowerCase().includes(search) ?? false;
+        const codeMatch = unit.codigo_qr?.toLowerCase().includes(search) ?? false;
 
         return nameMatch || serieMatch || codeMatch;
     });
@@ -218,7 +223,10 @@ const submit = () => {
                                     <p class="text-sm font-bold text-black leading-tight">
                                         {{ unit.nombre_equipo }}
                                     </p>
-                                    <p class="text-[12px] font-mono text-blue-600 font-bold uppercase">Cód: {{ unit.codigo_qr }}</p>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <p class="text-[11px] font-mono text-blue-600 font-bold uppercase">Cód: {{ unit.codigo_qr }}</p>
+                                        <StatusBadge :status="unit.estado_equipo" class="scale-85 origin-left" />
+                                    </div>
                                 </div>
 
                                 <div v-if="form.equipment_id === unit.id" class="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shrink-0">

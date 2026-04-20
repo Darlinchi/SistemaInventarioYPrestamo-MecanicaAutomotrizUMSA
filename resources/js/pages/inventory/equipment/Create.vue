@@ -81,6 +81,9 @@ const addAccesorio = () => {
 
 const removeAccesorio = (index: number) => form.accesorios.splice(index, 1);
 
+const urlParams = new URLSearchParams(window.location.search);
+const fromTab = urlParams.get('tab') || 'herramientas';
+
 function submit() {
     // Creamos una copia para no alterar el formulario original en la vista
     form.post(equipmentRoutes.store.url(), {
@@ -107,7 +110,7 @@ function submit() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-3xl mx-auto p-4 w-full">
             <div class="mb-6">
-                <Link :href="itemsRoutes.index.url()" class="inline-flex items-center text-[15px] font-medium text-neutral-500 hover:text-[#1a3a5a] transition-colors group">
+                <Link :href="itemsRoutes.index.url()+ '?tab=' + fromTab" class="inline-flex items-center text-[15px] font-medium text-neutral-500 hover:text-[#1a3a5a] transition-colors group">
                     <ArrowLeft class="w-5 h-5 mr-1 group-hover:-translate-x-1 transition-transform"/>
                     Volver al inventario
                 </Link>
@@ -312,13 +315,12 @@ function submit() {
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 justify-end gap-4 w-full">
-                    <button
-                        type="button"
-                        @click="itemsRoutes.index.url()"
-                        class="flex items-center justify-center h-14 bg-white border border-neutral-200 text-neutral-600 rounded-xl font-semibold text-[20px] hover:bg-neutral-50 transition-all active:scale-95"
+                    <Link
+                        :href="itemsRoutes.index.url()+ '?tab=' + fromTab"
+                        class="flex items-center justify-center h-14 bg-white border border-neutral-200 text-neutral-500 rounded-xl font-semibold text-[20px] hover:bg-neutral-100 transition-all active:scale-95 shadow-sm"
                     >
                         Cancelar
-                    </button>
+                    </Link>
 
                     <Button
                         type="submit"

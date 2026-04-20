@@ -27,6 +27,13 @@ const formatSafeDate = (dateString: string) => {
         year: 'numeric'
     });
 };
+
+const exportHistoryPdf = () => {
+    // Abrimos el reporte en una pestaña nueva
+    const url = '/dashboard/reports/history/pdf';
+    window.open(url, '_blank');
+};
+
 </script>
 
 <template>
@@ -39,7 +46,10 @@ const formatSafeDate = (dateString: string) => {
                 </h3>
                 <p class="text-sm text-neutral-500 font-medium">Registro cronológico de préstamos y devoluciones</p>
             </div>
-            <button class="bg-[#1a3a5a] text-white px-6 py-3 rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 hover:bg-[#122a42] transition-all shadow-lg shadow-blue-900/10 active:scale-95">
+            <button
+                @click="exportHistoryPdf"
+                class="bg-[#1a3a5a] text-white px-6 py-3 rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 hover:bg-[#122a42] transition-all shadow-lg shadow-blue-900/10 active:scale-95"
+            >
                 <FileDown class="w-4 h-4" /> Exportar Historial
             </button>
         </div>
@@ -129,7 +139,7 @@ const formatSafeDate = (dateString: string) => {
                     ? 'bg-neutral-50 text-neutral-400 border-neutral-100'
                     : 'bg-[#1a3a5a] text-white border-[#1a3a5a] shadow-blue-900/20'
             ]">
-                {{ log.fecha_retorno ? 'Cerrado' : 'Activo' }}
+                {{ log.fecha_retorno ? 'Completado' : 'Activo' }}
             </span>
         </div>
     </div>

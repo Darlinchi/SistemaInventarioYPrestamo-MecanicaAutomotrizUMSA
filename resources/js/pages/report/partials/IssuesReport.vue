@@ -7,6 +7,13 @@ import StatusBadge from '@/components/shared/StatusBadge.vue';
 const props = defineProps<{
     issues: Array<any>;
 }>();
+
+// Dentro del <script setup>
+const exportIssuesPdf = () => {
+    const url = '/dashboard/reports/issues/pdf';
+    window.open(url, '_blank');
+};
+
 </script>
 
 <template>
@@ -22,7 +29,8 @@ const props = defineProps<{
 
             <button
                 v-if="issues.length > 0"
-                class="bg-[#1a3a5a] text-white px-6 py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 hover:bg-[#1a3a5a] transition-all shadow-lg shadow-red-900/10 active:scale-95 whitespace-nowrap"
+                @click="exportIssuesPdf"
+                class="bg-[#1a3a5a] text-white px-6 py-3.5 rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center gap-2 hover:bg-[#122a42] transition-all shadow-lg shadow-blue-900/10 active:scale-95 whitespace-nowrap"
             >
                 <FileDown class="w-4 h-4" /> Exportar Incidencias
             </button>

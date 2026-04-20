@@ -45,7 +45,7 @@ class MaintenanceController extends Controller
     public function create()
     {
         return Inertia::render('maintenance/Create', [
-            'equipment' => Equipment::all(),
+            'equipment' => Equipment::whereIn('estado_equipo', ['Disponible', 'Incompleto', 'Dañado'])->get(),
             'companies' => MaintenanceCompany::all() // Para seleccionar la empresa
         ]);
     }

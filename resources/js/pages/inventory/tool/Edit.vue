@@ -55,6 +55,9 @@ const resetFoto = () => {
     photoPreview.value = props.tool.foto_herramienta ? `/storage/${props.tool.foto_herramienta}` : null;
 };
 
+const urlParams = new URLSearchParams(window.location.search);
+const fromTab = urlParams.get('tab') || 'herramientas';
+
 function submit() {
     form.post(toolsRoutes.update.url(props.tool.id), {
         forceFormData: true,
@@ -69,7 +72,7 @@ function submit() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-2xl mx-auto p-4 w-full">
             <div class="mb-6">
-                <Link :href="itemsRoutes.index.url()" class="inline-flex items-center text-[15px] font-medium text-neutral-500 hover:text-[#1a3a5a] transition-colors group">
+                <Link :href="itemsRoutes.index.url()+ '?tab=' + fromTab" class="inline-flex items-center text-[15px] font-medium text-neutral-500 hover:text-[#1a3a5a] transition-colors group">
                     <ArrowLeft class="w-5 h-5 mr-1 group-hover:-translate-x-1 transition-transform"/>
                     Volver al inventario
                 </Link>
@@ -209,7 +212,7 @@ function submit() {
 
                 <div class="grid grid-cols-1 md:grid-cols-2 justify-end gap-4 w-full">
                     <Link
-                        :href="itemsRoutes.index.url()"
+                        :href="itemsRoutes.index.url()+ '?tab=' + fromTab"
                         class="flex items-center justify-center h-14 bg-white border border-neutral-200 text-neutral-500 rounded-xl font-semibold text-[20px] hover:bg-neutral-100 transition-all active:scale-95 shadow-sm"
                     >
                         Cancelar
