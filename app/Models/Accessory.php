@@ -4,9 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Accessory extends Model
 {
+    use HasFactory;
+
+    protected $table = 'accessories';
+
     protected $fillable = [
         'equipment_id',
         'nombre_accesorio',
@@ -14,7 +19,7 @@ class Accessory extends Model
         'estado_accesorio',
     ];
 
-    public function equipment()
+    public function equipment(): BelongsTo
     {
         return $this->belongsTo(Equipment::class);
     }

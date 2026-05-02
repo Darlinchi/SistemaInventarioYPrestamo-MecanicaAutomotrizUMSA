@@ -3,9 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Student extends Model
 {
+    use HasFactory;
+
+    protected $table      = 'students';
     protected $primaryKey = 'id_student'; // Indicamos que la PK no es 'id'
     public $incrementing = false;        // No es autoincremental
 
@@ -16,7 +21,7 @@ class Student extends Model
     ];
 
     // Relación inversa: Un estudiante pertenece a un prestatario
-    public function borrower()
+    public function borrower(): BelongsTo
     {
         return $this->belongsTo(Borrower::class, 'id_student');
     }

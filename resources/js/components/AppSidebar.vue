@@ -19,13 +19,17 @@ import AppLogo from './AppLogo.vue';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 // Aqui estan los iconos utilizados
-import { Users, Package, Building2, LayoutDashboard, ClipboardList, Settings, FileText, UsersIcon } from 'lucide-vue-next';
+import { Users, Package, Building2, LayoutDashboard, ClipboardList, Settings, FileText, UsersIcon,
+    NotebookPen, NotebookText
+ } from 'lucide-vue-next';
 // Rutas del inventario
 import itemsRoutes from '@/routes/items';
 // Rutas de los prestamistas
 import borrowersRoutes from '@/routes/borrowers';
 // Rutas de los prestamos
 import loansRoutes from '@/routes/loans';
+// Rutas de las devoluciones
+import loanReturnRoutes from '@/routes/loan-returns';
 // Rutas de las mantenimiento
 import maintenancesRoutes from '@/routes/maintenances';
 // Rutas de las empresas de mantenimiento
@@ -86,14 +90,23 @@ const mainNavItems = computed((): NavItem[] => {
         items.push({
             title: 'Préstamos',
             href: loansRoutes.index.url(),
-            icon: ClipboardList,
+            icon: NotebookPen,
+        });
+    }
+
+    // Devoluciones — super-admin, director (lectura) y encargado (completo)
+    if (hasRole('super-admin', 'director', 'encargado')) {
+        items.push({
+            title: 'Devoluciones',
+            href: loanReturnRoutes.index.url(),
+            icon: NotebookText,
         });
     }
 
     // Mantenimiento — super-admin y encargado (el director no opera esto)
     if (hasRole('super-admin', 'encargado')) {
         items.push({
-            title: 'Mantenimiento',
+            title: 'Mantenimientos',
             href: maintenancesRoutes.index.url(),
             icon: Settings,
         });
@@ -108,7 +121,7 @@ const mainNavItems = computed((): NavItem[] => {
     // Prestamistas — super-admin, director (lectura) y encargado (completo)
     if (hasRole('super-admin', 'director', 'encargado')) {
         items.push({
-            title: 'Prestamistas',
+            title: 'Solicitantes',
             href: borrowersRoutes.index.url(),
             icon: UsersIcon,
         });

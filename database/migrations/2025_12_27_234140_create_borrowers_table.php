@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('borrowers', function (Blueprint $table) {
             $table->id(); // Este será el id_prestario
             $table->string('cedula_identidad', 20)->unique();
-            $table->string('nombresP', 100);
-            $table->string('apellidosP', 100);
+            $table->string('nombres', 100);
+            $table->string('apellidos', 100);
             $table->timestamps();
         });
     }

@@ -28,6 +28,8 @@ return new class extends Migration
                 ->on('subjects')
                 ->onDelete('cascade');
 
+            $table->string('paralelo', 5)->default('A');
+
             $table->primary(['teacher_id', 'subject_id']);
             $table->timestamps();
         });

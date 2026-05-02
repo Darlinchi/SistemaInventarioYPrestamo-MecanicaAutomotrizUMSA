@@ -4,9 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Borrower extends Model
 {
+    use HasFactory;
+
+    protected $table = 'borrowers';
+
+    protected $fillable = [
+        'cedula_identidad',
+        'nombres',
+        'apellidos',
+    ];
+
     //Relación con el Docente
     public function teacher(): HasOne
     {
@@ -41,4 +53,17 @@ class Borrower extends Model
         return $this->hasMany(Loan::class, 'id', 'id');
     }
 
+    // ─── Helper: devuelve el tipo real del borrower ────────────────
+    public function getTipoAttribute(): string
+    {
+        if ($this->teacher()->exists())   return 'docente';
+        if ($this->assistant()->exists()) return 'auxiliar';
+        if ($this->student()->exists())   return 'estudiante';
+        return 'desconocido';
+    }
+
+    public function getNombreCompletoAttribute(): string
+    {
+        return "{$this->nombres} {$this->apellidos}";
+    }
 }

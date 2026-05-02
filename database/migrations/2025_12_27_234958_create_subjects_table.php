@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id(); // Este será nuestro id_materia
             $table->string('sigla', 20)->unique();
             $table->string('nombre_materia', 100);
+            $table->unsignedInteger('semestre')->nullable();
             $table->timestamps();
         });
     }

@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { Head, usePage } from '@inertiajs/vue3';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import AlertNotification from '@/components/AlertNotification.vue';
 import PageHeader from '@/components/PageHeader.vue';
-import CreateActionButton from '@/components/CreateActionButton.vue';
 import SearchInput from '@/components/shared/SearchInput.vue';
 import SelectFilter from '@/components/shared/SelectFilter.vue';
 import DateFilter from '@/components/shared/DateFilter.vue';
 import ClearFiltersButton from '@/components/shared/ClearFiltersButton.vue';
-import LoanActiveCard from '@/components/LoanActiveCard.vue';
-import ReturnLoanModal from '@/components/ReturnLoanModal.vue';
+import LoanHistoryTable from '@/components/LoanHistoryTable.vue';
+import LoanDetailModal from '@/components/LoanDetailModal.vue';
 import { Package } from 'lucide-vue-next';
 import loanRoutes from '@/routes/loans';
 
@@ -30,9 +29,11 @@ interface Loan {
     all_items: any[];
 }
 
-const props = defineProps<{
-    loans: Loan[];
-}>();
+const props = withDefaults(defineProps<{
+    loans?: Loan[];
+}>(), {
+    loans: () => []
+});
 
 const page = usePage();
 const can = (permission: string) =>
@@ -40,6 +41,7 @@ const can = (permission: string) =>
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Préstamos', href: loanRoutes.index.url() },
+    { title: 'Devoluciones', href: '#' },
 ];
 
 // --- NOTIFICACIONES FLASH ---
@@ -76,9 +78,9 @@ const months = [
     { id: 10, name: 'Octubre' }, { id: 11, name: 'Noviembre' }, { id: 12, name: 'Diciembre' }
 ];
 
-// Solo préstamos activos
+// Solo préstamos devueltos
 const filteredLoans = computed(() => {
-    let filtered = props.loans.filter((loan: Loan) => loan.estado_prestamo === 'Activo');
+    let filtered = props.loans.filter((loan: Loan) => loan.estado_prestamo === 'Devuelto');
 
     if (searchQuery.value.trim() !== '') {
         const query = searchQuery.value.toLowerCase();
@@ -103,11 +105,15 @@ const filteredLoans = computed(() => {
         filtered = filtered.filter(loan => loan.subject.sigla === selectedSubject.value);
     }
     if (filterDate.value !== '') {
-        filtered = filtered.filter(loan => loan.fecha_salida === filterDate.value);
+        // Para devoluciones filtramos por fecha_retorno si existe, sino por fecha_salida
+        filtered = filtered.filter(loan =>
+            (loan.fecha_retorno ?? loan.fecha_salida) === filterDate.value
+        );
     }
     if (filterMonth.value !== '') {
         filtered = filtered.filter(loan => {
-            const month = new Date(loan.fecha_salida + 'T00:00:00').getMonth() + 1;
+            const fechaRef = loan.fecha_retorno ?? loan.fecha_salida;
+            const month = new Date(fechaRef + 'T00:00:00').getMonth() + 1;
             return month.toString() === filterMonth.value;
         });
     }
@@ -118,7 +124,7 @@ const filteredLoans = computed(() => {
 const uniqueSubjects = computed(() => {
     const subjectsMap = new Map();
     props.loans
-        .filter(l => l.estado_prestamo === 'Activo')
+        .filter(l => l.estado_prestamo === 'Devuelto')
         .forEach(loan => {
             if (loan.subject) subjectsMap.set(loan.subject.sigla, loan.subject.nombre_materia);
         });
@@ -128,97 +134,44 @@ const uniqueSubjects = computed(() => {
 const uniqueBorrowerCI = computed(() => {
     const borrowersMap = new Map();
     props.loans
-        .filter(l => l.estado_prestamo === 'Activo')
+        .filter(l => l.estado_prestamo === 'Devuelto')
         .forEach(loan => {
             if (loan.borrower) borrowersMap.set(loan.borrower.cedula_identidad, loan.borrower.apellidos);
         });
     return Array.from(borrowersMap.entries()).map(([cedula_identidad, apellidos]) => ({ cedula_identidad, apellidos }));
 });
 
-// --- MODAL DE DEVOLUCIÓN ---
-const isReturnModalOpen = ref(false);
-const selectedLoan = ref<any>(null);
+// --- MODAL DE DETALLE ---
+const viewInformacion = ref(false);
+const loanInformacion = ref<Loan | null>(null);
 
-const returnForm = useForm({
-    loan_id: null as number | null,
-    items: [] as any[],
-    observacion: '',
-    fecha_retorno: new Date().toISOString().split('T')[0],
-    hora_fin: '',
-});
-
-const openReturnModal = (loan: any) => {
-    if (!loan) return;
-    selectedLoan.value = loan;
-    returnForm.loan_id = loan.id;
-    returnForm.observacion = '';
-
-    returnForm.items = (loan.all_items || []).map((i: any) => ({
-        id: i.id,
-        nombre_mostrar: i.nombre_mostrar,
-        foto: i.foto || i.foto_equipo || i.foto_herramienta,
-        tipo: i.es_equipo ? 'equipo' : 'herramienta',
-        es_equipo: i.es_equipo,
-        estado_devolucion: 'Disponible',
-        accessories: (i.accessories || []).map((acc: any) => ({
-            id: acc.id,
-            nombre_accesorio: acc.nombre_accesorio,
-            estado_accesorio: 'Bueno'
-        }))
-    }));
-
-    const now = new Date();
-    returnForm.fecha_retorno = now.toISOString().split('T')[0];
-    returnForm.hora_fin = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-    isReturnModalOpen.value = true;
+const openViewInformacion = (loan: Loan) => {
+    loanInformacion.value = loan;
+    viewInformacion.value = true;
 };
 
-const processReturn = () => {
-    returnForm.post('/dashboard/loan-returns', {
-        preserveScroll: true,
-        onSuccess: () => {
-            isReturnModalOpen.value = false;
-            selectedLoan.value = null;
-            returnForm.reset();
-        },
-        onError: (err) => {
-            console.log("Error detallado:", err);
-        }
-    });
+const closeViewInformacion = () => {
+    viewInformacion.value = false;
+    loanInformacion.value = null;
 };
 
-const currentTime = ref(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-let timer: any;
-watch(isReturnModalOpen, (isOpen) => {
-    if (isOpen) {
-        timer = setInterval(() => {
-            currentTime.value = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }, 60000);
-    } else {
-        clearInterval(timer);
-    }
-});
+const handleGenerateReport = (id: number | string) => {
+    const url = `/dashboard/loans/${id}/report`;
+    window.open(url, '_blank');
+};
 
 </script>
 
 <template>
-    <Head title="Préstamos Activos" />
+    <Head title="Devoluciones" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
             <AlertNotification :message="flashSuccess" />
 
             <PageHeader
-                description="Administre los préstamos activos de equipos y herramientas del taller"
-            >
-                <template #action>
-                    <CreateActionButton
-                        v-if="can('prestamos.crear')"
-                        :href="loanRoutes.create.url()"
-                        :label="`Registrar Préstamo`"
-                    />
-                </template>
-            </PageHeader>
+                description="Historial de devoluciones de equipos y herramientas del taller"
+            />
 
             <!-- FILTROS -->
             <div class="flex flex-col md:flex-row items-center gap-3 mb-6 w-full">
@@ -234,31 +187,27 @@ watch(isReturnModalOpen, (isOpen) => {
             <div class="space-y-4">
                 <div v-if="filteredLoans.length === 0" class="text-center py-20 bg-neutral-50 rounded-3xl border-2 border-dashed border-neutral-200">
                     <Package class="w-12 h-12 mx-auto text-neutral-300 mb-4" />
-                    <p class="text-neutral-500 font-medium">No se encontraron préstamos activos con esos criterios.</p>
+                    <p class="text-neutral-500 font-medium">No se encontraron devoluciones con esos criterios.</p>
                 </div>
 
-                <div v-else class="space-y-4">
-                    <LoanActiveCard
-                        v-for="loan in filteredLoans"
-                        :key="loan.id"
-                        :loan="loan"
-                        :isOpen="openLoanId === loan.id"
-                        :loanRoutes="loanRoutes"
-                        :can-return="can('prestamos.devolver')"
+                <div v-else>
+                    <LoanHistoryTable
+                        :loans="filteredLoans"
+                        :openLoanId="openLoanId"
                         :can-edit="can('prestamos.editar')"
+                        :can-delete="can('prestamos.eliminar')"
+                        @view="openViewInformacion"
                         @toggleItems="toggleItems"
-                        @return="openReturnModal"
+                        @generateReport="handleGenerateReport"
                     />
                 </div>
             </div>
         </div>
 
-        <ReturnLoanModal
-            :show="isReturnModalOpen"
-            :loan="selectedLoan"
-            :form="returnForm"
-            @close="isReturnModalOpen = false"
-            @confirm="processReturn"
+        <LoanDetailModal
+            :show="viewInformacion"
+            :loan="loanInformacion"
+            @close="closeViewInformacion"
         />
     </AppLayout>
 </template>

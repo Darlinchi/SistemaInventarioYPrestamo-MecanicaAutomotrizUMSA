@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreign('id_assistant')
                 ->references('id')->on('borrowers')
                 ->onDelete('cascade');
-            
+
             $table->string('registro_universitario', 20)->unique();
             // Aquí podrías añadir campos específicos de auxiliares
             $table->timestamps();

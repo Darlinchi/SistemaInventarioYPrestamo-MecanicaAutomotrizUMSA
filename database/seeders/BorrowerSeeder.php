@@ -17,8 +17,8 @@ class BorrowerSeeder extends Seeder
             // 1. Insertamos en el padre (borrowers) y recuperamos el ID
             $borrowerId = DB::table('borrowers')->insertGetId([
                 'cedula_identidad' => $faker->unique()->numerify('#######'),
-                'nombresP' => $faker->firstName(),
-                'apellidosP' => $faker->lastName(),
+                'nombres' => $faker->firstName(),
+                'apellidos' => $faker->lastName(),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -36,8 +36,8 @@ class BorrowerSeeder extends Seeder
             // 1. Insertamos en el padre (borrowers) y recuperamos el ID
             $borrowerId = DB::table('borrowers')->insertGetId([
                 'cedula_identidad' => $faker->unique()->numerify('#######'),
-                'nombresP' => $faker->firstName(),
-                'apellidosP' => $faker->lastName(),
+                'nombres' => $faker->firstName(),
+                'apellidos' => $faker->lastName(),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

@@ -65,10 +65,14 @@ const exportHistoryPdf = () => {
                     <div class="space-y-1">
                         <p class="text-[12px] font-black text-neutral-500 uppercase tracking-widest leading-none">Responsable</p>
                         <p class="text-base font-bold text-neutral-900 leading-tight">
-                            {{ log.borrower.nombresP }} {{ log.borrower.apellidosP }}
+                            {{ log.borrower.nombres }} {{ log.borrower.apellidos }}
                         </p>
-                        <span class="inline-block text-[10px] px-2 py-0.5 bg-blue-50 text-blue-700 rounded-lg font-black uppercase tracking-tighter">
-                            {{ log.borrower.teacher ? 'Docente' : 'Auxiliar' }}
+                        <span class="inline-block text-[11px] px-2 py-0.5 bg-[#1a3a5a]/10 text-[#1a3a5a] rounded-lg font-black uppercase tracking-tighter">
+                            {{
+                                log.borrower.teacher
+                                ? 'DOCENTE'
+                                : (log.borrower.assistant ? 'AUXILIAR' : 'ESTUDIANTE')
+                            }}
                         </span>
                     </div>
                 </div>
@@ -119,7 +123,13 @@ const exportHistoryPdf = () => {
                             <div class="max-h-52 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
                                 <div v-for="item in log.items_prestados" :key="item.id"
                                     class="flex items-center justify-between p-2.5 bg-neutral-50 border border-neutral-100 rounded-xl">
-                                    <span class="text-[12px] font-bold text-neutral-800 leading-tight flex-1">{{ item.nombre_mostrar }}</span>
+                                    <div class="flex flex-col">
+                                        <span class="text-[12px] font-bold text-neutral-800 leading-tight">{{ item.nombre_mostrar }}</span>
+                                        <!-- Mostramos el estado histórico si existe[cite: 11] -->
+                                        <span v-if="item.estado_devolucion" class="text-[9px] font-black text-[#1a3a5a] uppercase">
+                                            Regresó: {{ item.estado_devolucion }}
+                                        </span>
+                                    </div>
                                     <span :class="[
                                         'ml-2 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase border',
                                         item.es_equipo ? 'bg-red-50 text-red-700 border-red-100' : 'bg-blue-50 text-blue-700 border-blue-100'
@@ -127,6 +137,7 @@ const exportHistoryPdf = () => {
                                         {{ item.es_equipo ? 'EQUIPO' : 'HERRAMIENTA' }}
                                     </span>
                                 </div>
+
                             </div>
                         </div>
                     </div>

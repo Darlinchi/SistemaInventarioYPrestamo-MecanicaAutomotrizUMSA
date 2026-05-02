@@ -23,11 +23,10 @@ class ReportController extends Controller
         // CALCULAMOS los datos en lugar de leer una tabla de reportes
         $totalPrestamos = Loan::count();
 
-        // Préstamos con estado 'Activo' o donde la fecha_retorno sea null
-        $activos = Loan::whereNull('fecha_retorno')->count();
-
-        // Préstamos donde ya se marcó la fecha de retorno
-        $devueltos = Loan::whereNotNull('fecha_retorno')->count();
+        // OPCIÓN RECOMENDADA: Usar el campo 'estado_prestamo'
+        // Esto es mucho más rápido y preciso para tus reportes
+        $activos = Loan::where('estado_prestamo', 'Activo')->count();
+        $devueltos = Loan::where('estado_prestamo', 'Devuelto')->count();
 
         // 2. Datos para la pestaña "Inventario"
         // Combinamos equipos y herramientas similar a como lo hicimos en el Index de Inventario
@@ -58,18 +57,42 @@ class ReportController extends Controller
         $items = $equipos->concat($herramientas);
 
         // 3. Datos para la pestaña "Historial"
-        $history = Loan::with(['borrower', 'equipments', 'tools'])
+        $history = Loan::with([
+            'borrower.teacher',
+            'borrower.assistant',
+            'loanReturns.returnDetails.returnable'
+        ])
         ->latest()
         ->get()
         ->map(function ($loan) {
+            $retorno = $loan->loanReturns ? $loan->loanReturns->first() : null;
+
+            if ($retorno && $retorno->returnDetails) {
+                $items_mostrar = $retorno->returnDetails->map(function ($detail) {
+                    $model = $detail->returnable;
+                    // Si el modelo fue eliminado físicamente, evitamos que explote
+                    if (!$model) return null;
+
+                    $esEquipo = str_contains($detail->returnable_type, 'Equipment');
+                    return [
+                        'id' => $detail->id,
+                        'nombre_mostrar' => $esEquipo ? $model->nombre_equipo : $model->nombre_herramienta,
+                        'es_equipo' => $esEquipo,
+                        'estado_devolucion' => $detail->estado_devolucion
+                    ];
+                })->filter()->values();
+            } else {
+                // Si no hay retorno, usamos los items originales del préstamo
+                $items_mostrar = $loan->all_items;
+            }
+
             return [
                 'id' => $loan->id,
                 'fecha_salida' => $loan->fecha_salida,
                 'fecha_retorno_prevista' => $loan->fecha_retorno_prevista,
-                'fecha_retorno' => $loan->fecha_retorno,
+                'fecha_retorno' => $retorno ? $retorno->fecha_retorno : null,
                 'borrower' => $loan->borrower,
-                // Usamos el Accessor que ya creaste en el modelo
-                'items_prestados' => $loan->all_items,
+                'items_prestados' => $items_mostrar,
             ];
         });
 

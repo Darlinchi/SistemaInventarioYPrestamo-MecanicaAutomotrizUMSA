@@ -3,10 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Tool extends Model
 {
-    public $incrementing = true;
+
+    use HasFactory;
+
+    protected $table = 'tools';
+
+    //public $incrementing = true;
 
     // Campos que se pueden llenar
     protected $fillable = [
@@ -16,8 +22,23 @@ class Tool extends Model
 
     public function loans()
     {
-        return $this->morphToMany(Loan::class, 'loanable', 'item_loan')
-                    ->withPivot('estado_devolucion')
-                    ->withTimestamps();
+        //return $this->morphToMany(Loan::class, 'loanable', 'item_loan')
+        //            ->withPivot('estado_devolucion')
+        //            ->withTimestamps();
+        return $this->morphMany(Loan::class, 'loanable', 'item_loan');
+    }
+
+    /**
+     * Ítems de devolución donde aparece esta herramienta.
+     * Relación polimórfica inversa: Tool como returnable
+     */
+    public function returnDetails()
+    {
+        return $this->morphMany(ReturnDetail::class, 'returnable');
+    }
+
+    public function isDisponible(): bool
+    {
+        return $this->estado_herramienta === 'Disponible';
     }
 }

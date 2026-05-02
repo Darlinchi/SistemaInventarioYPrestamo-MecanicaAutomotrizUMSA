@@ -7,6 +7,8 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\LoanController;
+use App\Http\Controllers\LoanReturnController;
+use App\Http\Controllers\ReturnDetailController;
 use App\Http\Controllers\BorrowerController;
 use App\Http\Controllers\MaintenanceCompanyController;
 use App\Http\Controllers\MaintenanceController;
@@ -105,6 +107,20 @@ Route::middleware(['auth', 'verified'])
             ->middleware('permission:prestamos.eliminar')->name('loans.destroy');
         Route::post('loans/{loan}/return', [LoanController::class, 'returnLoan'])
             ->middleware('permission:prestamos.devolver')->name('loans.return');
+
+        // Rutas de Devoluciones (LoanReturn)
+        Route::post('loan-returns', [LoanReturnController::class, 'store'])
+            ->middleware('permission:prestamos.devolver') // Reutilizamos el permiso de devolver
+            ->name('loan-returns.store');
+
+        Route::get('loan-returns', [LoanReturnController::class, 'index'])
+            ->name('loan-returns.index');
+
+        // LoanReturn
+        //Route::resource('loanReturn', LoanReturnController::class);
+        //Route::get('loanReturns', [LoanReturnController::class, 'index'])->name('loanReturns.index');
+        //Route::get('loanReturn', [LoanReturnController::class, 'index'])->name('loanReturn.index');
+        //Route::post('loans/{loan}/return', [LoanController::class, 'returnLoan'])->name('loans.return');
 
         // Maintenances
         Route::get('maintenances/{id}/report', [MaintenanceController::class, 'generateReport'])->name('maintenances.report');

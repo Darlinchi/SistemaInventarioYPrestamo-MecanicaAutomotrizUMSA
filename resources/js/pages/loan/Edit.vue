@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ref, computed } from 'vue';
 import loanRoutes from '@/routes/loans';
 import { ArrowLeft, Loader2, Package, Search, CheckCircle, User, Save, Trash2, Plus, Calendar, Clock,
-    ClockAlert, CalendarCheck2, ClipboardCheck, BookMarked, Image
+    ClockAlert, CalendarCheck2, ClipboardCheck, BookMarked, Image, Wrench
  } from 'lucide-vue-next';
 
 const props = defineProps<{
@@ -26,56 +26,75 @@ interface SelectedItem {
     id: number;
     type: string;
 }
+
+// En Edit.vue
 const form = useForm({
-    borrower_id: props.loan.borrower_id,
-    subject_id: props.loan.subject_id,
-    selected_items: props.loan.all_items.map((i: any): SelectedItem => ({
+    borrower_id: props.loan?.borrower_id || '',
+    subject_id: props.loan?.subject_id || '',
+    selected_items: (props.loan?.all_items || []).map((i: any) => ({
         id: i.id,
+        // Usamos el namespace completo que espera tu controlador en el método update
         type: i.es_equipo ? 'App\\Models\\Equipment' : 'App\\Models\\Tool'
     })),
 });
 
-// Ayudante para comparar con tipos definidos
+// 2. Protege la búsqueda de items disponibles
+const availableItemsForSearch = computed(() => {
+    const items = props.items || []; // Si props.items es undefined, usa un array vacío
+    return items.filter((item: any) =>
+        !isSelected(item.id, item.es_equipo) &&
+        (item.nombre_mostrar || '').toLowerCase().includes(searchTerm.value.toLowerCase())
+    );
+});
+
+// 2. Función isSelected: Debe comparar con la misma lógica del formulario
 const isSelected = (id: number, esEquipo: boolean) => {
     const type = esEquipo ? 'App\\Models\\Equipment' : 'App\\Models\\Tool';
     return form.selected_items.some((i: SelectedItem) => i.id === id && i.type === type);
 };
 
-const availableItemsForSearch = computed(() => {
-    return props.items.filter((item: any) =>
-        !isSelected(item.id, item.es_equipo) &&
-        item.nombre_mostrar.toLowerCase().includes(searchTerm.value.toLowerCase())
-    );
-});
-
+// 3. selectedItemsList: Ahora filtrará correctamente los items de props.items
 const selectedItemsList = computed(() => {
-    return props.items.filter((item: any) => isSelected(item.id, item.es_equipo));
+    const allItems = props.items || [];
+    return allItems.filter((item: any) => isSelected(item.id, item.es_equipo));
 });
 
+
+// Agrega estas funciones dentro de tu script setup actual
+const getItemStatus = (item: any) => item.estado_mostrar || 'Desconocido';
+
+const isAvailable = (item: any) => {
+    const status = getItemStatus(item);
+    // En edición, un item es "disponible" si está disponible/nuevo O si ya pertenece a este préstamo
+    return status === 'Disponible' || status === 'Nuevo' || isSelected(item.id, item.es_equipo);
+};
+
+// Actualiza el toggle para que no permita seleccionar items bloqueados
 const toggleItemSelection = (item: any) => {
-    // Validamos que el item exista para evitar errores de "undefined"
-    if (!item) return;
+    if (!item || !isAvailable(item)) return; // BLOQUEO
+
     const type = item.es_equipo ? 'App\\Models\\Equipment' : 'App\\Models\\Tool';
-    // Buscamos si ya existe en el formulario comparando ID y Tipo
     const index = form.selected_items.findIndex((i: SelectedItem) =>
         i.id === item.id && i.type === type
     );
 
     if (index > -1) {
-        // Si existe, lo quitamos
         form.selected_items.splice(index, 1);
     } else {
-        // Si no existe, lo agregamos con su estructura completa
-        form.selected_items.push({
-            id: item.id,
-            type: type
-        });
+        form.selected_items.push({ id: item.id, type: type });
     }
 };
+
 
 const submit = () => {
     form.put(loanRoutes.update.url(props.loan.id), {
         preserveScroll: true,
+        onSuccess: () => {
+            console.log("Préstamo actualizado con éxito");
+        },
+        onError: (errors) => {
+            console.log("Errores detectados:", errors);
+        }
     });
 };
 
@@ -95,41 +114,41 @@ const canSubmit = computed(() => {
                 </Link>
             </div>
 
-            <form @submit.prevent="submit" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <form @submit.prevent="submit" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                <div class="lg:col-span-1 space-y-4">
+                <div class="lg:col-span-5 space-y-4">
                     <div class="bg-neutral-50 p-6 rounded-3xl border border-neutral-200 space-y-6 shadow-sm">
-                        <h3 class="font-bold text-lg border-b pb-2 flex items-center">
+                        <h3 class="font-bold text-lg border-b pb-2 flex items-center text-[#1a3a5a]">
                             <ClipboardCheck class="w-5 h-5 mr-2 text-[#1a3a5a]"/> Datos del Préstamo
                         </h3>
 
                         <div class="space-y-1">
-                            <p class="flex items-center gap-1 text-[12px] font-black text-neutral-700 uppercase tracking-widest">
-                                <User class="w-4 h-4 text-neutral-700" />
+                            <p class="flex items-center gap-1 text-[14px] font-black text-[#1a3a5a] tracking-wider">
+                                <User class="w-4 h-4 text-[#1a3a5a]" />
                                 <span>Responsable</span>
                             </p>
-                            <p class="text-sm font-bold text-neutral-800">{{ loan.borrower.nombresP }} {{ loan.borrower.apellidosP }}</p>
+                            <p class="text-sm font-bold text-neutral-800">{{ loan.borrower.nombres }} {{ loan.borrower.apellidos }}</p>
                         </div>
 
                         <div class="space-y-1">
-                            <p class="flex items-center gap-1 text-[12px] font-black text-neutral-700 uppercase tracking-widest">
-                                <BookMarked class="w-4 h-4 text-neutral-700" />
+                            <p class="flex items-center gap-1 text-[14px] font-black text-[#1a3a5a] tracking-wider">
+                                <BookMarked class="w-4 h-4 text-[#1a3a5a]" />
                                 <span>Materia</span>
                             </p>
-                            <p class="text-xs font-black text-blue-600">{{ loan.subject.sigla }}</p>
                             <p class="text-sm font-bold text-neutral-800">{{ loan.subject.nombre_materia }}</p>
+                            <p class="text-xs font-black text-[#1a3a5a]">{{ loan.subject.sigla }}</p>
                         </div>
 
                         <div class="pt-4 border-t border-neutral-200 grid grid-cols-2 gap-4">
                             <div>
-                                <p class="flex items-center gap-1 text-[12px] font-black text-orange-400 uppercase tracking-widest">
+                                <p class="flex items-center gap-1 text-[14px] font-black text-orange-400 tracking-wider">
                                     <Calendar class="w-4 h-4 text-orange-400" />
                                     <span>Fecha Salida</span>
                                 </p>
                                 <p class="text-[13px] font-medium mt-1.5">{{ loan.fecha_salida }}</p>
                             </div>
                             <div>
-                                <p class="flex items-center gap-1 text-[12px] font-black text-blue-600 uppercase tracking-widest">
+                                <p class="flex items-center gap-1 text-[14px] font-black text-blue-600 tracking-wider">
                                     <Clock class="w-4 h-4 text-blue-600" />
                                     <span>Hora Salida</span>
                                 </p>
@@ -139,14 +158,14 @@ const canSubmit = computed(() => {
 
                         <div class="pt-4 border-t border-neutral-200 grid grid-cols-2 gap-4">
                             <div>
-                                <p class="flex items-center gap-1 text-[12px] font-black text-orange-400 uppercase tracking-widest">
+                                <p class="flex items-center gap-1 text-[14px] font-black text-orange-400 tracking-wider">
                                     <CalendarCheck2 class="w-4 h-4 text-orange-400" />
                                     <span>F. Retorno</span>
                                 </p>
                                 <p class="text-[13px] font-medium mt-1.5">{{ loan.fecha_retorno_prevista }}</p>
                             </div>
                             <div>
-                                <p class="flex items-center gap-1 text-[12px] font-black text-blue-600 uppercase tracking-widest">
+                                <p class="flex items-center gap-1 text-[14px] font-black text-blue-600 tracking-wider">
                                     <ClockAlert class="w-4 h-4 text-blue-600" />
                                     <span>H. Retorno</span>
                                 </p>
@@ -168,7 +187,7 @@ const canSubmit = computed(() => {
                     </Button>
                 </div>
 
-                <div class="lg:col-span-2 space-y-6">
+                <div class="lg:col-span-7 space-y-6">
                     <div class="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-neutral-900 flex items-center">
@@ -184,13 +203,13 @@ const canSubmit = computed(() => {
                                 class="flex items-center justify-between p-3 bg-blue-50/50 border border-blue-100 rounded-xl group">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded bg-white flex items-center justify-center border border-blue-100 overflow-hidden">
-    <img
-        v-if="item.foto_equipo || item.foto_herramienta || item.foto"
-        :src="'/storage/' + (item.foto_equipo || item.foto_herramienta || item.foto)"
-        class="object-cover w-full h-full"
-    />
-    <Image v-else class="w-4 h-4 text-blue-500" />
-</div>
+                                        <img
+                                            v-if="item.foto_equipo || item.foto_herramienta || item.foto"
+                                            :src="'/storage/' + (item.foto_equipo || item.foto_herramienta || item.foto)"
+                                            class="object-cover w-full h-full"
+                                        />
+                                        <Image v-else class="w-4 h-4 text-blue-500" />
+                                    </div>
                                     <div class="flex-1">
                                         <p class="text-[14px] font-bold text-neutral-800 leading-tight">{{ item.nombre_mostrar }}</p>
                                         <span :class="[
@@ -222,29 +241,54 @@ const canSubmit = computed(() => {
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                             <div
-                                v-for="item in availableItemsForSearch" :key="item.id"
-                                @click="toggleItemSelection(item)"
-                                class="p-3 border border-neutral-100 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all flex items-center gap-3"
-                            >
-                                <div class="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center overflow-hidden border">
-    <img
-        v-if="item.foto_equipo || item.foto_herramienta || item.foto"
-        :src="'/storage/' + (item.foto_equipo || item.foto_herramienta || item.foto)"
-        class="object-cover w-full h-full"
-    />
-    <Image v-else class="w-5 h-5 text-neutral-400" />
+    v-for="item in availableItemsForSearch" :key="item.id"
+    @click="toggleItemSelection(item)"
+    :class="[
+        'p-3 border rounded-xl transition-all flex items-center gap-3',
+        !isAvailable(item) ? 'opacity-70 bg-neutral-50 cursor-not-allowed border-dashed' : 'cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 border-neutral-100'
+    ]"
+>
+    <div class="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center overflow-hidden border">
+        <img
+            v-if="item.foto"
+            :src="'/storage/' + item.foto"
+            class="object-cover w-full h-full"
+            :class="!isAvailable(item) ? 'grayscale' : ''"
+        />
+        <Image v-else class="w-5 h-5 text-neutral-400" />
+    </div>
+    <div class="flex-1">
+        <p class="text-[15px] font-bold text-neutral-800 leading-tight">{{ item.nombre_mostrar }}</p>
+
+        <span :class="[
+            'px-2 py-0.5 rounded-full text-[10px] font-black uppercase border leading-none',
+            item.es_equipo ? 'bg-red-50 text-red-700 border-red-200' : 'bg-blue-50 text-blue-700 border-blue-200'
+        ]">
+            {{ item.tipo }}
+        </span>
+
+        <!-- MENSAJES DE ESTADO (Igual que en Create.vue) -->
+        <div v-if="!isAvailable(item)" class="mt-1">
+            <div v-if="getItemStatus(item) === 'Mantenimiento'" class="flex flex-col">
+                <span class="text-[10px] font-black text-orange-600 uppercase flex items-center gap-1">
+                    <Wrench class="w-3 h-3" /> En Mantenimiento
+                </span>
+                <span v-if="item.fecha_retorno_estimado" class="text-[11px] text-neutral-700 italic">
+                    Disponible el: {{ item.fecha_retorno_estimado }}
+                </span>
+            </div>
+            <div v-else-if="getItemStatus(item) === 'Prestado'" class="flex flex-col">
+                <span class="text-[10px] font-black text-red-600 uppercase flex items-center gap-1">
+                    <ClockAlert class="w-3 h-3" /> Prestado
+                </span>
+                <span v-if="item.fecha_disponible" class="text-[11px] text-neutral-700 italic">
+                    Disponible: {{ item.fecha_disponible }}
+                </span>
+            </div>
+        </div>
+    </div>
+    <Plus v-if="isAvailable(item)" class="w-4 h-4 text-neutral-300" />
 </div>
-                                <div class="flex-1">
-                                    <p class="text-[15px] font-bold text-neutral-800 leading-tight">{{ item.nombre_mostrar }}</p>
-                                    <span :class="[
-                                        'px-2 py-0.5 rounded-full text-[10px] font-black uppercase border leading-none',
-                                        item.es_equipo ? 'bg-red-50 text-red-700 border-red-200' : 'bg-blue-50 text-blue-700 border-blue-200'
-                                    ]">
-                                        {{ item.es_equipo ? 'Equipo' : 'Herramienta' }}
-                                    </span>
-                                </div>
-                                <Plus class="w-4 h-4 text-neutral-300" />
-                            </div>
                         </div>
                         <p v-if="availableItemsForSearch.length === 0 && searchTerm" class="text-center py-4 text-xs text-neutral-400">No se encontraron coincidencias</p>
                     </div>

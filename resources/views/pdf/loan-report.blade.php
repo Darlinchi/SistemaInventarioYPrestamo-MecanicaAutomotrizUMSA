@@ -41,13 +41,18 @@
         <tr><td colspan="4" class="section-title">INFORMACIÓN DEL PRÉSTAMO</td></tr>
         <tr>
             <td class="header-bg" style="width: 20%;">RESPONSABLE:</td>
-            <td style="width: 30%;">{{ $loan->borrower->nombresP }} {{ $loan->borrower->apellidosP }}</td>
+            <td style="width: 30%;">{{ $loan->borrower->nombres }} {{ $loan->borrower->apellidos }}</td>
             <td class="header-bg" style="width: 20%;">C.I.:</td>
             <td style="width: 30%;">{{ $loan->borrower->cedula_identidad }}</td>
         </tr>
         <tr>
             <td class="header-bg">TIPO:</td>
-            <td>{{ $loan->borrower->teacher ? 'DOCENTE' : 'AUXILIAR' }}</td>
+            <td>
+            {{
+            $loan->borrower->teacher
+                ? 'DOCENTE'
+                : ($loan->borrower->assistant ? 'AUXILIAR' : 'ESTUDIANTE')
+            }}</td>
             <td class="header-bg">MATERIA:</td>
             <td>{{ $loan->subject->nombre_materia }} ({{ $loan->subject->sigla }})</td>
         </tr>

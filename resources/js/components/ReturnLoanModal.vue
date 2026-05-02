@@ -17,25 +17,37 @@ const props = defineProps<{
 
 const emit = defineEmits(['close', 'confirm']);
 
+// NUEVA FUNCIÓN: Maneja el cambio de estado del Item (Herramienta o Equipo)
+const handleItemStatusChange = (index: number) => {
+    const item = props.form.items[index];
+    const tipoLabel = item.es_equipo ? 'El equipo' : 'La herramienta';
+
+    // Si se marca como Dañado, Extraviado o Incompleto
+    if (['Dañado', 'Extraviado', 'Incompleto'].includes(item.estado_devolucion)) {
+        const estadoMayus = item.estado_devolucion.toUpperCase();
+        const nota = `[AUTO]: ${tipoLabel} "${item.nombre_mostrar}" se reporta como ${estadoMayus} al momento de la devolución. `;
+
+        // Evitar duplicados si el usuario cambia el select varias veces
+        if (!props.form.observacion.includes(nota)) {
+            props.form.observacion += nota;
+        }
+    }
+};
+
 const handleAccessoryStatusChange = (itemIndex: number, accIndex: number) => {
     const item = props.form.items[itemIndex];
     const accessory = item.accessories[accIndex];
     const nombreAcc = accessory.nombre_accesorio;
 
-    // 1. Si el accesorio se marca como extraviado -> Equipo Incompleto
     if (accessory.estado_accesorio === 'Extraviado') {
         item.estado_devolucion = 'Incompleto';
-
         const nota = `[AUTO]: El equipo "${item.nombre_mostrar}" se marca como INCOMPLETO porque el accesorio "${nombreAcc}" fue reportado como EXTRAVIADO. `;
         if (!props.form.observacion.includes(nota)) {
             props.form.observacion += nota;
         }
     }
-
-    // 2. Si el accesorio se marca como dañado -> Equipo Dañado
     else if (accessory.estado_accesorio === 'Dañado') {
         item.estado_devolucion = 'Dañado';
-
         const nota = `[AUTO]: El equipo "${item.nombre_mostrar}" se marca como DAÑADO porque el accesorio "${nombreAcc}" presenta DAÑOS. `;
         if (!props.form.observacion.includes(nota)) {
             props.form.observacion += nota;
@@ -71,10 +83,14 @@ const handleAccessoryStatusChange = (itemIndex: number, accIndex: number) => {
                         <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
                             <User class="w-4 h-4" /> Responsable
                         </p>
-                        <p class="text-base font-bold text-neutral-900">{{ loan?.borrower.apellidosP }} {{ loan?.borrower.nombresP }}</p>
+                        <p class="text-base font-bold text-neutral-900">{{ loan?.borrower.apellidos }} {{ loan?.borrower.nombres }}</p>
                         <div class="flex gap-2">
                             <span class="inline-block px-2 py-0.5 rounded-md bg-[#1a3a5a]/10 text-[13px] font-black text-[#1a3a5a]">
-                                {{ loan?.borrower.teacher ? 'DOCENTE' : 'AUXILIAR' }}
+                                {{
+                                loan?.borrower?.teacher
+                                    ? 'DOCENTE'
+                                    : (loan?.borrower?.assistant ? 'AUXILIAR' : 'ESTUDIANTE')
+                                }}
                             </span>
                             <span class="px-2 py-0.5 rounded-lg bg-neutral-100 text-[13px] font-black text-neutral-700 border border-neutral-200">
                                 CI: {{ loan?.borrower.cedula_identidad }}
@@ -194,13 +210,13 @@ const handleAccessoryStatusChange = (itemIndex: number, accIndex: number) => {
                                 </div>
                             </div>
 
-                            <select v-model="form.items[index].estado_devolucion"
+                            <select v-model="item.estado_devolucion"
+                                @change="handleItemStatusChange(Number(index))"
                                 class="text-[13px] font-bold rounded-xl border-neutral-200 bg-neutral-50 focus:ring-black focus:border-black transition-all py-1.5 px-3">
                                 <option value="Disponible">Disponible</option>
                                 <option value="Dañado">Dañado</option>
                                 <option value="Extraviado">Extraviado</option>
                                 <option value="Incompleto">Incompleto</option>
-                                <option value="Baja">Baja</option>
                             </select>
                         </div>
 

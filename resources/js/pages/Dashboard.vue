@@ -182,14 +182,14 @@ const processReturn = () => {
                                     <td class="p-4 pl-8">
                                         <div class="flex items-center gap-3">
                                             <div class="w-8 h-8 rounded-full bg-[#1a3a5a] flex items-center justify-center text-[10px] font-bold text-white uppercase">
-                                                <template v-if="loan.borrower?.nombresP">
-                                                    {{ loan.borrower.apellidosP[0] }}{{ loan.borrower.nombresP[0] }}
+                                                <template v-if="loan.borrower?.nombres">
+                                                    {{ loan.borrower.apellidos[0] }}{{ loan.borrower.nombres[0] }}
                                                 </template>
                                                 <User v-else class="w-4 h-4 text-neutral-300" />
                                             </div>
                                             <div>
                                                 <p class="text-sm font-bold text-neutral-800">
-                                                    {{ loan.borrower?.apellidosP }} {{ loan.borrower?.nombresP }}
+                                                    {{ loan.borrower?.apellidos }} {{ loan.borrower?.nombres }}
                                                 </p>
                                             </div>
                                         </div>

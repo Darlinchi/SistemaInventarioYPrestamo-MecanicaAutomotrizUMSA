@@ -4,13 +4,16 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
 import { Input } from '@/components/ui/input';
+import { FileInput } from '@/components/ui/file-input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import SearchInput from '@/components/shared/SearchInput.vue';
+import TabSelector from '@/components/shared/TabSelector.vue';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import loanRoutes from '@/routes/loans';
-import { ArrowLeft, Save, Loader2, Cog, Package, Image, Search, ClipboardPen, XCircle, User, Calendar, Clock,
-    ClockAlert, CalendarClock, CalendarCheck2, ClipboardCheck, BookMarked } from 'lucide-vue-next';
+import { ArrowLeft, Save, Loader2, Cog, Settings, Image, Search, ClipboardPen, XCircle, User, Calendar, Clock,
+    ClockAlert, CalendarClock, CalendarCheck2, ClipboardCheck, BookMarked, GraduationCap, UserPen, PenLine,
+    FileText } from 'lucide-vue-next';
 
 const props = defineProps<{
     borrowers: Array<any>;
@@ -22,6 +25,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Préstamos', href: loanRoutes.index.url() },
     { title: 'Registrar Préstamo', href: loanRoutes.create.url() },
 ];
+
+// Definimos los tipos de pestañas
+const activeBorrowerTab = ref('personal'); // 'personal' para Docentes/Auxiliares, 'estudiante' para Estudiantes
 
 const searchTerm = ref('');
 const date = new Date();
@@ -39,14 +45,62 @@ const minutes = String(date.getMinutes()).padStart(2, '0');
 // Formato final: HH:mm
 const now = `${hour}:${minutes}`;
 
+// 1. Definimos las opciones de las pestañas
+const loansTabs = [
+    { id: 'personal', label: 'Docente / Auxiliar', icon: User },
+    { id: 'estudiante', label: 'Estudiante', icon: GraduationCap },
+];
+
+// 2. Cambiamos el nombre de la variable para que sea genérico (activeTab)
+const activeTab = ref('personal');
+
+// 3. Mantén el watch para actualizar el tipo en el form
+watch(activeTab, (newVal) => {
+    form.tipo_prestatario = newVal;
+});
+
 const form = useForm({
+    tipo_prestatario: 'docente', // 'personal' o 'estudiante'
     borrower_id: '',
+    cedula_identidad: '',
+    nombres: '',
+    apellidos: '',
+    registro_universitario: '',
+    motivo: '',
+    archivo_nota: null as File | null,
     subject_id: '',
     items: [] as Array<{ id: number; tipo: string }>,
     fecha_salida: today,
     hora_inicio: now,
-    hora_fin_prevista: '',
     fecha_retorno_prevista: '',
+    hora_fin_prevista: '',
+});
+
+// Sincronización de pestañas y reseteo[cite: 7]
+watch(activeTab, (newVal) => {
+    form.tipo_prestatario = newVal === 'personal' ? 'docente' : 'estudiante';
+    form.reset('borrower_id', 'cedula_identidad', 'nombres', 'apellidos', 'registro_universitario', 'motivo', 'archivo_nota');
+});
+
+// Auto-llenado para Docente/Auxiliar[cite: 7]
+watch(() => form.borrower_id, (newId) => {
+    if (newId && activeTab.value === 'personal') {
+        const b = props.borrowers.find(x => x.id === newId);
+        if (b) {
+            form.cedula_identidad = b.cedula_identidad;
+            form.nombres = b.nombres;
+            form.apellidos = b.apellidos;
+            form.tipo_prestatario = b.teacher ? 'docente' : 'auxiliar';
+        }
+    }
+});
+
+const getItemStatus = (item: any) => item.estado_mostrar || 'Desconocido';
+const isAvailable = (item: any) => ['Disponible', 'Nuevo'].includes(getItemStatus(item));
+
+// Sincroniza el tipo de prestatario con la pestaña activa
+watch(activeBorrowerTab, (newTab) => {
+    form.tipo_prestatario = newTab;
 });
 
 // FUNCIÓN PARA EL RELOJ EN TIEMPO REAL
@@ -84,6 +138,11 @@ const filteredBorrowers = computed(() => {
     });
 });
 
+watch(activeBorrowerTab, (newTab) => {
+    form.tipo_prestatario = newTab === 'personal' ? 'docente' : 'estudiante';
+    form.reset('borrower_id', 'cedula_identidad', 'nombres', 'apellidos', 'registro_universitario', 'archivo_nota');
+});
+
 // Limpiar el otro campo si la selección actual lo invalida
 watch(() => form.borrower_id, (newId) => {
     if (newId && form.subject_id) {
@@ -103,15 +162,9 @@ watch(() => form.hora_inicio, (newTime) => {
     if (newTime) {
         const [h, m] = newTime.split(':');
         let calculatedHour = (parseInt(h) + 2);
-
-        // Si pasa de 24, vuelve a empezar (ej. 23 + 2 = 01)
         if (calculatedHour >= 24) calculatedHour -= 24;
-
         const endHour = String(calculatedHour).padStart(2, '0');
-
-        // Asignamos directamente al form
         form.hora_fin_prevista = `${endHour}:${m}`;
-        console.log("Hora fin calculada:", form.hora_fin_prevista); // Mira tu consola (F12) para probar
     }
 }, { immediate: true }); // 'immediate' hace que calcule incluso al cargar la página
 
@@ -129,35 +182,13 @@ const resetFilters = () => {
 // 2. Filtrar ítems por el buscador
 const filteredItems = computed(() => {
     return props.items.filter(item => {
-        // 1. El estado ya viene mapeado como 'estado_mostrar' desde el controlador
-        const estado = item.estado_mostrar;
-
-        // 2. Solo permitir 'Disponible' o 'Nuevo'
-        const esValido = estado === 'Disponible' || estado === 'Nuevo';
-
-        // 3. Aplicar filtro de búsqueda
         const search = searchTerm.value.toLowerCase();
-
-        // Usamos 'nombre_mostrar' y buscamos también en la marca si existe
         const nombre = (item.nombre_mostrar || '').toLowerCase();
         const marca = (item.marca || item.marca_modelo || '').toLowerCase();
 
-        const coincideBusqueda =
-            nombre.toLowerCase().includes(search) ||
-            (marca || '').toLowerCase().includes(search);
-
-        return esValido && coincideBusqueda;
+        return nombre.includes(search) || marca.includes(search);
     });
 });
-
-// Función para obtener el estado sin importar el tipo
-const getItemStatus = (item: any) => item.estado_mostrar || 'Desconocido';
-
-// Función para saber si está disponible (Opcional: para bloquear selección)
-const isAvailable = (item: any) => {
-    const status = getItemStatus(item);
-    return status === 'Disponible' || status === 'Nuevo';
-};
 
 // Función auxiliar para saber si un item está seleccionado (para la clase CSS)
 const isSelected = (item: any) => {
@@ -165,14 +196,13 @@ const isSelected = (item: any) => {
 };
 
 const toggleItemSelection = (item: any) => {
-    // Buscamos si ya está en el array
-    const index = form.items.findIndex(i => i.id === item.id && i.tipo === item.tipo);
+    // Si no está disponible, no hacemos nada (evita la selección)
+    if (!isAvailable(item)) return;
 
+    const index = form.items.findIndex(i => i.id === item.id && i.tipo === item.tipo);
     if (index > -1) {
-        // Si existe, lo quitamos
         form.items.splice(index, 1);
     } else {
-        // Si no existe, agregamos el objeto completo
         form.items.push({ id: item.id, tipo: item.tipo });
     }
 };
@@ -190,17 +220,25 @@ function submit() {
     });
 }
 
+const handleFileChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    if (target.files && target.files.length > 0) {
+        form.archivo_nota = target.files[0];
+    }
+};
 const canSubmit = computed(() => {
-    return form.borrower_id && form.subject_id && form.items.length > 0 && !form.processing;
+    const common = form.items.length > 0 && !!form.subject_id && !!form.fecha_retorno_prevista && !form.processing;
+    if (activeTab.value === 'personal') return common && !!form.borrower_id;
+    return common && !!form.cedula_identidad && !!form.registro_universitario && !!form.archivo_nota;
 });
-
 </script>
 
 <template>
-    <Head title="Nuevo Préstamo" />
+    <Head title="Registrar Préstamo" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-5xl mx-auto p-4 w-full">
-            <div class="flex justify-between items-center mb-6">
+
+            <div class="flex justify-between items-center mb-3">
                 <Link :href="loanRoutes.index.url()" class="inline-flex items-center text-[15px] font-medium text-neutral-500 hover:text-[#1a3a5a] transition-colors group">
                     <ArrowLeft class="w-5 h-5 mr-1 group-hover:-translate-x-1 transition-transform"/> Volver a préstamos
                 </Link>
@@ -209,94 +247,164 @@ const canSubmit = computed(() => {
                 </button>
             </div>
 
-            <form @submit.prevent="submit" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-1 space-y-4">
+            <TabSelector
+                :tabs="loansTabs"
+                :activeTab="activeTab"
+                @update:activeTab="val => activeTab = val"
+            />
+
+            <form @submit.prevent="submit" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-5 space-y-4">
                     <div class="bg-neutral-50 p-6 rounded-3xl border border-neutral-200 space-y-2 shadow-sm">
-                        <h3 class="font-bold text-lg border-b border-neutral-200 pb-3 flex items-center text-neutral-800">
+                        <h3 class="font-bold text-lg border-b border-neutral-200 pb-3 flex items-center text-[#1a3a5a]">
                             <ClipboardPen class="w-5 h-5 mr-2 text-[#1a3a5a]"/> Información
                         </h3>
 
-                        <!--Logica con el seleccionador -->
-                        <div class="grid gap-2 mt-3">
-                            <Label for="borrower_id" class="text-[13px] font-black uppercase text-neutral-800 tracking-wider flex items-center gap-1">
-                                <User class="w-4 h-4 text-neutral-700" /> Responsable
-                            </Label>
-                            <select v-model="form.borrower_id"
-                            class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ">
-                                <option value="" disabled>Seleccione un docente/auxiliar</option>
-                                <option v-for="b in filteredBorrowers" :key="b.id" :value="b.id">
-                                    {{ b.apellidosP }} {{ b.nombresP }}
-                                </option>
-                            </select>
-                            <InputError :message="form.errors.borrower_id" />
+                        <div class="max-h-[330px] overflow-y-auto pr-2 custom-scrollbar">
+                            <div v-if="activeTab === 'personal'" class="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <div class="grid gap-2 mt-1">
+                                    <Label for="borrower_id" class="mb-1 flex items-center gap-2 font-black text-[#1a3a5a]">
+                                        <User class="w-4 h-4 text-[#1a3a5a]" /> Responsable
+                                    </Label>
+                                    <select v-model="form.borrower_id"
+                                    class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ">
+                                        <option value="" disabled>Seleccionar un docente/auxiliar</option>
+                                        <option v-for="b in filteredBorrowers" :key="b.id" :value="b.id">
+                                            {{ b.apellidos }} {{ b.nombres }}
+                                        </option>
+                                    </select>
+                                    <InputError :message="form.errors.borrower_id" />
+                                </div>
+                            </div>
+
+                            <div v-else class="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="space-y-2">
+                                        <Label for="cedula_identidad" class="flex items-center gap-2 font-black text-[#1a3a5a]">
+                                            <PenLine class="w-4 h-4 text-[#1a3a5a]"/> Carnet de Identidad
+                                        </Label>
+                                        <Input v-model="form.cedula_identidad" placeholder="C.I." />
+                                        <InputError :message="form.errors.cedula_identidad" />
+                                    </div>
+                                    <div class="space-y-2">
+                                        <Label for="registro_universitario" class="flex items-center gap-2 font-black text-[#1a3a5a]">
+                                            <PenLine class="w-4 h-4 text-[#1a3a5a]"/> Registro Universitario
+                                        </Label>
+                                        <Input v-model="form.registro_universitario" placeholder="R.U." />
+                                        <InputError :message="form.errors.registro_universitario" />
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="space-y-2">
+                                        <Label for="nombre" class="flex items-center gap-2 font-black text-[#1a3a5a]">
+                                            <UserPen class="w-4 h-4 text-[#1a3a5a]"/> Nombre(s)
+                                        </Label>
+                                        <Input id="nombres" v-model="form.nombres" placeholder="Nombre(s)"/>
+                                        <InputError :message="form.errors.nombres" />
+                                    </div>
+                                    <div class="space-y-2">
+                                        <Label for="apellidos" class="flex items-center gap-2 font-black text-[#1a3a5a]">
+                                            <UserPen class="w-4 h-4 text-[#1a3a5a]"/> Apellido(s)
+                                        </Label>
+                                        <Input id="apellidos" v-model="form.apellidos" placeholder="Apellido(s)" />
+                                        <InputError :message="form.errors.apellidos" />
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <Label for="motivo" class="flex items-center gap-2 font-black text-[#1a3a5a]">
+                                        <PenLine class="w-4 h-4 text-[#1a3a5a]"/> Motivo de solicitud
+                                    </Label>
+                                    <Input v-model="form.motivo" placeholder="Ej: Proyecto de Grado - Taller II" class="border-blue-200 rounded-xl" />
+                                    <InputError :message="form.errors.motivo" />
+                                </div>
+
+                                <div class="grid gap-2">
+                                    <Label class="mb-1 flex items-center gap-2 font-black text-[#1a3a5a]">
+                                        <FileText class="w-4 h-4 text-[#1a3a5a]"/> Autorización de Dirección
+                                    </Label>
+                                    <div class="flex flex-col md:flex-row items-center gap-6">
+                                        <div class="flex-1 space-y-2">
+                                            <FileInput type="file" @change="(e: Event) => form.archivo_nota = (e.target as HTMLInputElement).files?.[0] || null"
+                                            accept="application/pdf" />
+                                            <p class="text-[13px] text-neutral-700 leading-tight">Adjuntar Nota (PDF). Máximo 2MB</p>
+                                            <InputError :message="form.errors.archivo_nota" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!--Logica con el seleccionador -->
+                            <div class="space-y-2 grid gap-2 mt-3">
+                                <Label for="subject_id" class="mb-1 flex items-center gap-2 font-black text-[#1a3a5a]">
+                                    <BookMarked class="w-4 h-4 text-[#1a3a5a]" />Materia
+                                </Label>
+                                <select v-model="form.subject_id" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm disabled:bg-neutral-50">
+                                    <option value="" disabled>Seleccionar la materia</option>
+                                    <option v-for="s in filteredSubjects" :key="s.id" :value="s.id">
+                                        {{ s.sigla }} - {{ s.nombre_materia }}
+                                    </option>
+                                </select>
+                                <InputError :message="form.errors.subject_id" />
+                            </div>
+
+                            <div class="space-y-2 grid grid-cols-2 gap-4 mt-2">
+                                <div class="space-y-2">
+                                    <Label for="fecha_salida" class="mb-2 flex items-center gap-2 text-blue-700 tracking-wider font-black">
+                                        <Calendar class="w-4 h-4" />
+                                        <span>Fecha Salida</span>
+                                    </Label>
+                                    <Input v-model="form.fecha_salida" type="date" readonly class="rounded-xl border-neutral-200 bg-neutral-100 h-10 px-2 cursor-not-allowed w-full" />
+                                    <InputError :message="form.errors.fecha_salida" />
+                                </div>
+                                <div class="space-y-2">
+                                    <Label for="hora_inicio" class="mb-2 flex items-center gap-2 text-blue-700 tracking-wider font-black">
+                                        <Clock class="w-4 h-4" />
+                                        <span>Hora Inicio</span>
+                                    </Label>
+                                    <Input v-model="form.hora_inicio" type="time" readonly class="rounded-xl border-neutral-200 bg-neutral-100 h-10 px-2 cursor-not-allowed w-full" />
+                                    <InputError :message="form.errors.hora_inicio" />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-2">
+                                    <Label for="fecha_retorno_prevista" class="mb-2 flex items-center gap-2 text-orange-700 tracking-wider font-black">
+                                        <CalendarClock class="w-4 h-4" />
+                                        <span>Fecha Retorno</span>
+                                    </Label>
+                                    <Input v-model="form.fecha_retorno_prevista" type="date":min="form.fecha_salida" />
+                                    <InputError :message="form.errors.fecha_retorno_prevista" />
+                                </div>
+                                <div class="space-y-2">
+                                    <Label for="hora_fin_prevista" class="mb-2 flex items-center gap-2 text-orange-700 tracking-wider font-black">
+                                        <ClockAlert class="w-4 h-4" />
+                                        <span>Hora Retorno</span>
+                                    </Label>
+                                    <Input v-model="form.hora_fin_prevista" type="time":min="form.hora_inicio"/>
+                                    <InputError :message="form.errors.hora_fin_prevista" />
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="grid gap-2 mt-3">
-                            <Label for="subject_id" class="text-[13px] font-black uppercase text-neutral-800 tracking-wider flex items-center gap-1">
-                                <BookMarked class="w-4 h-4 text-neutral-700" />Materia
-                            </Label>
-                            <select v-model="form.subject_id" class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm disabled:bg-neutral-50">
-                                <option value="" disabled>Seleccione la materia</option>
-                                <option v-for="s in filteredSubjects" :key="s.id" :value="s.id">
-                                    {{ s.sigla }} - {{ s.nombre_materia }}
-                                </option>
-                            </select>
-                            <InputError :message="form.errors.subject_id" />
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4 ">
-                            <div class="space-y-2">
-                                <Label for="fecha_salida" class="flex items-center gap-1 text-[12px] font-black uppercase text-blue-700 tracking-wider">
-                                    <Calendar class="w-4 h-4" />
-                                    <span>Fecha Salida</span>
-                                </Label>
-                                <Input v-model="form.fecha_salida" type="date" readonly class="rounded-xl border-neutral-200 bg-neutral-100 h-10 px-2 cursor-not-allowed w-full" />
-                                <InputError :message="form.errors.fecha_salida" />
-                            </div>
-                            <div class="space-y-2">
-                                <Label for="hora_inicio" class="flex items-center gap-1.5 text-[12px] font-black uppercase text-blue-700 tracking-wider">
-                                    <Clock class="w-4 h-4" />
-                                    <span>Hora Inicio</span>
-                                </Label>
-                                <Input v-model="form.hora_inicio" type="time" readonly class="rounded-xl border-neutral-200 bg-neutral-100 h-10 px-2 cursor-not-allowed w-full" />
-                                <InputError :message="form.errors.hora_inicio" />
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-6">
-                            <div class="space-y-2">
-                                <Label for="fecha_retorno_prevista" class="flex items-center gap-1 text-[12px] font-black uppercase text-orange-700 tracking-wider">
-                                    <CalendarClock class="w-4 h-4" />
-                                    <span>F. Retorno</span>
-                                </Label>
-                                <Input v-model="form.fecha_retorno_prevista" type="date":min="form.fecha_salida" class="w-fit min-w-[120px] px-1"/>
-                                <InputError :message="form.errors.fecha_retorno_prevista" />
-                            </div>
-                            <div class="space-y-2">
-                                <Label for="hora_fin_prevista" class="flex items-center gap-1.5 text-[12px] font-black uppercase text-orange-700 tracking-wider">
-                                    <ClockAlert class="w-4 h-4" />
-                                    <span>H. Retorno</span>
-                                </Label>
-                                <Input v-model="form.hora_fin_prevista" type="time":min="form.hora_inicio"/>
-                                <InputError :message="form.errors.hora_fin_prevista" />
-                            </div>
-                        </div>
                     </div>
 
-                    <Button type="submit"
+                    <Button
+                        type="submit"
+                        :disabled="!canSubmit"
                         class="py-6 text-[20px] font-semibold text-white shadow-lg shadow-blue-900/20 active:scale-95 transition-all w-full"
-                        :disabled="!canSubmit">
-                        <!--:disabled="form.processing || form.items.length === 0">-->
+                        :class="!canSubmit">
                         <template v-if="form.processing">
                             <Loader2 class="mr-2 h-5 w-5 animate-spin" /> Procesando...
                         </template>
                         <template v-else>
-                            Registrar Préstamo
+                            <Save class="w-5 h-5 mr-2" /> Confirmar Préstamo
                         </template>
                     </Button>
                 </div>
 
-                <div class="lg:col-span-2 space-y-6">
+                <div class="lg:col-span-7 space-y-6">
                     <div class="bg-white p-6 rounded-3xl border border-neutral-200 shadow-sm min-h-[500px] flex flex-col">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-lg flex items-center">
@@ -313,17 +421,20 @@ const canSubmit = computed(() => {
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[330px] overflow-y-auto pr-2 custom-scrollbar">
                             <div
-                                v-for="item in filteredItems" :key="item.id + (item.equipment ? 'e' : 't')"
+                                v-for="item in filteredItems"
+                                :key="item.id + (item.tipo === 'equipo' ? 'e' : 't')"
                                 @click="toggleItemSelection(item)"
-                                :class="['p-3 border rounded-xl cursor-pointer transition-all flex items-center gap-3',
+                                :class="['p-3 border rounded-xl transition-all flex items-center gap-3 relative',
                                     isSelected(item) ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-neutral-200 hover:border-neutral-400',
-                                    !isAvailable(item) ? 'opacity-50 grayscale cursor-not-allowed' : '']"
+                                    !isAvailable(item) ? 'opacity-75 bg-neutral-50 cursor-not-allowed border-dashed border-orange-200' : 'cursor-pointer']"
                             >
-                                <div class="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center overflow-hidden border border-neutral-100 shadow-inner">
+                                <!-- Imagen del ítem -->
+                                <div class="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center overflow-hidden border border-neutral-100">
                                     <img
-                                        v-if="item.foto_equipo || item.foto_herramienta || item.foto"
-                                        :src="'/storage/' + (item.foto_equipo || item.foto_herramienta || item.foto)"
+                                        v-if="item.foto"
+                                        :src="'/storage/' + item.foto"
                                         class="object-cover w-full h-full"
+                                        :class="!isAvailable(item) ? 'grayscale' : ''"
                                         alt="Foto del item"
                                     />
                                     <Image v-else class="w-6 h-6 text-neutral-300" />
@@ -333,16 +444,43 @@ const canSubmit = computed(() => {
                                     <p class="text-sm font-bold text-black leading-tight">
                                         {{ item.nombre_mostrar }}
                                     </p>
+
+                                    <!-- Etiqueta de tipo -->
                                     <span :class="[
-                                        'px-2 py-0.5 rounded-full text-[10px] font-black uppercase border leading-none transition-colors',
-                                        item.tipo?.toLowerCase() === 'equipo'
-                                            ? 'bg-red-50 text-red-700 border-red-200'
-                                            : 'bg-blue-50 text-blue-700 border-blue-200'
+                                        'px-2 py-0.5 rounded-full text-[9px] font-black uppercase border transition-colors',
+                                        item.tipo?.toLowerCase() === 'equipo' ? 'bg-red-50 text-red-700 border-red-100' : 'bg-blue-50 text-blue-700 border-blue-100'
                                     ]">
                                         {{ item.tipo }}
                                     </span>
+
+                                    <!-- MENSAJES DE ESTADO NO DISPONIBLE -->
+                                    <div v-if="!isAvailable(item)" class="mt-1">
+                                        <!-- Caso Mantenimiento (Proviene de la tabla maintenances)[cite: 6] -->
+                                        <div v-if="getItemStatus(item) === 'Mantenimiento'" class="mt-1 flex flex-col">
+                                            <span class="text-[10px] font-black text-orange-600 uppercase flex items-center gap-1">
+                                                <Settings class="w-3 h-3" /> Mantenimiento
+                                            </span>
+                                            <!-- Usamos la variable que acabamos de llenar en el controlador[cite: 1, 6] -->
+                                            <span v-if="item.fecha_retorno_estimado" class="text-[11px] text-neutral-700 italic">
+                                                Disponible el: {{ item.fecha_retorno_estimado }} - {{ item.hora_fin_estimado }}
+                                            </span>
+                                        </div>
+
+                                        <!-- Caso Prestado (Proviene de la tabla loans)[cite: 2] -->
+                                        <!-- Mensaje para cuando está PRESTADO (Equipos y Herramientas) -->
+                                        <div v-else-if="getItemStatus(item) === 'Prestado'" class="flex flex-col">
+                                            <span class="text-[10px] font-black text-red-600 uppercase flex items-center gap-1">
+                                                <ClockAlert class="w-3 h-3" /> Prestado
+                                            </span>
+                                            <!-- Esta es la variable que ahora cargamos para ambos en el controlador -->
+                                            <span v-if="item.fecha_disponible" class="text-[11px] text-neutral-700 italic">
+                                                Disponible el: {{ item.fecha_disponible }} - {{ item.hora_fin_prevista }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
 
+                                <!-- Indicador de selección -->
                                 <div v-if="isSelected(item)" class="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
                                     <Save class="w-3 h-3 text-white" />
                                 </div>

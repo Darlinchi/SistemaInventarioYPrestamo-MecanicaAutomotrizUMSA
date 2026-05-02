@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class MaintenanceCompany extends Model
 {
@@ -12,7 +13,7 @@ class MaintenanceCompany extends Model
         'descripcion_empresa', 'direccion'
     ];
 
-    public function maintenances()
+    public function maintenances(): BelongsToMany
     {
         return $this->belongsToMany(Maintenance::class, 'maintenance_maintenance_company');
     }

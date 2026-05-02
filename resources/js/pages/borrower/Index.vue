@@ -17,26 +17,30 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Prestamistas',
+        title: 'Solicitantes',
         href: borrower.index.url(), // Usa la función de tu archivo de rutas
     },
 ];
 
-const activeTab = ref<'docentes' | 'auxiliares'>('docentes');
+const activeTab = ref<'docentes' | 'auxiliares' | 'estudiantes'>('docentes');
 const openSubjectId = ref<number | null>(null);
 
 // Contadores corregidos
 const countDocentes = computed(() => props.borrowers.filter(b => b.teacher !== null).length);
 const countAuxiliares = computed(() => props.borrowers.filter(b => b.assistant !== null).length);
+const countEstudiantes = computed(() => props.borrowers.filter(b => b.teacher === null && b.assistant === null).length);
 
 const borrowerTabs = computed(() => [
     { id: 'docentes', label: 'Docentes', count: countDocentes.value, icon: 'UserCog' },
-    { id: 'auxiliares', label: 'Auxiliares', count: countAuxiliares.value, icon: 'UserCheck' }
+    { id: 'auxiliares', label: 'Auxiliares', count: countAuxiliares.value, icon: 'UserCheck' },
+    { id: 'estudiantes', label: 'Estudiantes', count: countEstudiantes.value, icon: 'GraduationCap' }
 ]);
 
 const filteredUsers = computed(() => {
-    return props.borrowers.filter(borrower => {
-        return activeTab.value === 'docentes' ? borrower.teacher !== null : borrower.assistant !== null;
+    return props.borrowers.filter(b => {
+        if (activeTab.value === 'docentes') return b.teacher !== null;
+        if (activeTab.value === 'auxiliares') return b.assistant !== null;
+        return b.teacher === null && b.assistant === null; // Caso estudiantes
     });
 });
 
@@ -49,7 +53,8 @@ const toggleSubjects = (id: number) => {
 const getSubjects = (borrower: any) => {
     if (borrower.teacher) return borrower.teacher.subjects || [];
     if (borrower.assistant) return borrower.assistant.subjects || [];
-    return [];
+    // Los estudiantes podrían tener materias mediante inscripciones si lo escalas luego
+    return borrower.student?.subjects || [];
 };
 
 // Cierra el popover si se hace clic fuera del contenedor
@@ -67,11 +72,11 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
 </script>
 
 <template>
-    <Head title="Prestamistas" />
+    <Head title="Solicitantes" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
             <PageHeader
-                description="Información sobre los docentes y auxiliares que realizan préstamos de equipos y herramientas del taller"
+                description="Información sobre los docentes, auxiliares y estudiantes que realizan préstamos de equipos y herramientas del taller"
             />
 
             <TabSelector
@@ -82,10 +87,9 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
 
             <!-- Uso de BaseTable -->
             <BaseTable :items="filteredUsers" :emptyText="`No se encontraron ${activeTab}`">
-                <!-- Uso de TableHeader con columnas dinámicas -->
                 <TableHeader :columns="[
                     'CÉDULA',
-                    ...(activeTab === 'auxiliares' ? ['R.U.'] : []),
+                    ...(activeTab !== 'docentes' ? ['R.U.'] : []), // R.U. para auxiliares y estudiantes
                     'NOMBRE (S)',
                     'APELLIDOS',
                     'MATERIAS'
@@ -94,29 +98,24 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                 <tbody class="divide-y divide-neutral-100 text-sm">
                     <tr v-for="borrower in filteredUsers" :key="borrower.id" class="hover:bg-neutral-50/50 transition-colors group">
 
-                        <!-- Cédula -->
                         <td class="p-4 pl-8 text-neutral-700 font-medium">
                             {{ borrower.cedula_identidad }}
                         </td>
 
-                        <!-- Registro Universitario (Solo Auxiliares) -->
-                        <td v-if="activeTab === 'auxiliares'" class="p-4">
+                        <td v-if="activeTab !== 'docentes'" class="p-4">
                             <span class="font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded-md text-xs border border-blue-100">
-                                {{ borrower.assistant?.registro_universitario }}
+                                {{ borrower.assistant?.registro_universitario || borrower.student?.registro_universitario || 'N/A' }}
                             </span>
                         </td>
 
-                        <!-- Nombres -->
                         <td class="p-4 font-bold text-[#1a3a5a]">
-                            {{ borrower.nombresP }}
+                            {{ borrower.nombres }}
                         </td>
 
-                        <!-- Apellidos -->
                         <td class="p-4 font-bold text-[#1a3a5a]">
-                            {{ borrower.apellidosP }}
+                            {{ borrower.apellidos }}
                         </td>
 
-                        <!-- Materias (Popover) -->
                         <td class="p-4 relative">
                             <div v-if="getSubjects(borrower).length > 0">
                                 <button
@@ -127,20 +126,17 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                                     <span class="font-black text-[#1a3a5a]">{{ getSubjects(borrower).length }}</span>
                                 </button>
 
-                                <!-- Popover de Materias -->
                                 <div v-if="openSubjectId === borrower.id"
                                     class="absolute left-0 z-50 mt-2 w-72 bg-white border border-neutral-200 rounded-2xl shadow-xl p-4 animate-in fade-in zoom-in-95 duration-200">
                                     <p class="text-[11px] uppercase text-neutral-400 font-black mb-3 tracking-widest border-b pb-2">
-                                        Materias Asignadas
+                                        Materias / Proyectos
                                     </p>
                                     <div class="space-y-2 max-h-56 overflow-y-auto pr-1 custom-scrollbar">
                                         <div v-for="sub in getSubjects(borrower)" :key="sub.id"
                                             class="p-3 bg-neutral-50 rounded-xl border border-neutral-100 hover:border-blue-200 transition-colors">
-                                            <div class="flex items-center justify-between mb-1">
-                                                <p class="text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-tighter">
-                                                    {{ sub.sigla }}
-                                                </p>
-                                            </div>
+                                            <p class="text-xs font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md uppercase tracking-tighter w-fit mb-1">
+                                                {{ sub.sigla }}
+                                            </p>
                                             <p class="text-[12px] font-bold text-neutral-800 leading-tight">
                                                 {{ sub.nombre_materia }}
                                             </p>
@@ -148,7 +144,7 @@ onUnmounted(() => window.removeEventListener('click', closePopovers));
                                     </div>
                                 </div>
                             </div>
-                            <span v-else class="text-neutral-400 italic text-xs px-2">Sin materias</span>
+                            <span v-else class="text-neutral-400 italic text-xs px-2">Uso General / Taller</span>
                         </td>
                     </tr>
                 </tbody>

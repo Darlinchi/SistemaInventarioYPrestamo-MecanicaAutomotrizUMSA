@@ -9,8 +9,8 @@ use App\Models\Item;
 use App\Models\Equipment;
 use App\Models\Tool;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect; // Para el redireccionamiento
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB; // <--- MUY IMPORTANTE PARA EL EDIT Y UPDATE
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;                     // Para renderizar las vistas
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -29,7 +29,9 @@ class LoanController extends Controller
             'borrower.assistant',
             'tools',
             'equipments.accessories',     // Lista de equipos prestados
-        ])->orderBy('id', 'desc')->get();
+        ])->orderBy('id', 'desc')
+          ->get()
+          ->append(['all_items']);
 
         return Inertia::render('loan/Index', [
             'loans' => $loans,
@@ -60,36 +62,77 @@ class LoanController extends Controller
      */
     public function create()
     {
-        // 1. Obtenemos Equipos disponibles
-        $equipment = Equipment::whereIn('estado_equipo', ['Disponible', 'Nuevo'])->get()
+        // 1. Equipos con Mantenimientos y Préstamos
+        $equipment = Equipment::whereNotIn('estado_equipo', ['Dañado', 'Baja', 'Incompleto', 'Extraviado'])
+            ->get()
             ->map(function ($e) {
-                $e->tipo = 'equipo';
-                $e->nombre_mostrar = $e->nombre_equipo;
-                $e->estado_mostrar = $e->estado_equipo;
-                $e->foto = $e->foto_equipo;
-                return $e;
-            });
+            $e->tipo = 'equipo';
+            $e->nombre_mostrar = $e->nombre_equipo;
+            $e->estado_mostrar = $e->estado_equipo;
+            $e->foto = $e->foto_equipo;
 
-        // 2. Obtenemos Herramientas disponibles
-        $tools = Tool::whereIn('estado_herramienta', ['Disponible', 'Nuevo'])->get()
+            // FECHA MANTENIMIENTO: Buscamos directamente en la tabla maintenances
+            $e->fecha_retorno_estimado = null;
+            if ($e->estado_equipo === 'Mantenimiento') {
+                $maintData = DB::table('maintenances')
+                    ->where('equipment_id', $e->id)
+                    ->where('estado_mantenimiento', 'En Proceso') // Asegúrate de que este sea el estado en tu DB[cite: 6]
+                    ->orderBy('id', 'desc')
+                    ->first();
+
+                $e->fecha_retorno_estimado = $maintData ? $maintData->fecha_retorno_estimado : null;
+            }
+
+            // FECHA PRÉSTAMO: (Esto ya te funcionaba)[cite: 2, 3]
+            $e->fecha_disponible = null;
+            if ($e->estado_equipo === 'Prestado') {
+                $loanData = DB::table('item_loan')
+                    ->join('loans', 'item_loan.loan_id', '=', 'loans.id')
+                    ->where('item_loan.loanable_id', $e->id)
+                    ->where('item_loan.loanable_type', Equipment::class)
+                    ->where('loans.estado_prestamo', 'Activo')
+                    ->select('loans.fecha_retorno_prevista')
+                    ->first();
+                $e->fecha_disponible = $loanData ? $loanData->fecha_retorno_prevista : null;
+            }
+
+            return $e;
+        });
+
+        // 2. Herramientas con Préstamos
+        $tools = Tool::whereNotIn('estado_herramienta', ['Dañado', 'Baja', 'Extraviado'])
+            ->get()
             ->map(function ($t) {
                 $t->tipo = 'herramienta';
                 $t->nombre_mostrar = $t->nombre_herramienta;
                 $t->estado_mostrar = $t->estado_herramienta;
                 $t->foto = $t->foto_herramienta;
+
+                // FECHA PRÉSTAMO PARA HERRAMIENTAS[cite: 2, 8]
+                $t->fecha_disponible = null;
+                if ($t->estado_herramienta === 'Prestado') {
+                    $loanData = DB::table('item_loan')
+                        ->join('loans', 'item_loan.loan_id', '=', 'loans.id')
+                        ->where('item_loan.loanable_id', $t->id)
+                        ->where('item_loan.loanable_type', Tool::class) // Aseguramos que busque como Tool[cite: 3, 8]
+                        ->where('loans.estado_prestamo', 'Activo')
+                        ->select('loans.fecha_retorno_prevista')
+                        ->first();
+                    $t->fecha_disponible = $loanData ? $loanData->fecha_retorno_prevista : null;
+                }
+
+                // Para que la herramienta no dé error en el frontend, inicializamos la variable de mantenimiento como null
+                $t->fecha_retorno_estimado = null;
+
                 return $t;
             });
 
-        // Unificamos para el selector del frontend
         $allItems = $equipment->concat($tools);
-
-        $borrowers = Borrower::with(['teacher.subjects', 'assistant.subjects'])->get();
-        $subjects = Subject::all();
 
         return Inertia::render('loan/Create', [
             'items' => $allItems,
-            'borrowers' => $borrowers,
-            'subjects' => $subjects,
+            'borrowers' => Borrower::with(['teacher.subjects', 'assistant.subjects'])->get(),
+            'subjects' => Subject::all(),
         ]);
     }
 
@@ -98,46 +141,89 @@ class LoanController extends Controller
      */
     public function store(Request $request)
     {
-        // Validacion de datos
-        $request->validate([
-            'borrower_id' => 'required|exists:borrowers,id',
-            'subject_id' => 'required|exists:subjects,id',
-            'items' => 'required|array|min:1',
+        // 1. Validaciones dinámicas
+        $rules = [
+            'cedula_identidad' => 'required|string',
+            'nombres'          => 'required|string',
+            'apellidos'        => 'required|string',
+            'subject_id'       => 'required|exists:subjects,id',
+            'items'            => 'required|array|min:1',
             'fecha_retorno_prevista' => 'required|date|after_or_equal:today',
-            'hora_fin_prevista' => 'required',
-        ]);
+            'hora_fin_prevista'      => 'required',
+            'tipo_prestatario'       => 'required|in:docente,auxiliar,estudiante',
+        ];
+
+        // Reglas extra si es estudiante
+        if ($request->tipo_prestatario === 'estudiante') {
+            $rules['registro_universitario'] = 'required|string';
+            $rules['archivo_nota'] = 'required|file|mimes:pdf|max:2048'; // PDF máx 2MB
+            $rules['motivo'] = 'required|string|max:200';
+        }
+
+        $request->validate($rules);
 
         try {
             DB::beginTransaction();
 
-            // Creacion del registro de préstamo
+            // 2. Gestionar el Prestatario (Borrower)
+            // Usamos updateOrCreate por si el docente/auxiliar ya existía pero cambió algún dato
+            $borrower = \App\Models\Borrower::updateOrCreate(
+                ['cedula_identidad' => $request->cedula_identidad],
+                [
+                    'nombres' => $request->nombres,
+                    'apellidos' => $request->apellidos
+                ]
+            );
+
+            // 3. Si es estudiante, registrar sus datos específicos
+            if ($request->tipo_prestatario === 'estudiante') {
+                \App\Models\Student::updateOrCreate(
+                    ['id_student' => $borrower->id],
+                    [
+                        'registro_universitario' => $request->registro_universitario,
+                        'semestre' => $request->semestre ?? 10 // Por defecto 10mo
+                    ]
+                );
+            }
+
+            // 4. Crear el registro del Préstamo
             $loan = Loan::create([
-                'user_id' => auth()->id(),
-                'borrower_id' => $request->borrower_id,
-                'subject_id' => $request->subject_id,
+                'user_id'     => auth()->id(),
+                'borrower_id' => $borrower->id,
+                'subject_id'  => $request->subject_id,
                 'fecha_salida' => now()->format('Y-m-d'),
-                'hora_inicio' => now()->format('H:i'),
+                'hora_inicio'  => now()->format('H:i'),
                 'fecha_retorno_prevista' => $request->fecha_retorno_prevista,
-                'hora_fin_prevista' => $request->hora_fin_prevista,
-                'estado_prestamo' => 'Activo',
+                'hora_fin_prevista'      => $request->hora_fin_prevista,
+                'estado_prestamo'        => 'Activo',
             ]);
 
+            // 5. Si es estudiante, guardar la Autorización y el PDF
+            if ($request->tipo_prestatario === 'estudiante' && $request->hasFile('archivo_nota')) {
+                $path = $request->file('archivo_nota')->store('notas_autorizacion', 'public');
+
+                \App\Models\Authorization::create([
+                    'loan_id' => $loan->id,
+                    'motivo'  => $request->motivo,
+                    'archivo_nota' => $path,
+                ]);
+            }
+
+            // 6. Vincular Equipos y Herramientas (Tu lógica polimórfica)
             foreach ($request->items as $itemData) {
-                // Buscamos el objeto según el tipo que viene del frontend
-                if ($itemData['tipo'] === 'equipo') {
-                    $asset = Equipment::findOrFail($itemData['id']);
-                    // Al ser polimórfica, usamos la relación definida con morphedByMany
-                    $loan->equipments()->attach($asset->id, ['estado_devolucion' => 'Prestado']);
+                if ($itemData['tipo'] === 'equipo' || $itemData['tipo'] === 'Equipo') {
+                    $asset = \App\Models\Equipment::findOrFail($itemData['id']);
+                    $loan->equipments()->attach($asset->id, ['loanable_type' => \App\Models\Equipment::class]);
                     $asset->update(['estado_equipo' => 'Prestado']);
                 } else {
-                    $asset = Tool::findOrFail($itemData['id']);
-                    $loan->tools()->attach($asset->id, ['estado_devolucion' => 'Prestado']);
+                    $asset = \App\Models\Tool::findOrFail($itemData['id']);
+                    $loan->tools()->attach($asset->id, ['loanable_type' => \App\Models\Tool::class]);
                     $asset->update(['estado_herramienta' => 'Prestado']);
                 }
             }
 
             DB::commit();
-            return Redirect::route('loans.index')->with('success', 'Préstamo realizado con éxito');
+            return Redirect::route('loans.index')->with('success', 'Préstamo registrado correctamente.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -219,58 +305,76 @@ class LoanController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
+
     public function edit(Loan $loan)
     {
-        // Aquí iría la lógica para editar un prestamo
-        // Cargamos las relaciones reales
-        $loan->load(['subject', 'borrower', 'equipments', 'tools']);
+        $loan->load(['equipments', 'tools', 'subject', 'borrower'])->append(['all_items']);
 
-        // 2. Traemos Equipos disponibles + los que YA están en este préstamo
-        $equipments = Equipment::whereIn('estado_equipo', ['Disponible', 'Nuevo'])
-            ->orWhereHas('loans', function($q) use ($loan) {
-                $q->where('loans.id', $loan->id);
-            })->get()->map(function($e) {
+        // Equipos unificados (Disponibles + Los del préstamo actual)
+        $equipments = Equipment::whereNotIn('estado_equipo', ['Dañado', 'Baja', 'Incompleto', 'Extraviado'])
+            ->orWhereExists(function ($query) use ($loan) {
+                $query->select(DB::raw(1))
+                    ->from('item_loan')
+                    ->whereColumn('item_loan.loanable_id', 'equipment.id')
+                    ->where('item_loan.loanable_type', Equipment::class)
+                    ->where('item_loan.loan_id', $loan->id);
+            })->get()->map(function ($e) {
                 return [
                     'id' => $e->id,
                     'nombre_mostrar' => $e->nombre_equipo,
-                    'tipo' => 'App\Models\Equipment', // Importante para el update
+                    'tipo' => 'Equipo',
                     'es_equipo' => true,
-                    'foto' => $e->foto_equipo
+                    'foto' => $e->foto_equipo,
+                    'estado_mostrar' => $e->estado_equipo,
+                    'fecha_retorno_estimado' => ($e->estado_equipo === 'Mantenimiento') ?
+                        DB::table('maintenances')->where('equipment_id', $e->id)->where('estado_mantenimiento', 'En Proceso')->value('fecha_retorno_estimado') : null,
+                    'fecha_disponible' => ($e->estado_equipo === 'Prestado') ?
+                        DB::table('item_loan')->join('loans', 'item_loan.loan_id', '=', 'loans.id')
+                        ->where('item_loan.loanable_id', $e->id)->where('item_loan.loanable_type', Equipment::class)
+                        ->where('loans.estado_prestamo', 'Activo')->value('loans.fecha_retorno_prevista') : null,
                 ];
             });
 
-        // 3. Traemos Herramientas disponibles + las que YA están en este préstamo
-        $tools = Tool::whereIn('estado_herramienta', ['Disponible', 'Nuevo'])
-            ->orWhereHas('loans', function($q) use ($loan) {
-                $q->where('loans.id', $loan->id);
-            })->get()->map(function($t) {
+        // Herramientas unificadas
+        $tools = Tool::whereNotIn('estado_herramienta', ['Dañado', 'Baja', 'Extraviado'])
+            ->orWhereExists(function ($query) use ($loan) {
+                $query->select(DB::raw(1))
+                    ->from('item_loan')
+                    ->whereColumn('item_loan.loanable_id', 'tools.id')
+                    ->where('item_loan.loanable_type', Tool::class)
+                    ->where('item_loan.loan_id', $loan->id);
+            })->get()->map(function ($t) {
                 return [
                     'id' => $t->id,
                     'nombre_mostrar' => $t->nombre_herramienta,
-                    'tipo' => 'App\Models\Tool',
+                    'tipo' => 'Herramienta',
                     'es_equipo' => false,
-                    'foto' => $t->foto_herramienta
+                    'foto' => $t->foto_herramienta,
+                    'estado_mostrar' => $t->estado_herramienta,
+                    'fecha_disponible' => ($t->estado_herramienta === 'Prestado') ?
+                        DB::table('item_loan')->join('loans', 'item_loan.loan_id', '=', 'loans.id')
+                        ->where('item_loan.loanable_id', $t->id)->where('item_loan.loanable_type', Tool::class)
+                        ->where('loans.estado_prestamo', 'Activo')->value('loans.fecha_retorno_prevista') : null,
+                    'fecha_retorno_estimado' => null,
                 ];
             });
 
-        // Unificamos para la lista de selección
-        $allItems = $equipments->concat($tools);
-
         return Inertia::render('loan/Edit', [
             'loan' => $loan,
-            'borrowers' => Borrower::with(['teacher.subjects', 'assistant.subjects'])->get(),
+            'borrowers' => Borrower::all(),
             'subjects' => Subject::all(),
-            'items' => $allItems,
+            'items' => $equipments->concat($tools), //[cite: 7]
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
+
     public function update(Request $request, Loan $loan)
     {
-        // Valida que lleguen los datos necesarios
         $request->validate([
+            'borrower_id' => 'required|exists:borrowers,id',
             'subject_id' => 'required|exists:subjects,id',
             'selected_items' => 'required|array|min:1',
         ]);
@@ -278,39 +382,47 @@ class LoanController extends Controller
         try {
             DB::beginTransaction();
 
-            // 1. Antes de sincronizar, liberamos TODOS los items actuales del préstamo
-            foreach ($loan->equipments as $e) $e->update(['estado_equipo' => 'Disponible']);
-            foreach ($loan->tools as $t) $t->update(['estado_herramienta' => 'Disponible']);
+            // 1. Actualizar datos básicos del préstamo
+            $loan->update([
+                'borrower_id' => $request->borrower_id,
+                'subject_id' => $request->subject_id,
+            ]);
 
-            // 2. Separamos los items que vienen del form por tipo
-            $newEquipments = collect($request->selected_items)->where('type', 'App\Models\Equipment');
-            $newTools = collect($request->selected_items)->where('type', 'App\Models\Tool');
+            // 2. Separar los items seleccionados por tipo
+            $selectedItems = collect($request->selected_items);
+            $newEquipmentIds = $selectedItems->where('type', \App\Models\Equipment::class)->pluck('id')->toArray();
+            $newToolIds = $selectedItems->where('type', \App\Models\Tool::class)->pluck('id')->toArray();
 
-            // 3. Sincronizamos Equipos
-            $syncEquipments = [];
-            foreach ($newEquipments as $item) {
-                $syncEquipments[$item['id']] = ['estado_devolucion' => 'Prestado'];
-                Equipment::find($item['id'])->update(['estado_equipo' => 'Prestado']);
-            }
-            $loan->equipments()->sync($syncEquipments);
+            // 3. Gestionar Estados de EQUIPOS
+            $oldEquipmentIds = $loan->equipments()->pluck('id')->toArray();
 
-            // 4. Sincronizamos Herramientas
-            $syncTools = [];
-            foreach ($newTools as $item) {
-                $syncTools[$item['id']] = ['estado_devolucion' => 'Prestado'];
-                Tool::find($item['id'])->update(['estado_herramienta' => 'Prestado']);
-            }
-            $loan->tools()->sync($syncTools);
+            // Equipos que se quitaron: volver a 'Disponible'
+            $equipmentsToRemove = array_diff($oldEquipmentIds, $newEquipmentIds);
+            \App\Models\Equipment::whereIn('id', $equipmentsToRemove)->update(['estado_equipo' => 'Disponible']);
 
-            $loan->update(['subject_id' => $request->subject_id]);
+            // Equipos nuevos: marcar como 'Prestado'
+            \App\Models\Equipment::whereIn('id', $newEquipmentIds)->update(['estado_equipo' => 'Prestado']);
+
+            $loan->equipments()->sync($newEquipmentIds);
+
+            // 4. Gestionar Estados de HERRAMIENTAS
+            $oldToolIds = $loan->tools()->pluck('id')->toArray();
+
+            // Herramientas que se quitaron: volver a 'Disponible'
+            $toolsToRemove = array_diff($oldToolIds, $newToolIds);
+            \App\Models\Tool::whereIn('id', $toolsToRemove)->update(['estado_herramienta' => 'Disponible']);
+
+            // Herramientas nuevas: marcar como 'Prestado'
+            \App\Models\Tool::whereIn('id', $newToolIds)->update(['estado_herramienta' => 'Prestado']);
+
+            $loan->tools()->sync($newToolIds);
 
             DB::commit();
-
-            return redirect()->route('loans.index')->with('success', 'Préstamo y equipos actualizados correctamente.');
+            return Redirect::route('loans.index')->with('success', 'Préstamo actualizado correctamente.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Error al actualizar el préstamo: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Error al actualizar: ' . $e->getMessage()]);
         }
     }
 
