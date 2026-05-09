@@ -17,7 +17,7 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Solicitantes',
+        title: 'Responsables',
         href: borrower.index.url(), // Usa la función de tu archivo de rutas
     },
 ];

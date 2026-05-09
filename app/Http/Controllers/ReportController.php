@@ -157,49 +157,76 @@ class ReportController extends Controller
     }
 
     public function exportHistory()
-    {
-        $history = \App\Models\Loan::with(['borrower', 'subject', 'equipments', 'tools'])
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function($loan) {
-                $items = collect();
+{
+    $loans = Loan::with([
+        'borrower',
+        'subject',
+        'loanReturns.returnDetails.returnable'
+    ])
+    ->orderBy('fecha_salida', 'desc')
+    ->get();
 
-                // Mapeo de Equipos con su estado de devolución individual
-                foreach($loan->equipments as $e) {
-                    $items->push([
-                        'nombre' => $e->nombre_equipo,
-                        'tipo' => 'EQUIPO',
-                        'estado_dev' => $e->pivot->estado_devolucion // Estado desde la tabla pivote
-                    ]);
-                }
+    $history = $loans->map(function ($loan) {
+        // CAMBIO AQUÍ: Verificación compatible con Objetos (hasOne) y Colecciones (hasMany)
+        $return = null;
 
-                // Mapeo de Herramientas con su estado de devolución individual
-                foreach($loan->tools as $t) {
-                    $items->push([
-                        'nombre' => $t->nombre_herramienta,
-                        'tipo' => 'HERR.',
-                        'estado_dev' => $t->pivot->estado_devolucion
-                    ]);
-                }
+        if ($loan->loanReturns) {
+            // Si es una colección (hasMany), sacamos el primero; si es objeto (hasOne), lo usamos directo
+            $return = ($loan->loanReturns instanceof \Illuminate\Database\Eloquent\Collection)
+                ? $loan->loanReturns->first()
+                : $loan->loanReturns;
+        }
 
-                return [
-                    'responsable' => $loan->borrower->apellidosP . ' ' . $loan->borrower->nombresP,
-                    'materia' => $loan->subject->nombre_materia . ' (' . $loan->subject->sigla . ')',
-                    'salida' => \Carbon\Carbon::parse($loan->fecha_salida)->format('d/m/Y'),
-                    'retorno' => $loan->fecha_retorno ? \Carbon\Carbon::parse($loan->fecha_retorno)->format('d/m/Y') : 'PENDIENTE',
-                    'estado_general' => $loan->fecha_retorno ? 'CERRADO' : 'ACTIVO',
-                    'observacion' => $loan->observacion_prestamo ?? 'Sin observaciones',
-                    'items' => $items
-                ];
-            });
+        return [
+            'responsable' => "{$loan->borrower->nombresP} {$loan->borrower->apellidosP}",
+            'materia'     => "{$loan->subject->nombre_materia} ({$loan->subject->sigla})",
+            'salida'      => \Carbon\Carbon::parse($loan->fecha_salida)->format('d/m/Y'),
+            'retorno'     => ($return && $return->fecha_retorno)
+                             ? \Carbon\Carbon::parse($return->fecha_retorno)->format('d/m/Y')
+                             : 'PENDIENTE',
+            'observacion' => $return ? $return->observacion : ($loan->estado_prestamo == 'Activo' ? 'Préstamo en curso' : 'Sin registro'),
+            'items'       => $this->mapItemsForHistory($loan, $return),
+        ];
+    });
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.loan-history', [
-            'history' => $history,
-            'date' => now()->format('d/m/Y H:i')
-        ]);
+    $pdf = Pdf::loadView('pdf.loan-history', [
+        'history' => $history,
+        'date'    => now()->format('d/m/Y H:i')
+    ]);
 
-        return $pdf->setPaper('letter', 'landscape')->stream('Historial_Completo_Prestamos.pdf');
+    return $pdf->setPaper('letter', 'landscape')->stream('Historial_Prestamos.pdf');
+}
+
+private function mapItemsForHistory($loan, $return)
+{
+    // Verificamos que el retorno exista y tenga detalles
+    if ($return && isset($return->returnDetails) && count($return->returnDetails) > 0) {
+        return $return->returnDetails->map(function ($detail) {
+            $nombre = 'Item no identificado';
+            if ($detail->returnable) {
+                $nombre = str_contains($detail->returnable_type, 'Equipment')
+                    ? $detail->returnable->nombre_equipo
+                    : $detail->returnable->nombre_herramienta;
+            }
+
+            return [
+                'nombre'     => $nombre,
+                'tipo'       => str_contains($detail->returnable_type, 'Equipment') ? 'EQ' : 'HER',
+                'estado_dev' => $detail->estado_devolucion ?? 'N/A'
+            ];
+        });
     }
+
+    // Si no hay retorno, usamos los ítems originales
+    // collect() asegura que podamos usar .map() sin que falle si all_items es nulo
+    return collect($loan->all_items ?? [])->map(function ($item) {
+        return [
+            'nombre'     => $item['nombre_mostrar'] ?? 'Sin nombre',
+            'tipo'       => (isset($item['es_equipo']) && $item['es_equipo']) ? 'EQ' : 'HER',
+            'estado_dev' => 'En tránsito'
+        ];
+    });
+}
 
     public function exportIssues()
     {

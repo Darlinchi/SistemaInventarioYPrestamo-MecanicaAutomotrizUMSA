@@ -145,6 +145,7 @@ const returnForm = useForm({
     observacion: '',
     fecha_retorno: new Date().toISOString().split('T')[0],
     hora_fin: '',
+    acuerdos: [] as any[],   // acuerdos de reposición del paso 2 del modal
 });
 
 const openReturnModal = (loan: any) => {
@@ -173,7 +174,9 @@ const openReturnModal = (loan: any) => {
     isReturnModalOpen.value = true;
 };
 
-const processReturn = () => {
+const processReturn = (acuerdos: any[]) => {
+    // Inyectamos los acuerdos emitidos por el modal antes del POST
+    returnForm.acuerdos = acuerdos;
     returnForm.post('/dashboard/loan-returns', {
         preserveScroll: true,
         onSuccess: () => {

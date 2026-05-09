@@ -41,7 +41,7 @@
         <tr><td colspan="4" class="section-title">INFORMACIÓN DEL PRÉSTAMO</td></tr>
         <tr>
             <td class="header-bg" style="width: 20%;">RESPONSABLE:</td>
-            <td style="width: 30%;">{{ $loan->borrower->nombres }} {{ $loan->borrower->apellidos }}</td>
+            <td style="width: 30%;">{{ $loan->borrower->apellidos }} {{ $loan->borrower->nombres }}</td>
             <td class="header-bg" style="width: 20%;">C.I.:</td>
             <td style="width: 30%;">{{ $loan->borrower->cedula_identidad }}</td>
         </tr>
@@ -76,8 +76,12 @@
                 <span style="color: #c05621;">{{ $loan->hora_fin_prevista }}</span>
             </td>
             <td>
-                {{ $loan->fecha_retorno }}<br>
-                <span style="color: #2f855a; font-weight: bold;">{{ $loan->hora_fin }}</span>
+                @if($loan->loanReturns)
+                    {{ $loan->loanReturns->fecha_retorno->format('d/m/Y') }}<br>
+                    <span style="color: #2f855a; font-weight: bold;">{{ $loan->loanReturns->hora_fin }}</span>
+                @else
+                    <span style="color: #666;">Sin registro</span>
+                @endif
             </td>
         </tr>
     </table>
@@ -93,28 +97,33 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Dentro del foreach de tu Blade -->
-            @foreach($loan->all_items as $item)
-            <tr>
-                <td>
-                    <!-- Usamos sintaxis de array [] porque tu modelo devuelve un array manual -->
-                    <strong>{{ $item['nombre_mostrar'] }}</strong><br>
-                    <small style="color: #666;">({{ $item['es_equipo'] ? 'EQUIPO' : 'HERRAMIENTA' }})</small>
+            @php $return = $loan->loanReturns; @endphp
+            @if($return)
+                @foreach($return->returnDetails as $detail)
+                <tr>
+                    <td>
+                        <strong>
+                            {{ str_contains($detail->returnable_type, 'Equipment') ? $detail->returnable->nombre_equipo : $detail->returnable->nombre_herramienta }}
+                        </strong><br>
+                        <small style="color: #666;">
+                            ({{ str_contains($detail->returnable_type, 'Equipment') ? 'EQUIPO' : 'HERRAMIENTA' }})
+                        </small>
 
-                    @if(isset($item['accessories']) && count($item['accessories']) > 0)
-                        <div style="margin-left: 10px; font-size: 8pt; margin-top: 4px;">
-                            @foreach($item['accessories'] as $acc)
-                                <span>• {{ $acc->nombre_accesorio }} ({{ $acc->estado_accesorio }})</span><br>
-                            @endforeach
-                        </div>
-                    @endif
-                </td>
-                <td style="text-align: center;">{{ $item['codigo_qr'] ?? 'N/A' }}</td>
-                <td style="text-align: center;">
-                    <span class="badge">{{ strtoupper($item['estado_devolucion']) }}</span>
-                </td>
-            </tr>
-            @endforeach
+                        @if($detail->returnDetailAccessories->isNotEmpty())
+                            <div style="margin-left: 10px; font-size: 8pt; margin-top: 4px;">
+                                @foreach($detail->returnDetailAccessories as $rda)
+                                    <span>• {{ $rda->accessory->nombre_accesorio }} ({{ $rda->estado_accesorio }})</span><br>
+                                @endforeach
+                            </div>
+                        @endif
+                    </td>
+                    <td style="text-align: center;">{{ $detail->returnable->codigo_qr ?? 'N/A' }}</td>
+                    <td style="text-align: center;">
+                        <span class="badge">{{ strtoupper($detail->estado_devolucion) }}</span>
+                    </td>
+                </tr>
+                @endforeach
+            @endif
         </tbody>
     </table>
 
@@ -123,7 +132,7 @@
     <div style="font-weight: bold; margin-bottom: 5px; text-transform: uppercase;">Notasde recepción final:</div>
         <tr>
             <td style="height: 60px; vertical-align: top; font-style: italic;">
-                {{ $loan->observacion ?? 'El préstamo fue devuelto sin observaciones adicionales registradas.' }}
+                {{ $loan->loanReturns->observacion ?? 'El préstamo fue devuelto sin observaciones adicionales.' }}
             </td>
         </tr>
     </table>

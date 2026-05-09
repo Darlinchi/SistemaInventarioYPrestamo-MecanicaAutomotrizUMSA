@@ -8,6 +8,7 @@ use App\Models\Subject;
 use App\Models\Item;
 use App\Models\Equipment;
 use App\Models\Tool;
+use App\Models\Reposition;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // <--- MUY IMPORTANTE PARA EL EDIT Y UPDATE
 use Illuminate\Support\Facades\Redirect;
@@ -45,8 +46,8 @@ class LoanController extends Controller
         $loan = Loan::with([
             'borrower',
             'subject',
-            'equipments.accessories',
-            'tools'
+            'loanReturns.returnDetails.returnable', // Indispensable para el PDF
+            'loanReturns.returnDetails.returnDetailAccessories.accessory'
         ])->findOrFail($id);
 
         // 2. Generar el PDF
@@ -70,30 +71,41 @@ class LoanController extends Controller
             $e->nombre_mostrar = $e->nombre_equipo;
             $e->estado_mostrar = $e->estado_equipo;
             $e->foto = $e->foto_equipo;
-
-            // FECHA MANTENIMIENTO: Buscamos directamente en la tabla maintenances
+            $e->fecha_disponible = null;
+            $e->hora_fin_prevista = null;
             $e->fecha_retorno_estimado = null;
+            $e->hora_fin_estimado = null;
+
             if ($e->estado_equipo === 'Mantenimiento') {
                 $maintData = DB::table('maintenances')
                     ->where('equipment_id', $e->id)
                     ->where('estado_mantenimiento', 'En Proceso') // Asegúrate de que este sea el estado en tu DB[cite: 6]
                     ->orderBy('id', 'desc')
+                    ->select('fecha_retorno_estimado', 'hora_fin_estimado')
                     ->first();
 
-                $e->fecha_retorno_estimado = $maintData ? $maintData->fecha_retorno_estimado : null;
+                if ($maintData) {
+                    $e->fecha_retorno_estimado = $maintData->fecha_retorno_estimado;
+                    $e->hora_fin_estimado = $maintData->hora_fin_estimado;
+                }
             }
 
             // FECHA PRÉSTAMO: (Esto ya te funcionaba)[cite: 2, 3]
             $e->fecha_disponible = null;
+            $e->hora_fin_prevista = null;
             if ($e->estado_equipo === 'Prestado') {
                 $loanData = DB::table('item_loan')
                     ->join('loans', 'item_loan.loan_id', '=', 'loans.id')
                     ->where('item_loan.loanable_id', $e->id)
                     ->where('item_loan.loanable_type', Equipment::class)
                     ->where('loans.estado_prestamo', 'Activo')
-                    ->select('loans.fecha_retorno_prevista')
+                    ->select('loans.fecha_retorno_prevista', 'loans.hora_fin_prevista')
                     ->first();
-                $e->fecha_disponible = $loanData ? $loanData->fecha_retorno_prevista : null;
+
+                if ($loanData) {
+                    $e->fecha_disponible = $loanData->fecha_retorno_prevista;
+                    $e->hora_fin_prevista = $loanData->hora_fin_prevista; // <--- Asignación explícita
+                }
             }
 
             return $e;
@@ -107,32 +119,45 @@ class LoanController extends Controller
                 $t->nombre_mostrar = $t->nombre_herramienta;
                 $t->estado_mostrar = $t->estado_herramienta;
                 $t->foto = $t->foto_herramienta;
-
-                // FECHA PRÉSTAMO PARA HERRAMIENTAS[cite: 2, 8]
                 $t->fecha_disponible = null;
+                $t->hora_fin_prevista = null;
+
                 if ($t->estado_herramienta === 'Prestado') {
                     $loanData = DB::table('item_loan')
                         ->join('loans', 'item_loan.loan_id', '=', 'loans.id')
                         ->where('item_loan.loanable_id', $t->id)
                         ->where('item_loan.loanable_type', Tool::class) // Aseguramos que busque como Tool[cite: 3, 8]
                         ->where('loans.estado_prestamo', 'Activo')
-                        ->select('loans.fecha_retorno_prevista')
+                        ->select('loans.fecha_retorno_prevista', 'loans.hora_fin_prevista')
                         ->first();
-                    $t->fecha_disponible = $loanData ? $loanData->fecha_retorno_prevista : null;
+
+                    if ($loanData) {
+                        $t->fecha_disponible = $loanData->fecha_retorno_prevista;
+                        $t->hora_fin_prevista = $loanData->hora_fin_prevista;
+                    }
                 }
 
                 // Para que la herramienta no dé error en el frontend, inicializamos la variable de mantenimiento como null
                 $t->fecha_retorno_estimado = null;
+                $t->hora_fin_estimado = null;
 
                 return $t;
             });
 
         $allItems = $equipment->concat($tools);
 
+        // Borrowers con reposiciones pendientes → bloqueados para nuevos préstamos
+        $borrowersBloqueados = Reposition::where('estado', 'Pendiente')
+            ->pluck('borrower_id')
+            ->unique()
+            ->values()
+            ->toArray();
+
         return Inertia::render('loan/Create', [
             'items' => $allItems,
             'borrowers' => Borrower::with(['teacher.subjects', 'assistant.subjects'])->get(),
             'subjects' => Subject::all(),
+            'borrowersBloqueados' => $borrowersBloqueados,
         ]);
     }
 
@@ -161,6 +186,27 @@ class LoanController extends Controller
         }
 
         $request->validate($rules);
+
+        // ── Verificar si el prestatario tiene reposiciones pendientes ─────────
+        // Si viene por CI (estudiante/nuevo), buscamos si ya tiene borrower_id
+        // Si viene por borrower_id (docente/auxiliar), lo usamos directo.
+        $borrowerIdParaCheck = $request->borrower_id ?? null;
+        if (!$borrowerIdParaCheck && $request->cedula_identidad) {
+            $existingBorrower = Borrower::where('cedula_identidad', $request->cedula_identidad)->first();
+            $borrowerIdParaCheck = $existingBorrower?->id;
+        }
+
+        if ($borrowerIdParaCheck) {
+            $tieneReposicionesPendientes = Reposition::where('borrower_id', $borrowerIdParaCheck)
+                ->where('estado', 'Pendiente')
+                ->exists();
+
+            if ($tieneReposicionesPendientes) {
+                return back()->withErrors([
+                    'borrower_id' => 'Este prestatario tiene reposiciones pendientes. Debe resolverlas antes de realizar un nuevo préstamo.',
+                ])->withInput();
+            }
+        }
 
         try {
             DB::beginTransaction();

@@ -64,6 +64,22 @@ class ToolController extends Controller
                     'estado_herramienta'      => $validated['estado_herramienta'],
                 ]);
 
+                // ── Si viene de una reposición por Reemplazo ──────────────────
+                if ($request->filled('reposition_id')) {
+                    $tool_created = Tool::latest()->first(); // la que acabamos de crear
+                    $rep = \App\Models\Reposition::find($request->reposition_id);
+                    if ($rep && $rep->estado === 'Pendiente') {
+                        $rep->update([
+                            'estado'             => 'Cumplida',
+                            'fecha_cumplimiento' => now()->toDateString(),
+                            'nuevo_item_id'      => $tool_created->id,
+                            'nuevo_item_type'    => Tool::class,
+                        ]);
+                    }
+                    return redirect()->route('repositions.index')
+                        ->with('success', 'Herramienta de reemplazo registrada y reposición marcada como cumplida.');
+                }
+
                 return redirect()->route('items.index')->with('success', 'Herramienta registrada con éxito');
             });
         } catch (\Exception $e) {

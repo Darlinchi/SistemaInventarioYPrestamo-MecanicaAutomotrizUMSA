@@ -11,7 +11,7 @@ import DateFilter from '@/components/shared/DateFilter.vue';
 import ClearFiltersButton from '@/components/shared/ClearFiltersButton.vue';
 import LoanHistoryTable from '@/components/LoanHistoryTable.vue';
 import LoanDetailModal from '@/components/LoanDetailModal.vue';
-import { Package } from 'lucide-vue-next';
+import { Package, Loader2 } from 'lucide-vue-next';
 import loanRoutes from '@/routes/loans';
 
 interface Loan {

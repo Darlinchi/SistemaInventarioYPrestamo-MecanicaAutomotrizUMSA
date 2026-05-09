@@ -14,6 +14,7 @@ use App\Http\Controllers\MaintenanceCompanyController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\RepositionController;
 
 // ruta publica: pagina de bienvenida
 Route::get('/', function () {
@@ -116,6 +117,7 @@ Route::middleware(['auth', 'verified'])
         Route::get('loan-returns', [LoanReturnController::class, 'index'])
             ->name('loan-returns.index');
 
+        Route::resource('repositions', RepositionController::class);
         // LoanReturn
         //Route::resource('loanReturn', LoanReturnController::class);
         //Route::get('loanReturns', [LoanReturnController::class, 'index'])->name('loanReturns.index');

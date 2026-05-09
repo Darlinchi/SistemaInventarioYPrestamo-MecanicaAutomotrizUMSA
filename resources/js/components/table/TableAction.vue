@@ -3,7 +3,7 @@ import { computed } from 'vue';
 
 const props = defineProps<{
     icon: any;
-    variant: 'view' | 'edit' | 'delete' | 'success';
+    variant: 'view' | 'edit' | 'delete' | 'success' | 'warning';
     title?: string;
 }>();
 
@@ -14,6 +14,7 @@ const classes = computed(() => {
         edit: "bg-white border-neutral-200 hover:bg-blue-50 text-blue-600",
         delete: "bg-white border-neutral-200 hover:bg-red-50 text-[#d90000]",
         success: "bg-white border-neutral-200 hover:bg-emerald-50 text-emerald-600",
+        warning: "bg-white border-neutral-200 hover:bg-amber-50 text-amber-600",
     };
     return `${base} ${variants[props.variant]}`;
 });

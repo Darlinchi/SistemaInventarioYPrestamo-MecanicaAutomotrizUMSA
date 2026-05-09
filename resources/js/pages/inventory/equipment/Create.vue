@@ -26,6 +26,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const photoPreview = ref<string | null>(null);
 
+// Detectar si venimos desde una reposición por Reemplazo
+const urlParams_init = new URLSearchParams(window.location.search);
+const repositionId   = urlParams_init.get('reposition_id') || '';
+const esReemplazo    = !!repositionId;
+
 // Formulario específico para Equipos
 const form = useForm({
     codigo_qr: "",
@@ -42,6 +47,7 @@ const form = useForm({
     rubro: "",
     fecha_adquisicion: "",
     accesorios: [] as { nombre: string; estado: string; foto: File | null; preview: string | null }[],
+    reposition_id: repositionId,  // para marcar la reposición Cumplida al guardar
 });
 
 const handleFileChange = (e: Event) => {
@@ -109,10 +115,28 @@ function submit() {
     <Head title="Nuevo Equipo" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-3xl mx-auto p-4 w-full">
+            <!-- Banner de contexto: reposición por reemplazo -->
+            <div
+                v-if="esReemplazo"
+                class="mb-5 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4"
+            >
+                <span class="text-2xl">🔁</span>
+                <div>
+                    <p class="text-sm font-black text-amber-800">Registrando equipo de reemplazo</p>
+                    <p class="text-xs text-amber-700 mt-0.5">
+                        Al guardar este equipo, la reposición quedará marcada automáticamente como
+                        <strong>Cumplida</strong> y serás redirigido a Reposiciones.
+                    </p>
+                </div>
+            </div>
+
             <div class="mb-6">
-                <Link :href="itemsRoutes.index.url()+ '?tab=' + fromTab" class="inline-flex items-center text-[15px] font-medium text-neutral-500 hover:text-[#1a3a5a] transition-colors group">
+                <Link
+                    :href="esReemplazo ? '/dashboard/repositions' : itemsRoutes.index.url() + '?tab=' + fromTab"
+                    class="inline-flex items-center text-[15px] font-medium text-neutral-500 hover:text-[#1a3a5a] transition-colors group"
+                >
                     <ArrowLeft class="w-5 h-5 mr-1 group-hover:-translate-x-1 transition-transform"/>
-                    Volver al inventario
+                    {{ esReemplazo ? 'Volver a Reposiciones' : 'Volver al inventario' }}
                 </Link>
             </div>
 

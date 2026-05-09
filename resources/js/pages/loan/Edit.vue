@@ -141,8 +141,8 @@ const canSubmit = computed(() => {
 
                         <div class="pt-4 border-t border-neutral-200 grid grid-cols-2 gap-4">
                             <div>
-                                <p class="flex items-center gap-1 text-[14px] font-black text-orange-400 tracking-wider">
-                                    <Calendar class="w-4 h-4 text-orange-400" />
+                                <p class="flex items-center gap-1 text-[14px] font-black text-blue-600 tracking-wider">
+                                    <Calendar class="w-4 h-4 text-blue-600" />
                                     <span>Fecha Salida</span>
                                 </p>
                                 <p class="text-[13px] font-medium mt-1.5">{{ loan.fecha_salida }}</p>
@@ -165,8 +165,8 @@ const canSubmit = computed(() => {
                                 <p class="text-[13px] font-medium mt-1.5">{{ loan.fecha_retorno_prevista }}</p>
                             </div>
                             <div>
-                                <p class="flex items-center gap-1 text-[14px] font-black text-blue-600 tracking-wider">
-                                    <ClockAlert class="w-4 h-4 text-blue-600" />
+                                <p class="flex items-center gap-1 text-[14px] font-black text-orange-400 tracking-wider">
+                                    <ClockAlert class="w-4 h-4 text-orange-400" />
                                     <span>H. Retorno</span>
                                 </p>
                                 <p class="text-[13px] font-medium mt-1.5">{{ loan.hora_fin_prevista }}</p>
@@ -241,54 +241,54 @@ const canSubmit = computed(() => {
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                             <div
-    v-for="item in availableItemsForSearch" :key="item.id"
-    @click="toggleItemSelection(item)"
-    :class="[
-        'p-3 border rounded-xl transition-all flex items-center gap-3',
-        !isAvailable(item) ? 'opacity-70 bg-neutral-50 cursor-not-allowed border-dashed' : 'cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 border-neutral-100'
-    ]"
->
-    <div class="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center overflow-hidden border">
-        <img
-            v-if="item.foto"
-            :src="'/storage/' + item.foto"
-            class="object-cover w-full h-full"
-            :class="!isAvailable(item) ? 'grayscale' : ''"
-        />
-        <Image v-else class="w-5 h-5 text-neutral-400" />
-    </div>
-    <div class="flex-1">
-        <p class="text-[15px] font-bold text-neutral-800 leading-tight">{{ item.nombre_mostrar }}</p>
+                                v-for="item in availableItemsForSearch" :key="item.id"
+                                @click="toggleItemSelection(item)"
+                                :class="[
+                                    'p-3 border rounded-xl transition-all flex items-center gap-3',
+                                    !isAvailable(item) ? 'opacity-70 bg-neutral-50 cursor-not-allowed border-dashed' : 'cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 border-neutral-100'
+                                ]"
+                            >
+                                <div class="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center overflow-hidden border">
+                                    <img
+                                        v-if="item.foto"
+                                        :src="'/storage/' + item.foto"
+                                        class="object-cover w-full h-full"
+                                        :class="!isAvailable(item) ? 'grayscale' : ''"
+                                    />
+                                    <Image v-else class="w-5 h-5 text-neutral-400" />
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-[15px] font-bold text-neutral-800 leading-tight">{{ item.nombre_mostrar }}</p>
 
-        <span :class="[
-            'px-2 py-0.5 rounded-full text-[10px] font-black uppercase border leading-none',
-            item.es_equipo ? 'bg-red-50 text-red-700 border-red-200' : 'bg-blue-50 text-blue-700 border-blue-200'
-        ]">
-            {{ item.tipo }}
-        </span>
+                                    <span :class="[
+                                        'px-2 py-0.5 rounded-full text-[10px] font-black uppercase border leading-none',
+                                        item.es_equipo ? 'bg-red-50 text-red-700 border-red-200' : 'bg-blue-50 text-blue-700 border-blue-200'
+                                    ]">
+                                        {{ item.tipo }}
+                                    </span>
 
-        <!-- MENSAJES DE ESTADO (Igual que en Create.vue) -->
-        <div v-if="!isAvailable(item)" class="mt-1">
-            <div v-if="getItemStatus(item) === 'Mantenimiento'" class="flex flex-col">
-                <span class="text-[10px] font-black text-orange-600 uppercase flex items-center gap-1">
-                    <Wrench class="w-3 h-3" /> En Mantenimiento
-                </span>
-                <span v-if="item.fecha_retorno_estimado" class="text-[11px] text-neutral-700 italic">
-                    Disponible el: {{ item.fecha_retorno_estimado }}
-                </span>
-            </div>
-            <div v-else-if="getItemStatus(item) === 'Prestado'" class="flex flex-col">
-                <span class="text-[10px] font-black text-red-600 uppercase flex items-center gap-1">
-                    <ClockAlert class="w-3 h-3" /> Prestado
-                </span>
-                <span v-if="item.fecha_disponible" class="text-[11px] text-neutral-700 italic">
-                    Disponible: {{ item.fecha_disponible }}
-                </span>
-            </div>
-        </div>
-    </div>
-    <Plus v-if="isAvailable(item)" class="w-4 h-4 text-neutral-300" />
-</div>
+                                    <!-- MENSAJES DE ESTADO (Igual que en Create.vue) -->
+                                    <div v-if="!isAvailable(item)" class="mt-1">
+                                        <div v-if="getItemStatus(item) === 'Mantenimiento'" class="flex flex-col">
+                                            <span class="text-[10px] font-black text-orange-600 uppercase flex items-center gap-1">
+                                                <Wrench class="w-3 h-3" /> En Mantenimiento
+                                            </span>
+                                            <span v-if="item.fecha_retorno_estimado" class="text-[11px] text-neutral-700 italic">
+                                                Disponible el: {{ item.fecha_retorno_estimado }}
+                                            </span>
+                                        </div>
+                                        <div v-else-if="getItemStatus(item) === 'Prestado'" class="flex flex-col">
+                                            <span class="text-[10px] font-black text-red-600 uppercase flex items-center gap-1">
+                                                <ClockAlert class="w-3 h-3" /> Prestado
+                                            </span>
+                                            <span v-if="item.fecha_disponible" class="text-[11px] text-neutral-700 italic">
+                                                Disponible: {{ item.fecha_disponible }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <Plus v-if="isAvailable(item)" class="w-4 h-4 text-neutral-300" />
+                            </div>
                         </div>
                         <p v-if="availableItemsForSearch.length === 0 && searchTerm" class="text-center py-4 text-xs text-neutral-400">No se encontraron coincidencias</p>
                     </div>

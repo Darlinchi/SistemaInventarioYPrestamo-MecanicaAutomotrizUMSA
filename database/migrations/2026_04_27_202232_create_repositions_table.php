@@ -37,7 +37,7 @@ return new class extends Migration
                 'Reparacion',   // lo manda a arreglar
                 'Reemplazo',       // trae el mismo ítem repuesto
                 'Desbloqueo',    // paga en dinero
-            ]);
+            ])->nullable();
 
             // ── Si es Reemplazo: referencia al ítem nuevo creado en el sistema ──
             // ✅ CORREGIDO: usando nullableMorphs en vez de campos sueltos

@@ -17,6 +17,7 @@ import { ArrowLeft, Save, Loader2, Cog, Settings, Image, Search, ClipboardPen, X
 
 const props = defineProps<{
     borrowers: Array<any>;
+    borrowersBloqueados: number[];
     items: Array<any>;
     subjects: Array<any>;
 }>();
@@ -81,6 +82,13 @@ watch(activeTab, (newVal) => {
     form.tipo_prestatario = newVal === 'personal' ? 'docente' : 'estudiante';
     form.reset('borrower_id', 'cedula_identidad', 'nombres', 'apellidos', 'registro_universitario', 'motivo', 'archivo_nota');
 });
+
+// Computed: bloqueo de borrower con reposiciones pendientes
+const borrowerSeleccionadoBloqueado = computed(() => {
+    if (!form.borrower_id) return false;
+    return props.borrowersBloqueados.includes(Number(form.borrower_id));
+});
+const isBloqueado = (id: number) => props.borrowersBloqueados.includes(Number(id));
 
 // Auto-llenado para Docente/Auxiliar[cite: 7]
 watch(() => form.borrower_id, (newId) => {
@@ -227,6 +235,7 @@ const handleFileChange = (e: Event) => {
     }
 };
 const canSubmit = computed(() => {
+    if (borrowerSeleccionadoBloqueado.value) return false; // bloqueado por reposiciones pendientes
     const common = form.items.length > 0 && !!form.subject_id && !!form.fecha_retorno_prevista && !form.processing;
     if (activeTab.value === 'personal') return common && !!form.borrower_id;
     return common && !!form.cedula_identidad && !!form.registro_universitario && !!form.archivo_nota;
@@ -267,12 +276,36 @@ const canSubmit = computed(() => {
                                         <User class="w-4 h-4 text-[#1a3a5a]" /> Responsable
                                     </Label>
                                     <select v-model="form.borrower_id"
-                                    class="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm ">
+                                        :class="[
+                                            'flex h-10 w-full rounded-md border bg-white px-3 py-2 text-sm',
+                                            borrowerSeleccionadoBloqueado
+                                                ? 'border-red-400 ring-1 ring-red-300 focus:border-red-500'
+                                                : 'border-input'
+                                        ]"
+                                    >
                                         <option value="" disabled>Seleccionar un docente/auxiliar</option>
-                                        <option v-for="b in filteredBorrowers" :key="b.id" :value="b.id">
-                                            {{ b.apellidos }} {{ b.nombres }}
+                                        <option
+                                            v-for="b in filteredBorrowers"
+                                            :key="b.id"
+                                            :value="b.id"
+                                            :disabled="isBloqueado(b.id)"
+                                        >
+                                            {{ isBloqueado(b.id) ? '🔒 ' : '' }}{{ b.apellidos }} {{ b.nombres }}{{ isBloqueado(b.id) ? ' — BLOQUEADO' : '' }}
                                         </option>
                                     </select>
+
+                                    <!-- Aviso de bloqueo -->
+                                    <div v-if="borrowerSeleccionadoBloqueado"
+                                        class="flex items-start gap-2 mt-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+                                        <span class="text-red-500 text-base shrink-0">⚠️</span>
+                                        <div>
+                                            <p class="text-xs font-black text-red-700 uppercase tracking-wide">Préstamo bloqueado</p>
+                                            <p class="text-xs text-red-600 mt-0.5">
+                                                Este responsable tiene reposiciones pendientes. Debe resolverlas antes de realizar un nuevo préstamo.
+                                            </p>
+                                        </div>
+                                    </div>
+
                                     <InputError :message="form.errors.borrower_id" />
                                 </div>
                             </div>
@@ -460,7 +493,7 @@ const canSubmit = computed(() => {
                                             <span class="text-[10px] font-black text-orange-600 uppercase flex items-center gap-1">
                                                 <Settings class="w-3 h-3" /> Mantenimiento
                                             </span>
-                                            <!-- Usamos la variable que acabamos de llenar en el controlador[cite: 1, 6] -->
+                                            <!-- Se agrega la hora con un guion -->
                                             <span v-if="item.fecha_retorno_estimado" class="text-[11px] text-neutral-700 italic">
                                                 Disponible el: {{ item.fecha_retorno_estimado }} - {{ item.hora_fin_estimado }}
                                             </span>
@@ -468,13 +501,14 @@ const canSubmit = computed(() => {
 
                                         <!-- Caso Prestado (Proviene de la tabla loans)[cite: 2] -->
                                         <!-- Mensaje para cuando está PRESTADO (Equipos y Herramientas) -->
+                                        <!-- Caso Prestado -->
                                         <div v-else-if="getItemStatus(item) === 'Prestado'" class="flex flex-col">
                                             <span class="text-[10px] font-black text-red-600 uppercase flex items-center gap-1">
                                                 <ClockAlert class="w-3 h-3" /> Prestado
                                             </span>
-                                            <!-- Esta es la variable que ahora cargamos para ambos en el controlador -->
+                                            <!-- Código actualizado con la hora -->
                                             <span v-if="item.fecha_disponible" class="text-[11px] text-neutral-700 italic">
-                                                Disponible el: {{ item.fecha_disponible }} - {{ item.hora_fin_prevista }}
+                                                Disponible: {{ item.fecha_disponible }} - {{ item.hora_fin_prevista }}
                                             </span>
                                         </div>
                                     </div>

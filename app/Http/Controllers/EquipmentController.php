@@ -93,6 +93,21 @@ class EquipmentController extends Controller
                     }
                 }
 
+                // ── Si viene de una reposición por Reemplazo ──────────────────
+                if ($request->filled('reposition_id')) {
+                    $rep = \App\Models\Reposition::find($request->reposition_id);
+                    if ($rep && $rep->estado === 'Pendiente') {
+                        $rep->update([
+                            'estado'             => 'Cumplida',
+                            'fecha_cumplimiento' => now()->toDateString(),
+                            'nuevo_item_id'      => $equipment->id,
+                            'nuevo_item_type'    => Equipment::class,
+                        ]);
+                    }
+                    return redirect()->route('repositions.index')
+                        ->with('success', 'Equipo de reemplazo registrado y reposición marcada como cumplida.');
+                }
+
                 return redirect()->route('items.index')->with('success', 'Equipo registrado con éxito');
             });
         } catch (\Exception $e) {
