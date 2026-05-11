@@ -18,13 +18,15 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RepositionController;
 
 // ruta publica: pagina de bienvenida
-Route::get('/', function () {
-    /*return redirect()->route('login');*/
+/*Route::get('/', function () {
+    return redirect()->route('login');
     return Inertia::render('Welcome', [
         'canRegister' => Features::enabled(Features::registration()),
     ]);
+})->name('home');*/
+Route::get('/', function () {
+    return redirect()->route('login');
 })->name('home');
-
 // Rutas protegidas: requieren login
 Route::middleware(['auth', 'verified'])
     ->prefix('dashboard')

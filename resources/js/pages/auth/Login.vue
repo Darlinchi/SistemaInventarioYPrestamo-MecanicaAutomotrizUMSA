@@ -20,7 +20,7 @@ defineProps<{
         title="Iniciar Sesión"
         description="Ingresa tu nombre de usuario y contraseña para acceder"
     >
-        <Head title="Log in" />
+        <Head title="Inicio de Sesión" />
 
         <div
             v-if="status"

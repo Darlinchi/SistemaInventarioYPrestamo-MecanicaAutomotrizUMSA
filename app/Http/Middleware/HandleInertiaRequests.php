@@ -61,7 +61,9 @@ class HandleInertiaRequests extends Middleware
             'auth'  => [
                 'user' => $request->user() ? [
                     'id'       => $request->user()->id,
+                    'name'     => $request->user()->name,
                     'username' => $request->user()->username,
+                    'email'    => $request->user()->email,
                     // getRoleNames() devuelve una Collection, se convierte a array para Vue
                     'roles'    => $request->user()->getRoleNames()->toArray(),
                     // Agrega esta línea:

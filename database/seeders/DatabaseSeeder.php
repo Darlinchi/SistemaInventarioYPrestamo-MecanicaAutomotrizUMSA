@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,46 +12,43 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
-
         // 1. Roles y permisos
         $this->call(RoleSeeder::class);
 
-        // 2. Creamos el usuario Administrador inicial
-        // 2. Super-admin (tú, el dev) — sin registro en staff
+        // 2. Super-admin (Tú)
         $admin = User::firstOrCreate(
-            ['username' => 'admin'],
-            [
+            ['username' => 'Darlin'], // 1er array: Lo que se busca
+            [                         // 2do array: Lo que se inserta si no existe
+                'name'     => 'Darlin Soliz',
                 'email'    => 'admin@gmail.com',
                 'password' => bcrypt('12345678'),
             ]
         );
         $admin->assignRole('super-admin');
 
+        // 3. Director
         $director = User::firstOrCreate(
-            ['username' => 'director'],
+            ['username' => 'Director Luis Copa'],
             [
+                'name'     => 'Luis Andrés Copa Yujra',
                 'email'    => 'director@gmail.com',
                 'password' => bcrypt('12345678'),
             ]
         );
         $director->assignRole('director');
 
-        // 3. Encargado — con registro en staff
+        // 4. Encargado
         $encargado = User::firstOrCreate(
-            ['username' => 'encargado'],
+            ['username' => 'Encargado'],
             [
+                'name'     => 'Encargados de taller',
                 'email'    => 'encargado@gmail.com',
                 'password' => bcrypt('12345678'),
             ]
         );
         $encargado->assignRole('encargado');
 
+        // 5. Registro en Staff (Solo para el encargado)
         if (! $encargado->staff()->exists()) {
             $encargado->staff()->create([
                 'horario_manana' => '07:00 - 12:00',
@@ -60,13 +56,14 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        $this->command->info('Usuarios creados:');
+        // Información en consola
+        $this->command->info('Usuarios creados correctamente para la UMSA:');
         $this->command->table(
-            ['Username', 'Rol', 'Contrasena'],
+            ['Username', 'Nombre Completo', 'Rol'],
             [
-                ['admin',     'super-admin', '12345678'],
-                ['director',  'director',    '12345678'],
-                ['encargado', 'encargado',   '12345678'],
+                ['Darlin', 'Darlin Soliz', 'super-admin'],
+                ['Director Luis Copa', 'Luis Andrés Copa Yujra', 'director'],
+                ['Encargado', 'Encargados de taller', 'encargado'],
             ]
         );
     }
