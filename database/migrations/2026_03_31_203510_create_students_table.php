@@ -24,7 +24,7 @@ return new class extends Migration
             // 3. Campos específicos para estudiantes de último año
             $table->string('registro_universitario', 20)->unique();
             //tal vez aqui no
-            $table->integer('semestre'); // Por defecto 10mo semestre
+            //$table->integer('semestre'); // Por defecto 10mo semestre
 
             $table->timestamps();
         });

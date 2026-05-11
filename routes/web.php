@@ -10,6 +10,7 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\LoanReturnController;
 use App\Http\Controllers\ReturnDetailController;
 use App\Http\Controllers\BorrowerController;
+use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\MaintenanceCompanyController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\ReportController;
@@ -159,6 +160,8 @@ Route::middleware(['auth', 'verified'])
 
         // Borrowers
         Route::get('borrowers', [BorrowerController::class, 'index'])->name('borrowers.index');
+        Route::post('borrowers/import', [BorrowerController::class, 'import'])
+            ->middleware('permission:prestatarios.crear')->name('borrowers.import');
         Route::get('borrowers/create', [BorrowerController::class, 'create'])
             ->middleware('permission:prestatarios.crear')->name('borrowers.create');
         Route::post('borrowers', [BorrowerController::class, 'store'])
@@ -172,6 +175,14 @@ Route::middleware(['auth', 'verified'])
             ->middleware('permission:prestatarios.editar');
         Route::delete('borrowers/{borrower}', [BorrowerController::class, 'destroy'])
             ->middleware('permission:prestatarios.eliminar')->name('borrowers.destroy');
+        Route::post('borrowers/{borrower}/toggle', [BorrowerController::class, 'toggleStatus'])->name('borrowers.toggle');
+
+        // Materias (Subjects)
+        Route::get('subjects', [SubjectController::class, 'index'])->name('subjects.index');
+        Route::post('subjects/import', [SubjectController::class, 'import'])->name('subjects.import');
+
+        // --- AÑADE ESTA LÍNEA AQUÍ ---
+        Route::post('subjects/{subject}/toggle', [SubjectController::class, 'toggleStatus'])->name('subjects.toggle');
 
         // Reports
         Route::resource('reports', ReportController::class);

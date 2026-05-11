@@ -47,12 +47,14 @@ class RoleSeeder extends Seeder
             'prestatarios.crear',
             'prestatarios.editar',
             'prestatarios.eliminar',
+            'prestatarios.toggle',
 
             // Materias
             'materias.ver',
             'materias.crear',
             'materias.editar',
             'materias.eliminar',
+            'materias.toggle',
 
             // Herramientas
             'herramientas.ver',
@@ -120,9 +122,17 @@ class RoleSeeder extends Seeder
             'herramientas.ver',
             'equipos.ver',
 
-            // Prestatarios y materias: solo lectura
+            // Prestatarios (Docentes/Auxiliares/Estudiantes) - PERMISO TOTAL
             'prestatarios.ver',
+            'prestatarios.crear',
+            'prestatarios.editar',
+            'prestatarios.eliminar',
+
+            // Materias - PERMISO TOTAL
             'materias.ver',
+            'materias.crear',
+            'materias.editar',
+            'materias.eliminar',
 
             // Préstamos: solo lectura
             'prestamos.ver',

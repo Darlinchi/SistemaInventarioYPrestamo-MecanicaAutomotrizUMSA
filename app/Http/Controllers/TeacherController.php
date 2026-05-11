@@ -31,6 +31,21 @@ class TeacherController extends Controller
         //
     }
 
+    public function toggleStatus($id)
+    {
+        // Buscamos al responsable (sea docente o auxiliar)
+        $borrower = Borrower::findOrFail($id);
+
+        // Cambiamos el estado al contrario del que tenga
+        $borrower->update([
+            'activo' => !$borrower->activo
+        ]);
+
+        $mensaje = $borrower->activo ? 'activado' : 'desactivado';
+
+        return back()->with('success', "El usuario ha sido {$mensaje} correctamente.");
+    }
+
     /**
      * Display the specified resource.
      */

@@ -73,7 +73,7 @@ const estaVencida = (rep: any) =>
                     <!-- Fecha registro -->
                     <div class="space-y-1">
                         <p class="flex items-center gap-2 text-[13px] font-black text-blue-700 uppercase tracking-widest leading-none">
-                            <Calendar class="w-4 h-4"/> Registrado
+                            <Calendar class="w-4 h-4"/> Registro
                         </p>
                         <p class="text-sm font-bold text-neutral-800">{{ rep.created_at }}</p>
                     </div>
@@ -104,7 +104,7 @@ const estaVencida = (rep: any) =>
                             {{ labelTipo(rep.tipo_reposicion) }}
                         </span>
                     </div>
-                    <!-- Fecha cumplimiento -->
+                    <!-- Fecha cumplimiento
                     <div class="space-y-1">
                         <p class="flex items-center gap-2 text-[13px] font-black text-orange-700 uppercase tracking-widest leading-none">
                             <CalendarCheck2 class="w-4 h-4"/> Cumplida
@@ -112,7 +112,7 @@ const estaVencida = (rep: any) =>
                         <p class="text-sm font-bold" :class="rep.fecha_cumplimiento ? 'text-green-700' : 'text-neutral-400'">
                             {{ rep.fecha_cumplimiento ?? '—' }}
                         </p>
-                    </div>
+                    </div> -->
                 </div>
             </div>
 
@@ -138,7 +138,17 @@ const estaVencida = (rep: any) =>
                     </span>
                 </div>
 
-                <!-- Responsable -->
+                <!-- Registrado por -->
+                <div class="space-y-1">
+                    <p class="text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
+                        Registrado por
+                    </p>
+                    <p class="text-sm font-bold text-neutral-800">{{ rep.registrado_por }}</p>
+                </div>
+            </div>
+
+            <!-- COLUMNA 3: Observación + registrado por + nuevo ítem -->
+            <div class="space-y-4">
                 <div class="space-y-1">
                     <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
                         <User class="w-4 h-4"/> Responsable
@@ -149,17 +159,6 @@ const estaVencida = (rep: any) =>
                             CI: {{ rep.borrower_ci }}
                         </span>
                     </p>
-                </div>
-            </div>
-
-            <!-- COLUMNA 3: Observación + registrado por + nuevo ítem -->
-            <div class="space-y-4">
-                <!-- Registrado por -->
-                <div class="space-y-1">
-                    <p class="text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
-                        Registrado por
-                    </p>
-                    <p class="text-sm font-bold text-neutral-800">{{ rep.registrado_por }}</p>
                 </div>
 
                 <!-- Ítem nuevo (Reemplazo cumplido) -->

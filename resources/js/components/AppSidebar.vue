@@ -20,12 +20,14 @@ import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 // Aqui estan los iconos utilizados
 import { Users, Package, Building2, LayoutDashboard, ClipboardList, Settings, FileText, UsersIcon,
-    NotebookPen, NotebookText, RefreshCcw
+    NotebookPen, NotebookText, RefreshCcw, BookMarked
  } from 'lucide-vue-next';
 // Rutas del inventario
 import itemsRoutes from '@/routes/items';
-// Rutas de los prestamistas
+// Rutas de los responsables
 import borrowersRoutes from '@/routes/borrowers';
+// Rutas de los materias
+import subjectRoutes from '@/routes/subjects';
 // Rutas de los prestamos
 import loansRoutes from '@/routes/loans';
 // Rutas de las devoluciones
@@ -114,6 +116,24 @@ const mainNavItems = computed((): NavItem[] => {
         });
     }
 
+    // Prestamistas — super-admin, director (lectura) y encargado (completo)
+    if (hasRole('super-admin', 'director', 'encargado')) {
+        items.push({
+            title: 'Responsables',
+            href: borrowersRoutes.index.url(),
+            icon: UsersIcon,
+        });
+    }
+
+    // Materias — super-admin, director (lectura) y encargado (completo)
+    if (hasRole('super-admin', 'director', 'encargado')) {
+        items.push({
+            title: 'Materias',
+            href: subjectRoutes.index.url(),
+            icon: BookMarked,
+        });
+    }
+
     // Mantenimiento — super-admin y encargado (el director no opera esto)
     if (hasRole('super-admin', 'encargado')) {
         items.push({
@@ -126,15 +146,6 @@ const mainNavItems = computed((): NavItem[] => {
             title: 'Emp. de Mantenimiento',
             href: maintenanceCompanyRoutes.index.url(),
             icon: Building2,
-        });
-    }
-
-    // Prestamistas — super-admin, director (lectura) y encargado (completo)
-    if (hasRole('super-admin', 'director', 'encargado')) {
-        items.push({
-            title: 'Responsables',
-            href: borrowersRoutes.index.url(),
-            icon: UsersIcon,
         });
     }
 

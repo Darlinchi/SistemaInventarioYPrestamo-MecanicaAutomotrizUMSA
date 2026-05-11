@@ -18,6 +18,8 @@ return new class extends Migration
                 ->onDelete('cascade');
 
             $table->string('registro_universitario', 20)->unique();
+            $table->date('fecha_inicio')->nullable();
+            $table->date('fecha_fin')->nullable();
             // Aquí podrías añadir campos específicos de auxiliares
             $table->timestamps();
         });

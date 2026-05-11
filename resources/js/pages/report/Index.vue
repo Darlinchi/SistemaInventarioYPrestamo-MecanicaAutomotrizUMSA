@@ -43,7 +43,7 @@ const activeTab = ref('inventario');
 const reportTabs = computed(() => [
     { id: 'inventario', label: 'Inventario', icon: Package, count: props.items.length },
     { id: 'historial', label: 'Historial', icon: History, count: props.history.length },
-    { id: 'problemas', label: 'Equipos con Problemas', icon: AlertTriangle, count: props.issues.length },
+    { id: 'problemas', label: 'Requieren mantenimiento', icon: AlertTriangle, count: props.issues.length },
 ]);
 
 </script>

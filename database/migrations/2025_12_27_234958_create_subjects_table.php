@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('subjects', function (Blueprint $table) {
             $table->id(); // Este será nuestro id_materia
             $table->string('sigla', 20)->unique();
+            $table->boolean('activo')->default(true);
+            $table->string('pensum', 20)->default('Actual');
             $table->string('nombre_materia', 100);
             $table->unsignedInteger('semestre')->nullable();
             $table->timestamps();

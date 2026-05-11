@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Teacher extends Model
@@ -12,6 +13,7 @@ class Teacher extends Model
     use HasFactory;
 
     protected $table    = 'teachers';
+    protected $fillable = ['id_teacher'];
     protected $primaryKey = 'id_teacher'; // Llave personalizada
     public $incrementing = false;        // No es auto-incremental
 
@@ -22,9 +24,17 @@ class Teacher extends Model
 
     public function subjects(): BelongsToMany
     {
-        return $this->belongsToMany(Subject::class, 'subject_teacher', 'teacher_id', 'subject_id')
-                    ->withPivot('paralelo') // Permite acceder a $subject->pivot->paralelo
-                    ->withTimestamps();
+        return $this->belongsToMany(
+            Subject::class,
+            'subject_teacher',
+            'teacher_id',
+            'subject_id'
+        )->withPivot('paralelo')->withTimestamps();
+    }
+
+    public function subjectTeachers(): HasMany
+    {
+        return $this->hasMany(SubjectTeacher::class, 'teacher_id', 'id_teacher');
     }
 
     public function assistants()

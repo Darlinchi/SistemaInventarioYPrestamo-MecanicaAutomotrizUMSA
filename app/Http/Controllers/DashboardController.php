@@ -13,34 +13,32 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // 1. Calculamos las estadísticas para las tarjetas superiores
+        // 1. Contamos equipos con estados críticos
+        $equiposConFalla = Equipment::whereIn('estado_equipo', ['Dañado', 'Extraviado', 'Incompleto'])->count();
+        $herramientasConFalla = Tool::whereIn('estado_herramienta', ['Dañado', 'Extraviado', 'Baja'])->count();
+
+        // 2. Contamos mantenimientos que están actualmente en el taller
+        $mantenimientosActivos = Maintenance::where('estado_mantenimiento', 'En Proceso')->count();
+
         $stats = [
-            'equipos_total' => Equipment::count() + Tool::count(), // Suma de ambos
+            'equipos_total' => Equipment::count() + Tool::count(),
             'prestamos_activos' => Loan::where('estado_prestamo', 'Activo')->count(),
-            'mantenimientos_pendientes' => Maintenance::where('estado_mantenimiento', 'En Proceso')->count(),
+            // SUMA TOTAL de problemas: lo que está en taller + lo que está dañado/perdido
+            'equipos_con_problemas' => $equiposConFalla + $herramientasConFalla + $mantenimientosActivos,
         ];
 
-        // 2. Opcional: Obtener los últimos 5 préstamos para mostrar en la sección grande
-        // En DashboardController.php
-        $recentLoans = Loan::with([
-            'borrower',
-            'subject',
-            'equipments.accessories', // Importante para los checkboxes de accesorios
-            'tools'
-        ])
-        ->where('estado_prestamo', 'Activo')
-        ->orderBy('created_at', 'desc')
-        ->take(5)
-        ->get();
-
-        $recentEquipments = Equipment::orderBy('created_at', 'desc')
-            ->take(4) // Tomamos los últimos 4 para que quepan bien en una fila
+        $recentLoans = Loan::with(['borrower', 'subject', 'equipments.accessories', 'tools'])
+            ->where('estado_prestamo', 'Activo')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
             ->get();
+
+        $recentEquipments = Equipment::orderBy('created_at', 'desc')->take(4)->get();
 
         return Inertia::render('Dashboard', [
             'stats' => $stats,
             'recentLoans' => $recentLoans,
-            'recentEquipments' => $recentEquipments // <--- Agrega esto
+            'recentEquipments' => $recentEquipments
         ]);
     }
 }

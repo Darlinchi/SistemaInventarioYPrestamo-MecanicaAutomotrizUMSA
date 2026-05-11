@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Inertia\Inertia;
-
+use Carbon\Carbon;
 
 class ReportController extends Controller
 {
@@ -20,43 +20,51 @@ class ReportController extends Controller
      */
     public function index()
     {
-        // CALCULAMOS los datos en lugar de leer una tabla de reportes
         $totalPrestamos = Loan::count();
-
-        // OPCIÓN RECOMENDADA: Usar el campo 'estado_prestamo'
-        // Esto es mucho más rápido y preciso para tus reportes
         $activos = Loan::where('estado_prestamo', 'Activo')->count();
         $devueltos = Loan::where('estado_prestamo', 'Devuelto')->count();
 
-        // 2. Datos para la pestaña "Inventario"
-        // Combinamos equipos y herramientas similar a como lo hicimos en el Index de Inventario
+        $hoy = now();
+        $limiteMantenimiento = now()->addDays(30);
+
+        // 1. Datos para Inventario con cruce de Mantenimientos
         $equipos = Equipment::all()->map(function ($item) {
+            // Buscamos la fecha del último mantenimiento completado
+            $ultimoMantenimiento = DB::table('maintenances')
+                ->where('equipment_id', $item->id)
+                ->where('estado_mantenimiento', 'Completado')
+                ->orderBy('fecha_mantenimiento', 'desc')
+                ->first();
+
             return [
                 'id' => $item->id,
                 'codigo_qr' => $item->codigo_qr,
                 'nombre_item' => $item->nombre_equipo,
+                'foto' => $item->foto_equipo,
                 'tipo' => 'equipo',
                 'estado' => $item->estado_equipo,
                 'ubicacion_item' => $item->ubicacion_equipo,
                 'observacion_item' => $item->observacion_equipo,
+                'proximo_mantenimiento' => $ultimoMantenimiento ? $ultimoMantenimiento->fecha_proximo_mantenimiento : null,
             ];
         });
 
         $herramientas = Tool::all()->map(function ($item) {
             return [
                 'id' => $item->id,
-                'codigo_qr' => $item->codigo_qr, // o el campo que uses para herramientas
+                'codigo_qr' => $item->codigo_qr,
                 'nombre_item' => $item->nombre_herramienta,
+                'foto' => $item->foto_herramienta,
                 'tipo' => 'herramienta',
                 'estado' => $item->estado_herramienta,
                 'ubicacion_item' => $item->ubicacion_herramienta,
+                'proximo_mantenimiento' => null, // Herramientas no suelen tener preventivo programado
             ];
         });
 
-        //$items = $equipos;
-        $items = $equipos->concat($herramientas);
+        $allItems = $equipos->concat($herramientas);
 
-        // 3. Datos para la pestaña "Historial"
+        // 2. Historial de Préstamos
         $history = Loan::with([
             'borrower.teacher',
             'borrower.assistant',
@@ -65,47 +73,61 @@ class ReportController extends Controller
         ->latest()
         ->get()
         ->map(function ($loan) {
-            $retorno = $loan->loanReturns ? $loan->loanReturns->first() : null;
+            $retorno = $loan->loanReturns instanceof \Illuminate\Database\Eloquent\Collection
+                       ? $loan->loanReturns->first()
+                       : $loan->loanReturns;
 
+            $items_mostrar = [];
             if ($retorno && $retorno->returnDetails) {
                 $items_mostrar = $retorno->returnDetails->map(function ($detail) {
                     $model = $detail->returnable;
-                    // Si el modelo fue eliminado físicamente, evitamos que explote
                     if (!$model) return null;
-
                     $esEquipo = str_contains($detail->returnable_type, 'Equipment');
                     return [
-                        'id' => $detail->id,
                         'nombre_mostrar' => $esEquipo ? $model->nombre_equipo : $model->nombre_herramienta,
-                        'es_equipo' => $esEquipo,
                         'estado_devolucion' => $detail->estado_devolucion
                     ];
                 })->filter()->values();
             } else {
-                // Si no hay retorno, usamos los items originales del préstamo
                 $items_mostrar = $loan->all_items;
             }
 
             return [
                 'id' => $loan->id,
                 'fecha_salida' => $loan->fecha_salida,
-                'fecha_retorno_prevista' => $loan->fecha_retorno_prevista,
                 'fecha_retorno' => $retorno ? $retorno->fecha_retorno : null,
                 'borrower' => $loan->borrower,
                 'items_prestados' => $items_mostrar,
             ];
         });
 
-        // 4. Datos para la pestaña "Equipos con Problemas"
-        $issues = $items->filter(function ($item) {
-            return in_array($item['estado'], ['Dañado', 'Extraviado', 'Incompleto']);
+        // 3. LÓGICA DE ALERTA DE MANTENIMIENTO (Issues)
+        $issues = $allItems->filter(function ($item) use ($hoy, $limiteMantenimiento) {
+            // Condición A: Estado crítico
+            //$esCritico = in_array($item['estado'], ['Dañado', 'Extraviado', 'Incompleto']);
+
+            // Condición B: Mantenimiento próximo (30 días)
+            $esAlertaFecha = false;
+            if ($item['proximo_mantenimiento']) {
+                $fechaProg = Carbon::parse($item['proximo_mantenimiento']);
+                // Se muestra si la fecha está entre hoy y los próximos 30 días
+                $esAlertaFecha = $fechaProg->lte($limiteMantenimiento) && $fechaProg->gte($hoy);
+            }
+
+            //return $esCritico || $esAlertaFecha;
+            return $esAlertaFecha;
+        })->map(function($item) use ($hoy, $limiteMantenimiento) {
+            $fechaProg = $item['proximo_mantenimiento'] ? Carbon::parse($item['proximo_mantenimiento']) : null;
+            // Marcamos para el frontend si es por fecha o por daño
+            $item['es_alerta_mantenimiento'] = $fechaProg && $fechaProg->lte($limiteMantenimiento) && $fechaProg->gte($hoy);
+            return $item;
         })->values();
 
         return Inertia::render('report/Index', [
             'totalPrestamos' => $totalPrestamos,
             'activos'        => $activos,
             'devueltos'      => $devueltos,
-            'items'          => $items,
+            'items'          => $allItems,
             'history'        => $history,
             'issues'         => $issues,
         ]);

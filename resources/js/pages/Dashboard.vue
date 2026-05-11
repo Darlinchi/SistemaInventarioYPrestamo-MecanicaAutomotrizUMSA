@@ -26,7 +26,7 @@ const props = defineProps<{
     stats: {
         equipos_total: number;
         prestamos_activos: number;
-        mantenimientos_pendientes: number;
+        equipos_con_problemas: number;
     };
     recentLoans: any[];
     recentEquipments: any[];
@@ -143,11 +143,11 @@ const processReturn = () => {
                     description="Equipos fuera del taller"
                 />
                 <StatCard
-                    title="Equipos con Problemas"
-                    :value="stats.mantenimientos_pendientes"
+                    title="Estado Crítico"
+                    :value="stats.equipos_con_problemas"
                     :icon="Wrench"
                     colorClass="text-[#d90000] group-hover:bg-[#d90000] group-hover:text-white"
-                    description="Requieren mantenimiento"
+                    description="Dañados, extraviados o en taller"
                 />
             </div>
 

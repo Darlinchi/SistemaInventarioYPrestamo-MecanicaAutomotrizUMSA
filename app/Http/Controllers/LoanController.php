@@ -155,8 +155,12 @@ class LoanController extends Controller
 
         return Inertia::render('loan/Create', [
             'items' => $allItems,
-            'borrowers' => Borrower::with(['teacher.subjects', 'assistant.subjects'])->get(),
-            'subjects' => Subject::all(),
+            // Filtramos responsables activos
+            'borrowers' => Borrower::where('activo', true) // <--- FILTRO AÑADIDO
+                ->with(['teacher.subjects', 'assistant.subjectTeachers.subject'])
+                ->get(),
+            // Filtramos materias activas
+            'subjects' => Subject::where('activo', true)->get(), // <--- FILTRO AÑADIDO
             'borrowersBloqueados' => $borrowersBloqueados,
         ]);
     }
@@ -170,8 +174,13 @@ class LoanController extends Controller
         $rules = [
             'cedula_identidad' => 'required|string',
             'nombres'          => 'required|string',
-            'apellidos'        => 'required|string',
             'subject_id'       => 'required|exists:subjects,id',
+            'subject_id'       => [
+                'required',
+                \Illuminate\Validation\Rule::exists('subjects', 'id')->where(function ($query) {
+                    $query->where('activo', true);
+                }),
+            ],
             'items'            => 'required|array|min:1',
             'fecha_retorno_prevista' => 'required|date|after_or_equal:today',
             'hora_fin_prevista'      => 'required',
@@ -181,11 +190,23 @@ class LoanController extends Controller
         // Reglas extra si es estudiante
         if ($request->tipo_prestatario === 'estudiante') {
             $rules['registro_universitario'] = 'required|string';
+            $rules['telefono'] = 'required|string|max:20';
             $rules['archivo_nota'] = 'required|file|mimes:pdf|max:2048'; // PDF máx 2MB
             $rules['motivo'] = 'required|string|max:200';
+
         }
 
         $request->validate($rules);
+
+        // --- BLINDAJE DE SEGURIDAD PARA TODOS LOS TIPOS ---
+        // Buscamos si el prestatario (por CI) ya existe y si está inactivo
+        $existingBorrower = Borrower::where('cedula_identidad', $request->cedula_identidad)->first();
+
+        if ($existingBorrower && !$existingBorrower->activo) {
+            return back()->withErrors([
+                'cedula_identidad' => 'Este responsable (Docente/Auxiliar/Estudiante) se encuentra INACTIVO en el sistema y no puede realizar préstamos.'
+            ])->withInput();
+        }
 
         // ── Verificar si el prestatario tiene reposiciones pendientes ─────────
         // Si viene por CI (estudiante/nuevo), buscamos si ya tiene borrower_id

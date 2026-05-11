@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ReturnDetailAccessorie;
+use App\Models\ReturnDetailAccessory;
 use Illuminate\Http\Request;
 
-class ReturnDetailAccessorieController extends Controller
+class ReturnDetailAccessoryController extends Controller
 {
     /**
      * Display a listing of the resource.

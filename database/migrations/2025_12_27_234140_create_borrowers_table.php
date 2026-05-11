@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('cedula_identidad', 20)->unique();
             $table->string('nombres', 100);
             $table->string('apellidos', 100);
+            $table->string('telefono', 20)->nullable();
+            $table->boolean('activo')->default(true);
             $table->timestamps();
         });
     }

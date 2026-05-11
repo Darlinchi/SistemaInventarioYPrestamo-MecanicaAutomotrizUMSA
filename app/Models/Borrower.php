@@ -17,6 +17,12 @@ class Borrower extends Model
         'cedula_identidad',
         'nombres',
         'apellidos',
+        'telefono',
+        'activo',
+    ];
+
+    protected $casts = [
+        'activo' => 'boolean',
     ];
 
     //Relación con el Docente

@@ -12,29 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('assistant_subject', function (Blueprint $table) {
-
+            $table->id();
             $table->unsignedBigInteger('assistant_id');
-            $table->unsignedBigInteger('teacher_id');
-            $table->unsignedBigInteger('subject_id');
+            $table->unsignedBigInteger('subject_teacher_id');
 
             $table->foreign('assistant_id')
                 ->references('id_assistant') // <-- Muy importante
                 ->on('assistants')
                 ->onDelete('cascade');
 
-            // Referencia a 'id_teacher' en la tabla 'teachers'
-            $table->foreign('teacher_id')
-                ->references('id_teacher')
-                ->on('teachers')
-                ->onDelete('cascade');
+            $table->foreign('subject_teacher_id')->references('id')->on('subject_teacher')->onDelete('cascade');
 
-            // Referencia a 'id' en la tabla 'subjects' (aquí si es 'id' estándar)
-            $table->foreign('subject_id')
-                ->references('id')
-                ->on('subjects')
-                ->onDelete('cascade');
-
-            $table->primary(['assistant_id', 'subject_id']);
             $table->timestamps();
         });
     }

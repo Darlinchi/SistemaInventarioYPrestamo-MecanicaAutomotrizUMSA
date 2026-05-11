@@ -13,7 +13,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import loanRoutes from '@/routes/loans';
 import { ArrowLeft, Save, Loader2, Cog, Settings, Image, Search, ClipboardPen, XCircle, User, Calendar, Clock,
     ClockAlert, CalendarClock, CalendarCheck2, ClipboardCheck, BookMarked, GraduationCap, UserPen, PenLine,
-    FileText } from 'lucide-vue-next';
+    FileText, Phone } from 'lucide-vue-next';
 
 const props = defineProps<{
     borrowers: Array<any>;
@@ -66,6 +66,7 @@ const form = useForm({
     cedula_identidad: '',
     nombres: '',
     apellidos: '',
+    telefono: '',
     registro_universitario: '',
     motivo: '',
     archivo_nota: null as File | null,
@@ -127,22 +128,48 @@ onUnmounted(() => {
 });
 
 // Logica de filtrado cruzado para la seleccion de materia y responsable
-// Filtra materias
+// Logica de filtrado cruzado para la seleccion de materia y responsable
 const filteredSubjects = computed(() => {
-    if (!form.borrower_id) return props.subjects; // Si no hay responsable, mostrar todas
+    // 1. Si no hay responsable seleccionado, mostrar todas las materias ACTIVAS
+    if (!form.borrower_id) {
+        return props.subjects.filter(s => s.activo);
+    }
 
     const selected = props.borrowers.find(b => b.id === form.borrower_id);
-    return selected?.teacher?.subjects || selected?.assistant?.subjects || [];
+    if (!selected) return [];
+
+    let subjects = [];
+    if (selected.teacher) {
+        subjects = selected.teacher.subjects || [];
+    } else if (selected.assistant) {
+        subjects = (selected.assistant.subject_teachers || [])
+            .map((st: any) => st.subject)
+            .filter(Boolean);
+    }
+
+    // 2. Filtramos para que SOLO pasen las que están activas (blindaje doble)
+    return subjects.filter((s: any) => s.activo);
 });
 
 // Filtra responsables
 const filteredBorrowers = computed(() => {
-    if (!form.subject_id) return props.borrowers; // Si no hay materia, mostrar todos
+    // Solo trabajamos con prestatarios que el controlador envió como activos
+    let pool = props.borrowers;
 
-    // Filtrar prestatarios que tengan la materia seleccionada
-    return props.borrowers.filter(b => {
-        const subs = b.teacher?.subjects || b.assistant?.subjects || [];
-        return subs.some((s: any) => s.id === form.subject_id);
+    if (!form.subject_id) return pool;
+
+    return pool.filter(b => {
+        let userSubjects: any[] = [];
+        if (b.teacher) {
+            userSubjects = b.teacher.subjects || [];
+        } else if (b.assistant) {
+            userSubjects = (b.assistant.subject_teachers || [])
+                .map((st: any) => st.subject)
+                .filter(Boolean);
+        }
+
+        // Verificamos si tiene la materia y si esa materia está activa
+        return userSubjects.some((s: any) => s.id === form.subject_id && s.activo);
     });
 });
 
@@ -234,12 +261,21 @@ const handleFileChange = (e: Event) => {
         form.archivo_nota = target.files[0];
     }
 };
+
 const canSubmit = computed(() => {
-    if (borrowerSeleccionadoBloqueado.value) return false; // bloqueado por reposiciones pendientes
+    // 1. Bloqueo por reposiciones pendientes
+    if (borrowerSeleccionadoBloqueado.value) return false;
+
+    // 2. Bloqueo si el responsable (buscado por CI o ID) está inactivo
+    const b = props.borrowers.find(x => x.cedula_identidad === form.cedula_identidad);
+    if (b && b.activo === false) return false;
+
     const common = form.items.length > 0 && !!form.subject_id && !!form.fecha_retorno_prevista && !form.processing;
+
     if (activeTab.value === 'personal') return common && !!form.borrower_id;
     return common && !!form.cedula_identidad && !!form.registro_universitario && !!form.archivo_nota;
 });
+
 </script>
 
 <template>
@@ -351,6 +387,14 @@ const canSubmit = computed(() => {
                                     </Label>
                                     <Input v-model="form.motivo" placeholder="Ej: Proyecto de Grado - Taller II" class="border-blue-200 rounded-xl" />
                                     <InputError :message="form.errors.motivo" />
+                                </div>
+
+                                <div class="space-y-2">
+                                    <Label for="telefono" class="flex items-center gap-2 font-black text-[#1a3a5a]">
+                                        <Phone class="w-4 h-4 text-[#1a3a5a]"/> Teléfono / Celular
+                                    </Label>
+                                    <Input v-model="form.telefono" placeholder="Ej: 70000000" />
+                                    <InputError :message="form.errors.telefono" />
                                 </div>
 
                                 <div class="grid gap-2">

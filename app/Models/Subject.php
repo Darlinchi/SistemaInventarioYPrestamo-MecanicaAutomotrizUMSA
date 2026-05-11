@@ -17,6 +17,8 @@ class Subject extends Model
         'sigla',
         'nombre_materia',
         'semestre',
+        'activo',
+        'pensum',
     ];
 
     // Relacion materia/docente

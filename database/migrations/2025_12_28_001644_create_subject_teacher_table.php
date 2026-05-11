@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('subject_teacher', function (Blueprint $table) {
+            $table->id();
             // En lugar de usar constrained() a secas, definimos la columna y la referencia manual
             $table->unsignedBigInteger('teacher_id');
             $table->unsignedBigInteger('subject_id');
@@ -30,7 +31,7 @@ return new class extends Migration
 
             $table->string('paralelo', 5)->default('A');
 
-            $table->primary(['teacher_id', 'subject_id']);
+            $table->unique(['teacher_id', 'subject_id', 'paralelo']);
             $table->timestamps();
         });
     }

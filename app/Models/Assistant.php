@@ -18,6 +18,13 @@ class Assistant extends Model
     protected $fillable = [
         'id_assistant',
         'registro_universitario',
+        'fecha_inicio',
+        'fecha_fin',
+    ];
+
+    protected $casts = [
+        'fecha_inicio' => 'date',
+        'fecha_fin'    => 'date',
     ];
 
     public function borrower(): BelongsTo
@@ -25,25 +32,24 @@ class Assistant extends Model
         return $this->belongsTo(Borrower::class, 'id_assistant', 'id');
     }
 
-    public function teachers(): BelongsToMany
+    // Relación correcta: assistant_subject → subject_teacher
+    public function subjectTeachers()
     {
         return $this->belongsToMany(
-            Teacher::class,
+            SubjectTeacher::class,
             'assistant_subject',
             'assistant_id',
-            'teacher_id',
-            'id_assistant',
-            'id_teacher'
-        )->withPivot('subject_id');
+            'subject_teacher_id'
+        )->withTimestamps();
     }
 
-    public function subjects(): BelongsToMany
+    public function assistantSubjects()
     {
         return $this->belongsToMany(
-            Subject::class,
-            'assistant_subject', // Tabla pivote
-            'assistant_id',      // FK en pivote que apunta a Assistant
-            'subject_id'         // FK en pivote que apunta a Subject
-        );
+            SubjectTeacher::class,
+            'assistant_subject',
+            'assistant_id',
+            'subject_teacher_id'
+        )->withTimestamps();
     }
 }
