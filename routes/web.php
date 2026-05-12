@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\EquipmentController;
@@ -43,6 +44,23 @@ Route::middleware(['auth', 'verified'])
 
     // Todos los roles autenticados acceden al grupo
     Route::middleware(['role:super-admin|director|encargado'])->group(function () {
+
+        Route::middleware(['role:super-admin|director'])->group(function () {
+
+            Route::get('/usuarios',                              [UserController::class, 'index'])->name('users.index');
+            Route::get('/usuarios/create',                       [UserController::class, 'create'])->name('users.create');
+            Route::post('/usuarios',                             [UserController::class, 'store'])->name('users.store');
+            Route::get('/usuarios/{user}/edit',                  [UserController::class, 'edit'])->name('users.edit');
+            Route::put('/usuarios/{user}',                       [UserController::class, 'update'])->name('users.update');
+            Route::delete('/usuarios/{user}',                    [UserController::class, 'destroy'])->name('users.destroy');
+
+            // Acciones especiales — accesibles por super-admin Y director
+            Route::post('/usuarios/{user}/toggle-status',        [UserController::class, 'toggleStatus'])->name('users.toggle');
+            Route::post('/usuarios/{user}/reset-password',       [UserController::class, 'resetPassword'])->name('users.reset');
+
+            // Cambiar contraseña desde Edit (nueva ruta)
+            Route::patch('/usuarios/{user}/password',            [UserController::class, 'changePassword'])->name('users.password');
+        });
 
         // Items
         Route::get('items/{id}/pdf', [ItemController::class, 'generateFicha'])->name('items.pdf');
@@ -121,11 +139,6 @@ Route::middleware(['auth', 'verified'])
             ->name('loan-returns.index');
 
         Route::resource('repositions', RepositionController::class);
-        // LoanReturn
-        //Route::resource('loanReturn', LoanReturnController::class);
-        //Route::get('loanReturns', [LoanReturnController::class, 'index'])->name('loanReturns.index');
-        //Route::get('loanReturn', [LoanReturnController::class, 'index'])->name('loanReturn.index');
-        //Route::post('loans/{loan}/return', [LoanController::class, 'returnLoan'])->name('loans.return');
 
         // Maintenances
         Route::get('maintenances/{id}/report', [MaintenanceController::class, 'generateReport'])->name('maintenances.report');
