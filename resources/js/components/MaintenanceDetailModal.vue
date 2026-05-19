@@ -2,7 +2,7 @@
 import StatusBadge from '@/components/shared/StatusBadge.vue';
 import {
     XIcon, ClipboardList, Package, Building2, Wrench, CalendarCheck, ClockAlert, History,
-    CalendarClock, Calendar, Clock, AlignLeft, FileText, Image, Cog
+    CalendarClock, Calendar, Clock, AlignLeft, FileText, Image, Cog, UserCog
 } from 'lucide-vue-next';
 
 const props = defineProps<{
@@ -71,6 +71,29 @@ const imprimirComprobante = () => {
                             <Wrench class="w-4 h-4" /> Tipo de Trabajo
                         </p>
                         <p class="text-base font-bold text-neutral-900 leading-tight">Mantenimiento {{ maint?.tipo_mantenimiento }}</p>
+                    </div>                    
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-neutral-50 rounded-3xl border border-neutral-200 shadow-sm">
+                    <div class="space-y-1 border-l border-neutral-100 pl-4">
+                        <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
+                            <UserCog class="w-4 h-4" /> Registrado por
+                        </p>
+                        <p class="text-base font-bold text-neutral-900 leading-tight">
+                            {{ maint?.user?.name ?? '—' }}
+                        </p>
+                        <span class="inline-block px-2 py-0.5 rounded-lg bg-emerald-50 text-[11px] font-black text-emerald-700 border border-emerald-100">
+                            {{ maint?.user?.username ?? '' }}
+                        </span>
+                    </div>
+
+                    <div class="space-y-1 border-l border-neutral-100 pl-4">
+                        <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
+                            <Wrench class="w-4 h-4" /> Próximo Mantenimiento
+                        </p>
+                        <p class="text-base font-bold text-neutral-900 leading-tight">
+                            {{ maint?.fecha_proximo_mantenimiento }}
+                        </p>
                     </div>
                 </div>
 

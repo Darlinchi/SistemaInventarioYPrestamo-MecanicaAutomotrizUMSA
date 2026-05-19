@@ -36,6 +36,7 @@ class LoanController extends Controller
 
         return Inertia::render('loan/Index', [
             'loans' => $loans,
+            'auth_user' => auth()->user()->only('id', 'name', 'username'),
         ]);
     }
 
@@ -45,7 +46,10 @@ class LoanController extends Controller
         // Importante: Cargamos accessories dentro de equipments para que tu accesor los encuentre
         $loan = Loan::with([
             'borrower',
+            'borrower.teacher',
+            'user',
             'subject',
+            'loanReturns.user',
             'loanReturns.returnDetails.returnable', // Indispensable para el PDF
             'loanReturns.returnDetails.returnDetailAccessories.accessory'
         ])->findOrFail($id);
@@ -190,7 +194,7 @@ class LoanController extends Controller
         // Reglas extra si es estudiante
         if ($request->tipo_prestatario === 'estudiante') {
             $rules['registro_universitario'] = 'required|string';
-            $rules['telefono'] = 'required|string|max:20';
+            $rules['celular'] = 'required|string|max:20';
             $rules['archivo_nota'] = 'required|file|mimes:pdf|max:2048'; // PDF máx 2MB
             $rules['motivo'] = 'required|string|max:200';
 
@@ -238,7 +242,9 @@ class LoanController extends Controller
                 ['cedula_identidad' => $request->cedula_identidad],
                 [
                     'nombres' => $request->nombres,
-                    'apellidos' => $request->apellidos
+                    'apellidoPaterno' => $request->apellidoPaterno,
+                    'apellidoMaterno' => $request->apellidoMaterno,
+                    'celular'         => $request->celular ?? null,
                 ]
             );
 
@@ -248,7 +254,6 @@ class LoanController extends Controller
                     ['id_student' => $borrower->id],
                     [
                         'registro_universitario' => $request->registro_universitario,
-                        'semestre' => $request->semestre ?? 10 // Por defecto 10mo
                     ]
                 );
             }
@@ -375,7 +380,7 @@ class LoanController extends Controller
 
     public function edit(Loan $loan)
     {
-        $loan->load(['equipments', 'tools', 'subject', 'borrower'])->append(['all_items']);
+        $loan->load(['equipments', 'tools', 'subject', 'borrower', 'borrower.teacher'])->append(['all_items']);
 
         // Equipos unificados (Disponibles + Los del préstamo actual)
         $equipments = Equipment::whereNotIn('estado_equipo', ['Dañado', 'Baja', 'Incompleto', 'Extraviado'])

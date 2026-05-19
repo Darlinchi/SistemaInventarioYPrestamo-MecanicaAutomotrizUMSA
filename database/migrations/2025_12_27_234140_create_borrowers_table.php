@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id(); // Este será el id_prestario
             $table->string('cedula_identidad', 20)->unique();
             $table->string('nombres', 100);
-            $table->string('apellidos', 100);
-            $table->string('telefono', 20)->nullable();
+            $table->string('apellidoPaterno', 100)->nullable();
+            $table->string('apellidoMaterno', 100)->nullable();
+            $table->string('celular', 20)->nullable();
             $table->boolean('activo')->default(true);
             $table->timestamps();
         });

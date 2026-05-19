@@ -48,7 +48,7 @@ defineProps<{
                         autocomplete="username"
                         placeholder="Nombre de usuario..."
                     />
-                    <InputError :message="errors.email" />
+                    <InputError :message="errors.username" />
                 </div>
 
                 <div class="grid gap-2">

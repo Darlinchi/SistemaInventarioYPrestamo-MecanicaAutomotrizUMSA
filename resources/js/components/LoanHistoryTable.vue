@@ -29,7 +29,7 @@ const tieneProblemas = (loan: any): boolean => {
 
 <template>
     <BaseTable :items="loans" emptyText="No hay registros en el historial de devoluciones">
-        <TableHeader :columns="['FECHA RETORNO', 'RESPONSABLE', 'MATERIA', 'SIGLA', 'ÍTEMS DEVUELTOS', 'ACCIONES']" />
+        <TableHeader :columns="['F. RETORNO', 'ENCARGADO', 'RESPONSABLE', 'MATERIA', 'SIGLA', 'ÍTEMS', 'ACCIONES']" />
 
         <tbody class="divide-y divide-neutral-100">
             <tr v-for="loan in loans" :key="loan.id" class="hover:bg-neutral-50/50 group transition-colors">
@@ -41,10 +41,17 @@ const tieneProblemas = (loan: any): boolean => {
 
                 <td class="p-4">
                     <div class="text-sm font-semibold text-neutral-700">
-                        {{ loan.borrower?.apellidos ?? loan.borrower?.apellidosP ?? '' }}
-                        {{ loan.borrower?.nombres ?? loan.borrower?.nombresP ?? '' }}
+                        {{ loan.user?.name }}
                     </div>
-                    <div class="text-xs text-neutral-400 mt-0.5">CI: {{ loan.borrower?.cedula_identidad }}</div>
+                    <div class="text-xs text-neutral-600 mt-0.5">CI: {{ loan.borrower?.cedula_identidad }}</div>
+                </td>
+
+                <td class="p-4">
+                    <div class="text-sm font-semibold text-neutral-700">
+                        {{ loan.borrower?.teacher?.titulo }} {{ loan.borrower?.apellidoPaterno }} {{ loan.borrower?.apellidoMaterno }}
+                        {{ loan.borrower?.nombres  }}
+                    </div>
+                    <div class="text-xs text-neutral-600 mt-0.5">CI: {{ loan.borrower?.cedula_identidad }}</div>
                 </td>
 
                 <td class="p-4">

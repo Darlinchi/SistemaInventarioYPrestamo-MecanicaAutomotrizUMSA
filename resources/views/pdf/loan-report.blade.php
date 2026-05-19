@@ -30,7 +30,8 @@
                 <div style="font-weight: bold;">Taller de Mecánica Automotriz - UMSA</div>
             </td>
             <td style="border: none; width: 20%; text-align: right;">
-                <div style="font-weight: bold;">Folio: #{{ str_pad($loan->id, 5, '0', STR_PAD_LEFT) }}</div>
+                <!--
+                <div style="font-weight: bold;">Folio: #{{ str_pad($loan->id, 5, '0', STR_PAD_LEFT) }}</div>-->
                 <div>Fecha: {{ date('d/m/Y') }}</div>
             </td>
         </tr>
@@ -41,7 +42,7 @@
         <tr><td colspan="4" class="section-title">INFORMACIÓN DEL PRÉSTAMO</td></tr>
         <tr>
             <td class="header-bg" style="width: 20%;">RESPONSABLE:</td>
-            <td style="width: 30%;">{{ $loan->borrower->apellidos }} {{ $loan->borrower->nombres }}</td>
+            <td style="width: 30%;"> {{ $loan->borrower->teacher?->titulo }}{{ $loan->borrower->apellidoPaterno }} {{ $loan->borrower->apellidoMaterno }} {{ $loan->borrower->nombres }}</td>
             <td class="header-bg" style="width: 20%;">C.I.:</td>
             <td style="width: 30%;">{{ $loan->borrower->cedula_identidad }}</td>
         </tr>
@@ -129,7 +130,7 @@
 
     <!-- OBSERVACIONES -->
     <table class="table">
-    <div style="font-weight: bold; margin-bottom: 5px; text-transform: uppercase;">Notasde recepción final:</div>
+    <div style="font-weight: bold; margin-bottom: 5px; text-transform: uppercase;">Notas de recepción final:</div>
         <tr>
             <td style="height: 60px; vertical-align: top; font-style: italic;">
                 {{ $loan->loanReturns->observacion ?? 'El préstamo fue devuelto sin observaciones adicionales.' }}
@@ -141,13 +142,23 @@
     <div class="footer">
         <div class="signature-box">
             Firma Prestatario<br>
-            <strong>{{ $loan->borrower->nombresP }} {{ $loan->borrower->apellidosP }}</strong><br>
+            <strong>
+                {{ $loan->borrower->teacher?->titulo }}
+                {{ $loan->borrower->apellidoPaterno }}
+                {{ $loan->borrower->apellidoMaterno }}
+                {{ $loan->borrower->nombres }}
+            </strong><br>
             C.I. {{ $loan->borrower->cedula_identidad }}
         </div>
         <div class="signature-box">
-            Encargado de Almacén / Taller<br>
-            <strong>{{ auth()->user()->name }}</strong><br>
-            Sistema de Inventario - UMSA
+            Encargado que Entregó<br>
+            <strong>{{ $loan->user->name ?? '—' }}</strong><br>
+            <span style="font-size:8pt; color:#666;">Registró el préstamo</span>
+        </div>
+        <div class="signature-box">
+            Encargado que Recibió<br>
+            <strong>{{ $loan->loanReturns?->user?->name ?? '—' }}</strong><br>
+            <span style="font-size:8pt; color:#666;">Recepcionó la devolución</span>
         </div>
     </div>
 

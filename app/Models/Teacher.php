@@ -13,7 +13,7 @@ class Teacher extends Model
     use HasFactory;
 
     protected $table    = 'teachers';
-    protected $fillable = ['id_teacher'];
+    protected $fillable = ['id_teacher', 'titulo', 'categoria'];
     protected $primaryKey = 'id_teacher'; // Llave personalizada
     public $incrementing = false;        // No es auto-incremental
 

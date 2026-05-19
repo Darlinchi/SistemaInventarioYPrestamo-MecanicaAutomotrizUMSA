@@ -100,34 +100,11 @@ const tiposReposicion = [
       color: 'border-amber-200 bg-amber-50 text-amber-700',    active: 'border-amber-500 bg-amber-100 ring-2 ring-amber-200 text-amber-700' },
 ];
 
-const iconoTipo = (tipo: string) => {
-    return tiposReposicion.find(t => t.value === tipo)?.icon ?? Wrench;
-};
-
-const labelTipo = (tipo: string) => {
-    return tiposReposicion.find(t => t.value === tipo)?.label ?? tipo;
-};
-
-const colorTipo = (tipo: string) => {
-    if (tipo === 'Reparacion') return 'bg-purple-50 text-purple-700 border-purple-200';
-    if (tipo === 'Reemplazo')  return 'bg-blue-50 text-blue-700 border-blue-200';
-    return 'bg-amber-50 text-amber-700 border-amber-200';
-};
-
 const colorEstado = (estado: string) => {
     if (['Dañado', 'Extraviado'].includes(estado)) return 'bg-red-50 text-red-700 border-red-100';
     if (estado === 'Incompleto')                   return 'bg-amber-50 text-amber-700 border-amber-100';
     return 'bg-neutral-100 text-neutral-600 border-neutral-200';
 };
-
-const colorTipoOrigen = (tipo: string) => {
-    if (tipo === 'Equipo')      return 'bg-red-50 text-red-700 border-red-100';
-    if (tipo === 'Herramienta') return 'bg-blue-50 text-blue-700 border-blue-100';
-    return 'bg-emerald-50 text-emerald-700 border-emerald-100';
-};
-
-const estaVencida = (rep: Reposition) =>
-    rep.estado === 'Pendiente' && !!rep.fecha_limite && new Date(rep.fecha_limite) < new Date();
 
 // ── MODAL DETALLE ────────────────────────────────────────────────
 const modalDetalle = ref(false);

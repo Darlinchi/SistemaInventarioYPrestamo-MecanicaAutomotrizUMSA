@@ -65,7 +65,7 @@ const exportHistoryPdf = () => {
                     <div class="space-y-1">
                         <p class="text-[12px] font-black text-neutral-500 uppercase tracking-widest leading-none">Responsable</p>
                         <p class="text-base font-bold text-neutral-900 leading-tight">
-                            {{ log.borrower.apellidos }} {{ log.borrower.nombres }}
+                            {{ log.borrower.teacher?.titulo }} {{ log.borrower.apellidoPaterno }} {{ log.borrower.apellidoMaterno }} {{ log.borrower.nombres }}
                         </p>
                         <span class="inline-block text-[11px] px-2 py-0.5 bg-[#1a3a5a]/10 text-[#1a3a5a] rounded-lg font-black uppercase tracking-tighter">
                             {{

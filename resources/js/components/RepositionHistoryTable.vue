@@ -79,6 +79,12 @@ const colorTipoOrigen = (tipo: string) => {
                         {{ rep.borrower_nombre }}
                     </div>
                     <div class="text-xs text-neutral-400 mt-0.5">CI: {{ rep.borrower_ci }}</div>
+                    <!-- Registrado por -->
+                    <div class="text-xs text-emerald-700 font-bold mt-1 flex items-center gap-1">
+                        <UserCheck class="w-3 h-3"/>
+                        {{ rep.registrado_por }}
+                        <span class="text-neutral-400 font-normal">· {{ rep.registrado_username }}</span>
+                    </div>
                 </td>
 
                 <!-- Tipo de reposición -->

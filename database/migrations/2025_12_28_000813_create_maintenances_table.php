@@ -17,7 +17,12 @@ return new class extends Migration
             $table->foreignId('equipment_id')
                 ->constrained('equipment')
                 ->onDelete('cascade')
-                ->onUpdate('cascade');
+                ->onUpdate('cascade'); 
+
+            $table->foreignId('user_id')
+                ->nullable()
+                ->constrained('users')
+                ->onDelete('restrict');
 
             // Clasificación del mantenimiento
             $table->enum('tipo_mantenimiento', ['Preventivo', 'Correctivo'])

@@ -30,6 +30,7 @@ const props = defineProps<{
     };
     recentLoans: any[];
     recentEquipments: any[];
+    auth_user: { id: number; name: string; username: string };
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -169,9 +170,9 @@ const processReturn = () => {
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
                             <thead>
-                                <tr class="bg-neutral-50/50 text-[10px] font-black text-[#1a3a5a] uppercase tracking-[0.2em]">
-                                    <th class="p-4 pl-8">Solicitante</th>
-                                    <th class="p-4">Materia / Unidad</th>
+                                <tr class="bg-neutral-50/50 text-[11px] font-black text-[#1a3a5a] uppercase tracking-[0.2em]">
+                                    <th class="p-4 pl-8">Responsable</th>
+                                    <th class="p-4">Materia</th>
                                     <th class="p-4">Fecha Salida</th>
                                     <th class="p-4 text-center">Estado</th>
                                     <th class="p-4 pr-8 text-right">Acciones</th>
@@ -183,13 +184,13 @@ const processReturn = () => {
                                         <div class="flex items-center gap-3">
                                             <div class="w-8 h-8 rounded-full bg-[#1a3a5a] flex items-center justify-center text-[10px] font-bold text-white uppercase">
                                                 <template v-if="loan.borrower?.nombres">
-                                                    {{ loan.borrower.apellidos[0] }}{{ loan.borrower.nombres[0] }}
+                                                    {{ loan.borrower.apellidoPaterno[0] }}{{ loan.borrower.nombres[0] }}
                                                 </template>
                                                 <User v-else class="w-4 h-4 text-neutral-300" />
                                             </div>
                                             <div>
                                                 <p class="text-sm font-bold text-neutral-800">
-                                                    {{ loan.borrower?.apellidos }} {{ loan.borrower?.nombres }}
+                                                    {{ loan.borrower?.teacher?.titulo }} {{ loan.borrower?.apellidoPaterno }} {{ loan.borrower?.apellidoMaterno }} {{ loan.borrower?.nombres }}
                                                 </p>
                                             </div>
                                         </div>
@@ -259,6 +260,7 @@ const processReturn = () => {
                     :show="isReturnModalOpen"
                     :loan="selectedLoan"
                     :form="returnForm"
+                    :auth-user="auth_user"
                     @close="isReturnModalOpen = false"
                     @confirm="processReturn"
                 />

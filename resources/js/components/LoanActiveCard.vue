@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {
     Calendar, CalendarCheck2, Clock, ClockAlert, User,
-    BookMarked, List, Edit, CheckCircle, Package
+    BookMarked, List, Edit, CheckCircle, Package, UserCog
 } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
 
@@ -15,6 +15,20 @@ defineProps<{
 
 defineEmits(['toggleItems', 'return', 'edit']);
 
+const formatHora = (hora: string | null | undefined): string => {
+    if (!hora) return '---';
+    return hora.substring(0, 5);
+};
+
+const formatFecha = (fecha: string | null | undefined): string => {
+    if (!fecha) return '---';
+    const d = new Date(fecha + 'T00:00:00');
+    return d.toLocaleDateString('es-BO', {
+        day:   '2-digit',
+        month: 'short',
+        year:  'numeric'
+    });
+};
 </script>
 
 <template>
@@ -25,37 +39,41 @@ defineEmits(['toggleItems', 'return', 'edit']);
         ]"
     >
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12 w-full">
+
+            <!-- Columna 1: Fechas y horas -->
             <div class="flex flex-col justify-center space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1">
                         <p class="flex items-center gap-2 text-[13px] font-black text-blue-700 uppercase tracking-widest leading-none">
                             <Calendar class="w-4 h-4" /> F. Salida
                         </p>
-                        <p class="text-sm font-bold text-neutral-800">{{ loan.fecha_salida }}</p>
+                        <p class="text-sm font-bold text-neutral-800">{{ formatFecha(loan.fecha_salida) }}</p>
                     </div>
                     <div class="space-y-1">
                         <p class="flex items-center gap-2 text-[13px] font-black text-orange-700 uppercase tracking-widest leading-none">
                             <CalendarCheck2 class="w-4 h-4" /> F. Límite
                         </p>
-                        <p class="text-sm font-bold text-neutral-800">{{ loan.fecha_retorno_prevista }}</p>
+                        <p class="text-sm font-bold text-neutral-800">{{ formatFecha(loan.fecha_retorno_prevista) }}</p>
                     </div>
                 </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1">
                         <p class="flex items-center gap-2 text-[13px] font-black text-blue-700 uppercase tracking-widest leading-none">
                             <Clock class="w-4 h-4" /> H. Inicio
                         </p>
-                        <p class="text-sm font-bold text-neutral-800">{{ loan.hora_inicio }}</p>
+                        <p class="text-sm font-bold text-neutral-800">{{ formatHora(loan.hora_inicio) }}</p>
                     </div>
                     <div class="space-y-1">
                         <p class="flex items-center gap-2 text-[13px] font-black text-orange-700 uppercase tracking-widest leading-none">
                             <ClockAlert class="w-4 h-4" /> H. Fin
                         </p>
-                        <p class="text-sm font-bold text-neutral-800">{{ loan.hora_fin_prevista }}</p>
+                        <p class="text-sm font-bold text-neutral-800">{{ formatHora(loan.hora_fin_prevista) }}</p>
                     </div>
                 </div>
             </div>
 
+            <!-- Columna 2: Responsable y materia -->
             <div class="space-y-4">
                 <div class="space-y-1">
                     <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
@@ -69,7 +87,7 @@ defineEmits(['toggleItems', 'return', 'edit']);
                         </span>
                     </p>
                     <p class="flex flex-col text-[14px] font-bold text-neutral-800 leading-tight mt-1">
-                        {{ loan.borrower.apellidos }} {{ loan.borrower.nombres }}
+                        {{ loan.borrower.apellidoPaterno }} {{ loan.borrower.apellidoMaterno }} {{ loan.borrower.nombres }}
                         <span class="text-[12px] text-neutral-500 font-medium mt-0.5">CI: {{ loan.borrower.cedula_identidad }}</span>
                     </p>
                 </div>
@@ -82,7 +100,23 @@ defineEmits(['toggleItems', 'return', 'edit']);
                 </div>
             </div>
 
-            <div class="flex flex-col justify-center">
+            <!-- Columna 3: Encargado + Items -->
+            <div class="flex flex-col justify-center gap-4">
+
+                <!-- ── ENCARGADO QUE REALIZÓ EL PRÉSTAMO ── -->
+                <div class="space-y-1" v-if="loan.user">
+                    <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
+                        <UserCog class="w-4 h-4" /> Encargado
+                    </p>
+                    <p class="text-[13px] font-bold text-neutral-800 leading-tight">
+                        {{ loan.user.name }}
+                    </p>
+                    <p class="text-[11px] text-neutral-400 font-medium">
+                        {{ loan.user.cedula_identidad }}
+                    </p>
+                </div>
+
+                <!-- ── ITEMS PRESTADOS ── -->
                 <div class="relative" :style="{ zIndex: isOpen ? '999' : '10' }">
                     <div class="flex items-center gap-3 mb-2">
                         <span class="bg-white px-3 py-1 rounded-full text-[13px] font-bold uppercase border border-blue-200 text-[#1a3a5a]">
@@ -127,7 +161,6 @@ defineEmits(['toggleItems', 'return', 'edit']);
         </div>
 
         <div class="flex flex-row md:flex-col gap-3 mt-6 md:mt-0 md:ml-8 w-full md:w-auto">
-
             <Link v-if="canEdit" :href="loanRoutes.edit.url(loan.id)" class="flex-1">
                 <button class="w-full flex items-center justify-center gap-2 bg-white border border-neutral-200 px-5 py-2.5 rounded-xl text-xs font-black text-neutral-700 hover:bg-neutral-100 transition shadow-sm uppercase tracking-wider">
                     <Edit class="w-3.5 h-3.5" /> Editar
@@ -141,7 +174,6 @@ defineEmits(['toggleItems', 'return', 'edit']);
             >
                 <CheckCircle class="w-3.5 h-3.5" /> Devolver
             </button>
-
         </div>
     </div>
 </template>

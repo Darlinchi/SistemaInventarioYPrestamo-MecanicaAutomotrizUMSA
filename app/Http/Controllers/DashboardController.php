@@ -27,11 +27,22 @@ class DashboardController extends Controller
             'equipos_con_problemas' => $equiposConFalla + $herramientasConFalla + $mantenimientosActivos,
         ];
 
-        $recentLoans = Loan::with(['borrower', 'subject', 'equipments.accessories', 'tools'])
-            ->where('estado_prestamo', 'Activo')
-            ->orderBy('created_at', 'desc')
-            ->take(5)
-            ->get();
+        $recentLoans = Loan::with([
+            'borrower',
+            'borrower.teacher',
+            'subject',
+            'equipments.accessories', // ← ya lo tienes
+            'tools'                   // ← ya lo tienes
+        ])
+        ->where('estado_prestamo', 'Activo')
+        ->orderBy('created_at', 'desc')
+        ->take(5)
+        ->get()
+        ->map(function ($loan) {          // ← AGREGA este map
+            return array_merge($loan->toArray(), [
+                'all_items' => $loan->buildAllItemsFromLoan(),
+            ]);
+        });
 
         $recentEquipments = Equipment::orderBy('created_at', 'desc')->take(4)->get();
 

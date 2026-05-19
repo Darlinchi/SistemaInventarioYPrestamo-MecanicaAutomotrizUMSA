@@ -10,13 +10,17 @@ import { Button } from '@/components/ui/button';
 import {
     ArrowLeft, Save, Loader2, UserPen,
     User, Mail, KeyRound, ShieldCheck,
-    AtSign, Power, RefreshCw
+    AtSign, Power, RefreshCw, Hash, Phone
 } from 'lucide-vue-next';
 
 interface UserData {
     id: number;
+    cedula_identidad: string;
     name: string;
+    apellidoPaterno: string;
+    apellidoMaterno: string;
     username: string;
+    celular: string;
     email: string;
     activo: boolean;
     roles: string[];
@@ -34,10 +38,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 // ── Formulario datos personales ───────────────────────────────────
 const form = useForm({
-    name:     props.user.name,
-    username: props.user.username,
-    email:    props.user.email ?? '',
-    role:     props.user.roles[0] ?? '',
+    cedula_identidad: props.user.cedula_identidad ?? '',
+    name:          props.user.name,
+    apellidoPaterno:  props.user.apellidoPaterno ?? '',
+    apellidoMaterno:  props.user.apellidoMaterno ?? '',
+    username:         props.user.username,
+    celular:          props.user.celular          ?? '',
+    email:            props.user.email ?? '',
+    role:             props.user.roles[0] ?? '',
 });
 
 function submitPersonal() {
@@ -137,25 +145,51 @@ function toggleActivo() {
                     </CardTitle>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Nombre completo -->
+                        <div class="grid gap-2">
+                            <Label for="cedula_identidad">
+                                <Hash class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Cédula de Identidad
+                            </Label>
+                            <Input id="cedula_identidad" v-model="form.cedula_identidad" placeholder="Ej. 12345678" />
+                            <InputError :message="form.errors.cedula_identidad" />
+                        </div>
+
                         <div class="grid gap-2">
                             <Label for="name">
-                                <User class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Nombre Completo
+                                <User class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Nombre(s)
                             </Label>
                             <Input id="name" v-model="form.name" />
                             <InputError :message="form.errors.name" />
                         </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid gap-2">
+                            <Label for="apellidoPaterno">
+                                <User class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Apellido Paterno
+                            </Label>
+                            <Input id="apellidoPaterno" v-model="form.apellidoPaterno" />
+                            <InputError :message="form.errors.apellidoPaterno" />
+                        </div>
 
                         <div class="grid gap-2">
-                            <Label for="username">
-                                <AtSign class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Nombre de Usuario
+                            <Label for="apellidoMaterno">
+                                <User class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Apellido Materno
                             </Label>
-                            <Input id="username" v-model="form.username" />
-                            <InputError :message="form.errors.username" />
+                            <Input id="apellidoMaterno" v-model="form.apellidoMaterno" />
+                            <InputError :message="form.errors.apellidoMaterno" />
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <Label class="text-sm font-medium flex items-center gap-2 text-neutral-700">
+                                <Phone class="w-4 h-4 text-[#1a3a5a]"/> Celular
+                            </Label>
+                            <Input v-model="form.celular" type="text"
+                                class="flex h-10 w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1a3a5a]" />
+                            <InputError :message="form.errors.celular" />
+                        </div>
+
                         <div class="grid gap-2">
                             <Label for="email">
                                 <Mail class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Correo Electrónico
@@ -164,7 +198,16 @@ function toggleActivo() {
                             <Input id="email" v-model="form.email" type="email" />
                             <InputError :message="form.errors.email" />
                         </div>
+                    </div>
 
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid gap-2">
+                            <Label for="username">
+                                <AtSign class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Nombre de Usuario
+                            </Label>
+                            <Input id="username" v-model="form.username" />
+                            <InputError :message="form.errors.username" />
+                        </div>
                         <!-- Rol -->
                         <div class="grid gap-2">
                             <Label for="role">
@@ -175,7 +218,7 @@ function toggleActivo() {
                                 v-model="form.role"
                                 class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-[#1a3a5a] outline-none"
                             >
-                                <option value="">— Seleccionar rol —</option>
+                                <option value="">Seleccionar rol </option>
                                 <option v-for="r in roles" :key="r" :value="r">{{ r }}</option>
                             </select>
                             <InputError :message="form.errors.role" />

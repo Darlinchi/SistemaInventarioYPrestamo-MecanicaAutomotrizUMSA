@@ -14,6 +14,7 @@ const props = defineProps<{
     show: boolean;
     loan: any;
     form: any; // useForm de Inertia pasado desde el padre
+    authUser: { id: number; name: string; username: string };
 }>();
 
 const emit = defineEmits<{ close: []; confirm: [acuerdos: any[]] }>();
@@ -272,13 +273,38 @@ const colorEstado = (estado: string) => {
             <!-- ══ PASO 1: DEVOLUCIÓN ══ -->
             <div v-if="currentStep === 'devolucion'" class="p-7 pt-3 overflow-y-auto custom-scrollbar space-y-5 flex-1 bg-neutral-50/30">
 
+                <!-- Responsable + Entregado por + Recibiendo -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 p-5 bg-neutral-50 rounded-3xl border border-neutral-200 shadow-sm">
+                    <!-- Quién entregó (registró el préstamo) -->
+                    <div class="space-y-1 border-l border-neutral-100 pl-4">
+                        <p class="flex items-center gap-2 text-[12px] font-black text-[#1a3a5a] uppercase tracking-widest">
+                            <UserCheck class="w-3.5 h-3.5" /> Entregado por
+                        </p>
+                        <p class="text-sm font-bold text-neutral-900">{{ loan?.user?.name ?? '—' }}</p>
+                        <span class="px-2 py-0.5 rounded-lg bg-blue-50 text-[11px] font-black text-[#1a3a5a] border border-blue-100">
+                            {{ loan?.user?.username ?? '' }}
+                        </span>
+                    </div>
+
+                    <!-- Quién está recibiendo ahora (usuario logueado) -->
+                    <div class="space-y-1 border-l border-neutral-100 pl-4">
+                        <p class="flex items-center gap-2 text-[12px] font-black text-[#1a3a5a] uppercase tracking-widest">
+                            <UserCheck class="w-3.5 h-3.5" /> Recibiendo ahora
+                        </p>
+                        <p class="text-sm font-bold text-neutral-900">{{ authUser?.name ?? '—' }}</p>
+                        <span class="px-2 py-0.5 rounded-lg bg-emerald-50 text-[11px] font-black text-[#1a3a5a] border border-emerald-100">
+                            {{ authUser?.username ?? '' }}
+                        </span>
+                    </div>
+                </div>
+
                 <!-- Responsable + Materia -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 p-5 bg-neutral-50 rounded-3xl border border-neutral-200 shadow-sm">
                     <div class="space-y-1">
                         <p class="flex items-center gap-2 text-[12px] font-black text-[#1a3a5a] uppercase tracking-widest">
                             <User class="w-3.5 h-3.5" /> Responsable
                         </p>
-                        <p class="text-sm font-bold text-neutral-900">{{ loan?.borrower?.apellidos }} {{ loan?.borrower?.nombres }}</p>
+                        <p class="text-sm font-bold text-neutral-900">{{ loan.borrower?.teacher?.titulo }} {{ loan?.borrower?.apellidoPaterno }} {{ loan?.borrower?.apellidoMaterno }} {{ loan?.borrower?.nombres }}</p>
                         <div class="flex gap-2 flex-wrap">
                             <span class="px-2 py-0.5 rounded-md bg-[#1a3a5a]/10 text-[12px] font-black text-[#1a3a5a]">
                                 {{ loan?.borrower?.teacher ? 'DOCENTE' : (loan?.borrower?.assistant ? 'AUXILIAR' : 'ESTUDIANTE') }}

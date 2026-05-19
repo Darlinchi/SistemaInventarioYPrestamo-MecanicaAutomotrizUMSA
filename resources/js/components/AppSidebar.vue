@@ -61,18 +61,10 @@ const mainNavItems = computed((): NavItem[] => {
     const userRoles = (page.props.auth as any)?.user?.roles || [];
 
     // Se agrego gestionar personal solo para los que son administradores
-    if (userRoles.includes('admin')) {
-        items.push({
-            title: 'Gestionar Personal',
-            href: '/dashboard/usuarios',
-            icon: Users,
-        });
-    }
-
     // Gestionar Personal — solo super-admin
     if (hasRole('super-admin')) {
         items.push({
-            title: 'Gestionar Personal',
+            title: 'Gestión de Usuarios',
             href: '/dashboard/usuarios',
             icon: Users,
         });

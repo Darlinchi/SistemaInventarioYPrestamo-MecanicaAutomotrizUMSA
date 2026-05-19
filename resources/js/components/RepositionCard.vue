@@ -139,11 +139,15 @@ const estaVencida = (rep: any) =>
                 </div>
 
                 <!-- Registrado por -->
+                <!-- COLUMNA 2 — Registrado por (reemplaza líneas 141-147): -->
                 <div class="space-y-1">
-                    <p class="text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
-                        Registrado por
+                    <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
+                        <UserCheck class="w-4 h-4"/> Registrado por
                     </p>
                     <p class="text-sm font-bold text-neutral-800">{{ rep.registrado_por }}</p>
+                    <span class="px-2 py-0.5 rounded-lg bg-emerald-50 text-[11px] font-black text-[#1a3a5a] border border-emerald-100">
+                        {{ rep.registrado_username }}
+                    </span>
                 </div>
             </div>
 

@@ -16,8 +16,9 @@ class Borrower extends Model
     protected $fillable = [
         'cedula_identidad',
         'nombres',
-        'apellidos',
-        'telefono',
+        'apellidoPaterno',
+        'apellidoMaterno',
+        'celular',
         'activo',
     ];
 
@@ -44,32 +45,23 @@ class Borrower extends Model
         return $this->hasOne(Student::class, 'id_student');
     }
 
-    // Un método "Heredado" para obtener el tipo de usuario (útil para badges)
-    public function getTipoUserAttribute()
-    {
-        if ($this->teacher()->exists()) return 'Docente';
-        if ($this->assistant()->exists()) return 'Auxiliar';
-        if ($this->student()->exists()) return 'Estudiante';
-        return 'Externo';
-    }
-
     // Un prestamista tiene muchos prestamos
     public function loans(): HasMany
     {
         return $this->hasMany(Loan::class, 'id', 'id');
     }
 
-    // ─── Helper: devuelve el tipo real del borrower ────────────────
-    public function getTipoAttribute(): string
-    {
-        if ($this->teacher()->exists())   return 'docente';
-        if ($this->assistant()->exists()) return 'auxiliar';
-        if ($this->student()->exists())   return 'estudiante';
-        return 'desconocido';
-    }
-
+    // ── Accessors ─────────────────────────────────────────────────
     public function getNombreCompletoAttribute(): string
     {
-        return "{$this->nombres} {$this->apellidos}";
+        return trim("{$this->nombres} {$this->apellidoPaterno} {$this->apellidoMaterno}");
+    }
+
+    public function getTipoAttribute(): string
+    {
+        if ($this->teacher) return 'docente';
+        if ($this->assistant) return 'auxiliar';
+        if ($this->student) return 'estudiante';
+        return 'desconocido';
     }
 }

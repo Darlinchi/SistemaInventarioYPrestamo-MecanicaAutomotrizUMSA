@@ -48,16 +48,19 @@ class BorrowerController extends Controller
             'tipo'             => 'required|in:docente,auxiliar',
             'cedula_identidad' => 'required|string|max:20|unique:borrowers,cedula_identidad',
             'nombres'          => 'required|string|max:100',
-            'apellidos'        => 'required|string|max:100',
-            'telefono'         => 'nullable|string|max:20',
+            'apellidoPaterno'  => 'required|string|max:100',
+            'apellidoMaterno'  => 'nullable|string|max:100',
+            'celular'          => 'nullable|string|max:20',
         ];
 
         // 2. Reglas específicas por tipo
         if ($request->tipo === 'docente') {
+            $rules['titulo']     = 'nullable|string|max:10';
+            $rules['categoria']  = 'nullable|in:Titular,Invitado';
             $rules['subject_id'] = 'required|exists:subjects,id';
             $rules['paralelo']   = 'required|string|max:5';
         } else {
-            $rules['registro_universitario'] = 'required|string|max:20|unique:assistants,registro_universitario';
+            $rules['categoria']              = 'nullable|in:Titular,Invitado';
             $rules['subject_teacher_id']     = 'required|exists:subject_teacher,id';
             $rules['fecha_inicio']           = 'nullable|date';
             $rules['fecha_fin']              = 'nullable|date|after:fecha_inicio';
@@ -71,14 +74,20 @@ class BorrowerController extends Controller
                 $borrower = Borrower::create([
                     'cedula_identidad' => $validated['cedula_identidad'],
                     'nombres'          => $validated['nombres'],
-                    'apellidos'        => $validated['apellidos'],
-                    'telefono'         => $validated['telefono'] ?? null,
+                    'apellidoPaterno'  => $validated['apellidoPaterno'],
+                    'apellidoMaterno'  => $validated['apellidoMaterno'] ?? null,
+                    'celular'          => $validated['celular'] ?? null,
                     'activo'           => true,
                 ]);
 
                 if ($request->tipo === 'docente') {
                     // Crear Docente
-                    $teacher = Teacher::create(['id_teacher' => $borrower->id]);
+                    $teacher = Teacher::create([
+                        'id_teacher' => $borrower->id,
+                        'titulo'     => $validated['titulo'] ?? null,
+                        'categoria'  => $validated['categoria'] ?? 'Titular',
+                    ]);
+
                     // Vincular materia
                     SubjectTeacher::create([
                         'teacher_id' => $teacher->id_teacher,
@@ -89,7 +98,7 @@ class BorrowerController extends Controller
                     // Crear Auxiliar
                     $assistant = Assistant::create([
                         'id_assistant'           => $borrower->id,
-                        'registro_universitario' => $validated['registro_universitario'],
+                        'categoria'              => $validated['categoria'] ?? 'Titular',
                         'fecha_inicio'           => $validated['fecha_inicio'] ?? null,
                         'fecha_fin'              => $validated['fecha_fin'] ?? null,
                     ]);
@@ -108,16 +117,6 @@ class BorrowerController extends Controller
         }
     }
 
-    public function toggleStatus(Borrower $borrower)
-    {
-        $borrower->update([
-            'activo' => !$borrower->activo
-        ]);
-
-        $estado = $borrower->activo ? 'habilitado' : 'deshabilitado';
-        return back()->with('success', "El responsable {$borrower->nombres} {$borrower->apellidos} ha sido {$estado}.");
-    }
-
     // ── Toggle habilitar/deshabilitar ─────────────────────────────
     public function toggleActivo(Borrower $borrower)
     {
@@ -126,13 +125,24 @@ class BorrowerController extends Controller
         return back()->with('success', "Responsable {$estado} correctamente.");
     }
 
+    public function toggleStatus(Borrower $borrower)
+{
+    $nuevoEstado = !$borrower->activo; // ← guarda el valor nuevo ANTES del update
+    $borrower->update(['activo' => $nuevoEstado]);
+
+    $estado = $nuevoEstado ? 'habilitado' : 'deshabilitado';
+
+    return redirect()->route('borrowers.index')
+        ->with('success', "{$borrower->nombres} {$borrower->apellidoPaterno} ha sido {$estado}.");
+}
 
     public function edit(Borrower $borrower)
     {
         // Cambiamos 'assistant.assistantSubjects' por 'assistant.subjectTeachers'
         $borrower->load([
             'teacher.subjectTeachers.subject',
-            'assistant.subjectTeachers.subject' // Aquí usamos el nombre exacto de tu modelo
+            'assistant.subjectTeachers.subject',
+            'assistant.subjectTeachers.teacher.borrower',
         ]);
 
         return Inertia::render('borrower/Edit', [
@@ -146,14 +156,20 @@ class BorrowerController extends Controller
     {
         $rules = [
             'nombres'          => 'required|string|max:100',
-            'apellidos'        => 'required|string|max:100',
-            'telefono'         => 'nullable|string|max:20',
+            'apellidoPaterno' => 'required|string|max:100',
+            'apellidoMaterno' => 'nullable|string|max:100',
+            'celular'         => 'nullable|string|max:20',
             'cedula_identidad' => 'required|string|max:20|unique:borrowers,cedula_identidad,' . $borrower->id,
         ];
 
+        if ($borrower->teacher) {
+            $rules['titulo']    = 'nullable|string|max:10';
+            $rules['categoria'] = 'nullable|in:Titular,Invitado';
+        }
+
         // Si es auxiliar, permitimos editar sus datos específicos
         if ($borrower->assistant) {
-            $rules['registro_universitario'] = 'required|string|max:20|unique:assistants,registro_universitario,' . $borrower->id . ',id_assistant';
+            $rules['categoria']   = 'nullable|in:Titular,Invitado';
             $rules['fecha_inicio'] = 'nullable|date';
             $rules['fecha_fin']    = 'nullable|date|after:fecha_inicio';
         }
@@ -165,14 +181,22 @@ class BorrowerController extends Controller
             $borrower->update([
                 'cedula_identidad' => $validated['cedula_identidad'],
                 'nombres'          => $validated['nombres'],
-                'apellidos'        => $validated['apellidos'],
-                'telefono'         => $validated['telefono'],
+                'apellidoPaterno'  => $validated['apellidoPaterno'],
+                'apellidoMaterno'  => $validated['apellidoMaterno'] ?? null,
+                'celular'          => $validated['celular'] ?? null,
             ]);
+
+            if ($borrower->teacher) {
+                $borrower->teacher->update([
+                    'titulo'    => $validated['titulo'] ?? null,
+                    'categoria' => $validated['categoria'] ?? 'Titular',
+                ]);
+            }
 
             // 2. Si es auxiliar, actualizar datos extra
             if ($borrower->assistant) {
                 $borrower->assistant->update([
-                    'registro_universitario' => $validated['registro_universitario'],
+                    'categoria'              => $validated['categoria'] ?? 'Titular',
                     'fecha_inicio'           => $request->fecha_inicio,
                     'fecha_fin'              => $request->fecha_fin,
                 ]);
@@ -200,37 +224,27 @@ class BorrowerController extends Controller
             ->with('success', 'Responsable actualizado correctamente.');
     }
 
-
-
-    // ── Quitar una materia a un docente ───────────────────────────
     public function removeSubjectTeacher(Request $request, Borrower $borrower)
     {
         $request->validate(['subject_teacher_id' => 'required|exists:subject_teacher,id']);
-
         SubjectTeacher::where('id', $request->subject_teacher_id)
             ->where('teacher_id', $borrower->teacher->id_teacher)
             ->delete();
-
         return back()->with('success', 'Materia eliminada correctamente.');
     }
 
-    // ── Quitar una materia a un auxiliar ──────────────────────────
     public function removeSubjectAssistant(Request $request, Borrower $borrower)
     {
         $request->validate(['assistant_subject_id' => 'required|exists:assistant_subject,id']);
-
         \App\Models\AssistantSubject::where('id', $request->assistant_subject_id)
             ->where('assistant_id', $borrower->assistant->id_assistant)
             ->delete();
-
-        return back()->with('success', 'Materia eliminada correctamente.');
+        return back()->with('success', 'Asignación eliminada correctamente.');
     }
 
-    // ── Import Excel ──────────────────────────────────────────────
     public function import(Request $request)
     {
         ini_set('max_execution_time', 300);
-
         $request->validate([
             'archivo' => 'required|file|mimes:xlsx,xls,csv|max:5120',
             'tipo'    => 'required|in:docente,auxiliar',
@@ -248,9 +262,7 @@ class BorrowerController extends Controller
             }
 
             if (count($import->errors()) > 0) {
-                $errMsg = collect($import->errors())
-                    ->map(fn($e) => $e->getMessage())
-                    ->join(' | ');
+                $errMsg = collect($import->errors())->map(fn($e) => $e->getMessage())->join(' | ');
                 return back()->with('warning', "{$label} importados con algunos errores: {$errMsg}");
             }
 
@@ -261,7 +273,6 @@ class BorrowerController extends Controller
                 ->map(fn($f) => "Fila {$f->row()}: " . implode(', ', $f->errors()))
                 ->join(' | ');
             return back()->withErrors(['archivo' => "Errores en el archivo: {$errores}"]);
-
         } catch (\Exception $e) {
             return back()->withErrors(['archivo' => 'Error al importar: ' . $e->getMessage()]);
         }

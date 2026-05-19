@@ -173,24 +173,44 @@ Route::middleware(['auth', 'verified'])
         Route::delete('maintenanceCompanies/{maintenanceCompany}', [MaintenanceCompanyController::class, 'destroy'])
             ->middleware('permission:empresas_mant.eliminar')->name('maintenanceCompanies.destroy');
 
-        // Borrowers
-        Route::get('borrowers', [BorrowerController::class, 'index'])->name('borrowers.index');
-        Route::post('borrowers/import', [BorrowerController::class, 'import'])
+        Route::get('maintenances/equipment/{equipment}/history-pdf',
+            [MaintenanceController::class, 'equipmentHistoryPdf'])
+            ->name('maintenances.equipment.history');
+
+        // Borrowers ── orden importante: específicas antes de {borrower}
+        Route::get('borrowers',        [BorrowerController::class, 'index'])->name('borrowers.index');
+        Route::post('borrowers/import',[BorrowerController::class, 'import'])
             ->middleware('permission:prestatarios.crear')->name('borrowers.import');
         Route::get('borrowers/create', [BorrowerController::class, 'create'])
             ->middleware('permission:prestatarios.crear')->name('borrowers.create');
-        Route::post('borrowers', [BorrowerController::class, 'store'])
+        Route::post('borrowers',       [BorrowerController::class, 'store'])
             ->middleware('permission:prestatarios.crear')->name('borrowers.store');
-        Route::get('borrowers/{borrower}', [BorrowerController::class, 'show'])->name('borrowers.show');
+
+        // Acciones específicas — DEBEN ir antes de borrowers/{borrower}
+        Route::post('borrowers/{borrower}/toggle',
+            [BorrowerController::class, 'toggleStatus'])
+            ->name('borrowers.toggle');
+
+        Route::delete('borrowers/{borrower}/subject-teacher',
+            [BorrowerController::class, 'removeSubjectTeacher'])
+            ->middleware('permission:prestatarios.editar')
+            ->name('borrowers.subject-teacher.remove');
+
+        Route::delete('borrowers/{borrower}/subject-assistant',
+            [BorrowerController::class, 'removeSubjectAssistant'])
+            ->middleware('permission:prestatarios.editar')
+            ->name('borrowers.subject-assistant.remove');
+
+        // CRUD estándar
+        Route::get('borrowers/{borrower}',      [BorrowerController::class, 'show'])->name('borrowers.show');
         Route::get('borrowers/{borrower}/edit', [BorrowerController::class, 'edit'])
             ->middleware('permission:prestatarios.editar')->name('borrowers.edit');
-        Route::put('borrowers/{borrower}', [BorrowerController::class, 'update'])
+        Route::put('borrowers/{borrower}',      [BorrowerController::class, 'update'])
             ->middleware('permission:prestatarios.editar')->name('borrowers.update');
-        Route::patch('borrowers/{borrower}', [BorrowerController::class, 'update'])
+        Route::patch('borrowers/{borrower}',    [BorrowerController::class, 'update'])
             ->middleware('permission:prestatarios.editar');
-        Route::delete('borrowers/{borrower}', [BorrowerController::class, 'destroy'])
+        Route::delete('borrowers/{borrower}',   [BorrowerController::class, 'destroy'])
             ->middleware('permission:prestatarios.eliminar')->name('borrowers.destroy');
-        Route::post('borrowers/{borrower}/toggle', [BorrowerController::class, 'toggleStatus'])->name('borrowers.toggle');
 
         // Materias (Subjects)
         Route::get('subjects', [SubjectController::class, 'index'])->name('subjects.index');

@@ -26,6 +26,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Responsables', href: borrowerRoutes.index.url() },
 ];
 
+const page = usePage();
 // --- PERMISOS ---
 // Verifica que 'usuarios.crear' exista en tu base de datos.
 // Si quieres que aparezca siempre para probar, cambia esto a: return true;
@@ -89,7 +90,6 @@ onMounted(() => window.addEventListener('click', closePopovers));
 onUnmounted(() => window.removeEventListener('click', closePopovers));
 
 // ── Flash messages ────────────────────────────────────────────────
-const page = usePage();
 const flashSuccess = computed(() => (page.props.flash as any)?.success);
 const flashWarning = computed(() => (page.props.flash as any)?.warning);
 
@@ -137,8 +137,8 @@ const submitImport = () => {
 // Columnas según tipo
 const columnasEjemplo = computed(() =>
     tipoImport.value === 'docente'
-        ? ['cedula_identidad', 'telefono', 'nombres', 'apellidos']
-        : ['cedula_identidad', 'telefono', 'nombres', 'apellidos', 'registro_universitario', 'fecha_inicio*', 'fecha_fin*']
+        ? ['cedula_identidad', 'celular', 'titulo', 'nombres', 'apellido_paterno', 'apellido_materno', 'materia_sigla', 'paralelo']
+        : ['cedula_identidad', 'celular', 'nombres', 'apellido_paterno', 'apellido_materno', 'registro_universitario', 'fecha_inicio*', 'fecha_fin*']
 );
 
 const formatDate = (dateString: string | null) => {
@@ -150,9 +150,9 @@ const formatDate = (dateString: string | null) => {
 const toggleBorrowerStatus = (id: number) => {
     router.post(`/dashboard/borrowers/${id}/toggle`, {}, {
         preserveScroll: true,
+        preserveState: false,  // ← fuerza recarga de props para mostrar el cambio
     });
 };
-
 </script>
 
 <template>
@@ -203,9 +203,10 @@ const toggleBorrowerStatus = (id: number) => {
             <!-- Uso de BaseTable -->
             <BaseTable :items="filteredUsers" :emptyText="`No se encontraron ${activeTab}`">
                 <TableHeader :columns="[
+                    ...(activeTab === 'docentes' || activeTab === 'auxiliares' ? ['CAT.'] : []),
                     'CÉDULA',
                     // R.U. se muestra para Auxiliares y Estudiantes
-                    ...(activeTab === 'auxiliares' || activeTab === 'estudiantes' ? ['R.U.'] : []),
+                    ...(activeTab === 'estudiantes' ? ['R.U.'] : []),
 
                     'NOMBRE COMPLETO',
                     'CELULAR',
@@ -224,27 +225,29 @@ const toggleBorrowerStatus = (id: number) => {
                 <tbody class="divide-y divide-neutral-100 text-sm">
                     <tr v-for="b in filteredUsers" :key="b.id" class="hover:bg-neutral-50/50 transition-colors group">
 
-                        <td class="p-4 pl-8 text-neutral-700 font-medium">
+                        <td v-if="activeTab === 'auxiliares' || activeTab === 'docentes'" class="p-4 font-bold text-[#1a3a5a]">
+                            {{ b.teacher?.categoria || b.assistant?.categoria }}
+                        </td>
+
+                        <td class="p-2 pl-8 text-neutral-700 font-medium">
                             {{ b.cedula_identidad }}
                         </td>
 
-                        <td v-if="activeTab === 'auxiliares' || activeTab === 'estudiantes'" class="p-4">
+                        <td v-if="activeTab === 'estudiantes'" class="p-2">
                             <span class="font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded-md text-xs border border-blue-100 font-bold">
-                                {{ b.assistant?.registro_universitario || b.student?.registro_universitario || 'N/A' }}
+                                {{ b.student?.registro_universitario || 'N/A' }}
                             </span>
                         </td>
 
-                        <td class="p-4 font-bold text-[#1a3a5a]">
-                            {{ b.apellidos }} {{ b.nombres }}
+                        <td class="p-2 font-bold text-[#1a3a5a]">
+                            {{ b.teacher?.titulo }} {{ b.apellidoPaterno }} {{ b.apellidoMaterno }} {{ b.nombres }}
                         </td>
 
-                        <td class="p-4">
-                            <a :href="`tel:${b.telefono}`" class="flex items-center gap-2 text-neutral-600 hover:text-blue-600 transition">
-                                <Phone class="w-3.5 h-3.5 text-blue-500"/> {{ b.telefono || 'Sin número' }}
-                            </a>
+                        <td class="p-2 pl-8 text-neutral-700 font-medium">
+                            {{ b.celular || 'Sin número' }}
                         </td>
 
-                        <td v-if="activeTab === 'docentes' || activeTab === 'auxiliares'" class="p-4 relative">
+                        <td v-if="activeTab === 'docentes' || activeTab === 'auxiliares'" class="p-2 relative">
                             <div v-if="getSubjects(b).length > 0">
                                 <button @click.stop="toggleSubjects(b.id)"
                                     class="flex items-center gap-2 px-3 py-1.5 bg-neutral-50 border border-neutral-200 rounded-xl hover:bg-white transition-all shadow-sm">
@@ -267,15 +270,15 @@ const toggleBorrowerStatus = (id: number) => {
                         </td>
 
                         <template v-if="activeTab === 'auxiliares'">
-                            <td class="p-4 pl-8 font-bold text-[#1a3a5a] text-sm">
+                            <td class="p-2 pl-8 font-bold text-[#1a3a5a] text-sm">
                                 {{ formatDate(b.assistant?.fecha_inicio) }}
                             </td>
-                            <td class="p-4 pl-8 font-bold text-[#1a3a5a] text-sm">
+                            <td class="p-2 pl-8 font-bold text-[#1a3a5a] text-sm">
                                 {{ formatDate(b.assistant?.fecha_fin) }}
                             </td>
                         </template>
 
-                        <td class="p-4">
+                        <td class="p-2">
                             <span :class="[
                                 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border',
                                 b.activo
@@ -288,7 +291,7 @@ const toggleBorrowerStatus = (id: number) => {
                             </span>
                         </td>
 
-                        <td class="p-4 flex items-center gap-2">
+                        <td class="p-2 flex items-center gap-2">
                             <button
                                 @click="toggleBorrowerStatus(b.id)"
                                 :title="b.activo ? 'Deshabilitar responsable' : 'Habilitar responsable'"
@@ -303,7 +306,7 @@ const toggleBorrowerStatus = (id: number) => {
                                 <PowerOff v-else class="w-4 h-4" />
                             </button>
 
-                            <Link :href="borrowerRoutes.edit.url(b.id)"
+                            <Link :href="borrowerRoutes.edit.url(b.id)" v-if="activeTab === 'auxiliares' || activeTab === 'docentes'"
                                 class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg inline-block transition-colors">
                                 <SquarePen class="w-5 h-5"/>
                             </Link>

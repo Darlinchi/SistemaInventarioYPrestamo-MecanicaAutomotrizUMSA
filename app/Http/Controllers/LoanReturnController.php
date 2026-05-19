@@ -19,10 +19,12 @@ class LoanReturnController extends Controller
     public function index()
     {
         $loans = Loan::with([
+                'user',
                 'borrower.teacher',
                 'borrower.assistant.teachers.borrower',
                 'subject',
                 'authorization',
+                'loanReturns.user',
                 'loanReturns.returnDetails.returnable',
                 'loanReturns.returnDetails.returnDetailAccessories.accessory',
             ])
@@ -90,6 +92,8 @@ class LoanReturnController extends Controller
                 'hora_fin_prevista'     => $loan->hora_fin_prevista,
                 'observacion'           => $observacion,
                 'borrower'              => $loan->borrower,
+                'user'                  => $loan->user,
+                'return_user' => $loan->loanReturns?->user,
                 'docente_asignado'      => $docenteNombre,
                 'archivo_autorizacion'  => $loan->authorization?->archivo_nota,
                 'motivo_autorizacion'   => $loan->authorization?->motivo,
@@ -101,6 +105,7 @@ class LoanReturnController extends Controller
         return Inertia::render('loanReturn/Index', [
             'loans'       => $result,
             'repositions' => app(RepositionController::class)->getRepositions(),
+            'auth_user'   => auth()->user()->only('id', 'name', 'username'),
         ]);
     }
 

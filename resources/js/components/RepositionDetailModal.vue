@@ -64,6 +64,7 @@ const estaVencida = (rep: any) =>
                         </h2>
                         <p class="text-neutral-500 text-sm font-medium mt-1">
                             Registrado el {{ rep.created_at }} · por {{ rep.registrado_por }}
+                            <span class="text-neutral-400">({{ rep.registrado_username }})</span>
                         </p>
                     </div>
                 </div>
@@ -114,15 +115,32 @@ const estaVencida = (rep: any) =>
                     </div>
                 </div>
 
-                <!-- Responsable -->
+                <!-- Responsable + Registrado por -->
                 <div class="p-6 bg-neutral-50 rounded-3xl border border-neutral-200 shadow-sm space-y-2">
-                    <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
-                        <User class="w-4 h-4"/> Responsable de la reposición
-                    </p>
-                    <p class="text-base font-bold text-neutral-900 leading-tight">{{ rep.borrower_nombre }}</p>
-                    <span class="inline-block px-2 py-0.5 rounded-lg bg-neutral-100 text-[13px] font-black text-neutral-700 border border-neutral-200">
-                        CI: {{ rep.borrower_ci }}
-                    </span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                        <!-- Responsable de la reposición (prestatario) -->
+                        <div class="space-y-2">
+                            <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
+                                <User class="w-4 h-4"/> Responsable
+                            </p>
+                            <p class="text-base font-bold text-neutral-900 leading-tight">{{ rep.borrower_nombre }}</p>
+                            <span class="inline-block px-2 py-0.5 rounded-lg bg-neutral-100 text-[13px] font-black text-neutral-700 border border-neutral-200">
+                                CI: {{ rep.borrower_ci }}
+                            </span>
+                        </div>
+
+                        <!-- Encargado que registró -->
+                        <div class="space-y-2 border-l border-neutral-100 pl-4">
+                            <p class="flex items-center gap-2 text-[13px] font-black text-emerald-700 uppercase tracking-widest">
+                                <UserCheck class="w-4 h-4"/> Registrado por
+                            </p>
+                            <p class="text-base font-bold text-neutral-900 leading-tight">{{ rep.registrado_por }}</p>
+                            <span class="inline-block px-2 py-0.5 rounded-lg bg-emerald-50 text-[11px] font-black text-emerald-700 border border-emerald-100">
+                                {{ rep.registrado_username }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Acuerdo -->

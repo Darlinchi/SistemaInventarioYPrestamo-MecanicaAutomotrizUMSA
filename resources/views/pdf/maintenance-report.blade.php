@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Informe Técnico #{{ $maint->id }}</title>
+    <link rel="icon" type="image/png" href="{{ public_path('images/logo-carrera.png') }}">
     <style>
         @page { margin: 1.5cm; }
         body { font-family: 'Helvetica', sans-serif; font-size: 9pt; color: #333; line-height: 1.4; }
@@ -28,7 +29,6 @@
                 <div style="font-weight: bold;">Taller de Mecánica Automotriz - UMSA</div>
             </td>
             <td style="border: none; width: 20%; text-align: right;">
-                <div style="font-weight: bold;">N° Registro: {{ str_pad($maint->id, 5, '0', STR_PAD_LEFT) }}</div>
                 <div>Emisión: {{ date('d/m/Y') }}</div>
             </td>
         </tr>
@@ -67,6 +67,15 @@
             <td>{{ $maint->fecha_retorno ?? 'Pendiente' }} ({{ $maint->hora_fin ?? '--:--' }})</td>
         </tr>
         <tr>
+            <td class="header-bg">REGISTRADO POR:</td>
+            <td colspan="3">
+                {{ $maint->user?->name ?? 'Sistema' }}
+                @if($maint->user?->username)
+                    <span style="color: #666; font-size: 8pt;">({{ $maint->user->username }})</span>
+                @endif
+            </td>
+        </tr>
+        <tr>
             <td class="header-bg">ESTADO RESULTANTE:</td>
             <td colspan="3">
                 <span class="status-badge">{{ $maint->estado_final_equipo ?? 'EN PROCESO' }}</span>
@@ -84,8 +93,8 @@
     <table style="width: 100%; margin-top: 60px; border: none;">
         <tr>
             <td style="text-align: center; width: 45%; border: none; border-top: 1px solid #000;">
-                <br><strong>ENCARGADO DE TALLER</strong><br>
-                {{ auth()->user()->name }}
+                <br><strong>REGISTRADO POR</strong><br>
+                {{ $maint->user?->name ?? auth()->user()->name }}
             </td>
             <td style="width: 10%; border: none;"></td>
             <td style="text-align: center; width: 45%; border: none; border-top: 1px solid #000;">

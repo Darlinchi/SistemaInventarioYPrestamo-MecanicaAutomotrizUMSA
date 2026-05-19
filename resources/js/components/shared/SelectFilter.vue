@@ -12,6 +12,7 @@ const props = defineProps<{
     optionLabel?: string;
     // Simplificamos aquí para evitar el error de unión compleja
     icon?: string | any;
+    combined?: boolean;
 }>();
 
 defineEmits(['update:modelValue']);
@@ -49,9 +50,12 @@ const iconComponent = computed(() => {
 
             <template v-for="option in options" :key="optionValue ? option[optionValue] : option">
                 <option :value="optionValue ? option[optionValue] : option">
-                    {{ optionLabel && optionValue
-                        ? `${option[optionValue]} - ${option[optionLabel]}`
-                        : option
+                    {{
+                        optionLabel && optionValue
+                            ? (props.combined
+                                ? `${option[optionValue]} - ${option[optionLabel]}`
+                                : option[optionLabel])
+                            : option
                     }}
                 </option>
             </template>

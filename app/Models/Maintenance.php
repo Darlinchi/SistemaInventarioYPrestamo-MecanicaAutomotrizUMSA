@@ -15,6 +15,7 @@ class Maintenance extends Model
 
     protected $fillable = [
         'equipment_id',
+        'user_id',
         'tipo_mantenimiento',
         'fecha_proximo_mantenimiento',
         'fecha_mantenimiento',
@@ -45,6 +46,10 @@ class Maintenance extends Model
     public function equipment(): BelongsTo
     {
         return $this->belongsTo(Equipment::class);
+    }
+
+    public function user(): BelongsTo {
+        return $this->belongsTo(User::class);
     }
 
     // ─── Helpers ───────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-    Package, Building2, Wrench, Calendar,
+    Package, Building2, Wrench, Calendar, UserCog, 
     CalendarCheck2, Clock, ClockAlert, CheckCircle
 } from 'lucide-vue-next';
 
@@ -27,16 +27,29 @@ defineEmits(['complete']);
                         />
                         <Package v-else class="w-8 h-8 text-red-500" />
                     </div>
-                    <div class="min-w-0">
-                        <p class="text-[12px] text-red-600 uppercase font-black tracking-widest mb-1">Equipo</p>
-                        <p class="text-base font-bold text-neutral-900 truncate">{{ maint.equipment.nombre_equipo }}</p>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span v-if="maint.equipment.codigo_qr"
-                                class="text-[12px] bg-white border border-blue-100 text-blue-600 px-2 py-0.5 rounded-lg font-mono font-bold uppercase shadow-sm">
-                                QR: {{ maint.equipment.codigo_qr }}
-                            </span>
+
+                    <div class="space-y-4">
+                        <div class="space-y-1">
+                            <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest leading-none">
+                                <Package class="w-4 h-4 text-[#1a3a5a]"/>
+                                <span>Equipo</span>
+                            </p>
+                            <p class="flex items-center gap-2 text-[14px] font-bold text-neutral-800 leading-tight">
+                                {{ maint.equipment.nombre_equipo }}
+                            </p>
+                        </div>
+
+                        <div class="space-y-1">
+                            <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest leading-none">
+                                <UserCog class="w-4 h-4 text-[#1a3a5a]"/>
+                                <span>Registrado por:</span>
+                            </p>
+                            <p class="flex items-center gap-2 text-[14px] font-bold text-neutral-800 leading-tight">
+                                {{ maint.user.name }}
+                            </p>
                         </div>
                     </div>
+                    
                 </div>
             </div>
 
@@ -55,7 +68,7 @@ defineEmits(['complete']);
                         <Wrench class="w-4 h-4 text-[#1a3a5a]" />
                         <span>Tipo de Mantenimiento</span>
                     </p>
-                    <p class="text-[11px]font-bold text-neutral-900 leading-tight">
+                    <p class="flex items-center gap-2 text-[14px] font-bold text-neutral-800 leading-tight">
                         {{ maint.tipo_mantenimiento }}
                     </p>
                 </div>

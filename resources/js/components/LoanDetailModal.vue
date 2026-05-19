@@ -46,7 +46,32 @@ const tipoPrestatario = (loan: any): string => {
                 </button>
             </div>
 
+
             <div class="p-8 pt-4 overflow-y-auto custom-scrollbar space-y-6 flex-1 bg-neutral-50/30">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-neutral-50 rounded-3xl border border-neutral-200 shadow-sm">
+                    <!-- Encargado que entregó -->
+                    <div class="space-y-2 border-l border-neutral-100 pl-4 flex flex-col justify-center">
+                        <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest leading-none">
+                            <UserCog class="w-4 h-4" /> Entregado por
+                        </p>
+                        <p class="text-base font-bold text-neutral-900 leading-tight">{{ loan?.user?.name ?? '—' }}</p>
+                        <span class="px-2 py-0.5 rounded-lg bg-emerald-50 text-[11px] font-black text-[#1a3a5a] border border-emerald-100 w-fit">
+                            {{ loan?.user?.username ?? '' }}
+                        </span>
+                    </div>
+
+                    <!-- Quién recibió la devolución -->
+                    <div v-if="loan?.return_user" class="space-y-2 border-l border-neutral-100 pl-4 flex flex-col justify-center">
+                        <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest leading-none">
+                            <UserCog class="w-4 h-4" /> Recibido por
+                        </p>
+                        <p class="text-base font-bold text-neutral-900 leading-tight">{{ loan?.return_user?.name ?? '—' }}</p>
+                        <span class="px-2 py-0.5 rounded-lg bg-emerald-50 text-[11px] font-black text-[#1a3a5a] border border-emerald-100 w-fit">
+                            {{ loan?.return_user?.username ?? '' }}
+                        </span>
+                    </div>
+                </div>
+
                 <!-- Responsable + Materia -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-neutral-50 rounded-3xl border border-neutral-200 shadow-sm">
                     <div class="space-y-2">
@@ -66,7 +91,7 @@ const tipoPrestatario = (loan: any): string => {
                             <User class="w-4 h-4" /> Responsable del Préstamo
                         </p>
                         <p class="text-base font-bold text-neutral-900 leading-tight">
-                            {{ loan?.borrower?.nombres }} {{ loan?.borrower?.apellidos }}
+                            {{ loan?.borrower?.teacher?.titulo }} {{ loan?.borrower?.apellidoPaterno }} {{ loan?.borrower?.apellidoMaterno }} {{ loan?.borrower?.nombres }}
                         </p>
 
                         <div class="flex gap-2 flex-wrap mt-2">

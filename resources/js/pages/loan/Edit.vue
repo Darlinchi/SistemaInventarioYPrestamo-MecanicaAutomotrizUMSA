@@ -127,7 +127,7 @@ const canSubmit = computed(() => {
                                 <User class="w-4 h-4 text-[#1a3a5a]" />
                                 <span>Responsable</span>
                             </p>
-                            <p class="text-sm font-bold text-neutral-800">{{ loan.borrower.nombres }} {{ loan.borrower.apellidos }}</p>
+                            <p class="text-sm font-bold text-neutral-800">{{ loan.borrower.teacher?.titulo }} {{ loan.borrower.apellidoPaterno }} {{ loan.borrower.apellidoMaterno }} {{ loan.borrower.nombres }} </p>
                         </div>
 
                         <div class="space-y-1">

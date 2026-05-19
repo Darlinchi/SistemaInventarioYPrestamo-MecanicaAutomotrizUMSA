@@ -17,7 +17,10 @@ return new class extends Migration
                 ->references('id')->on('borrowers')
                 ->onDelete('cascade');
 
-            $table->string('registro_universitario', 20)->unique();
+            $table->enum('categoria', [
+                'Titular',
+                'Invitado',
+            ])->default('Titular');
             $table->date('fecha_inicio')->nullable();
             $table->date('fecha_fin')->nullable();
             // Aquí podrías añadir campos específicos de auxiliares

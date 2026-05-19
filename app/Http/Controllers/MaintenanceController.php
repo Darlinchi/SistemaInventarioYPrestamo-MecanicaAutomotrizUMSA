@@ -18,7 +18,7 @@ class MaintenanceController extends Controller
      */
     public function index()
     {
-        $maintenances = Maintenance::with(['equipment', 'companies'])
+        $maintenances = Maintenance::with(['equipment', 'companies', 'user'])
         ->orderBy('fecha_mantenimiento', 'desc')
         ->orderBy('hora_inicio', 'desc')
         ->get();
@@ -31,12 +31,32 @@ class MaintenanceController extends Controller
     public function generateReport($id)
     {
         // Cambiamos 'company' por 'companies'
-        $maint = Maintenance::with(['equipment', 'companies'])->findOrFail($id);
+        $maint = Maintenance::with(['equipment', 'companies', 'user'])->findOrFail($id);
 
         $pdf = Pdf::loadView('pdf.maintenance-report', compact('maint'));
         $pdf->setPaper('letter', 'portrait');
 
         return $pdf->stream("REPORTE_TECNICO_{$maint->id}.pdf");
+    }
+
+    /**
+     * PDF con el historial COMPLETO de mantenimientos de un equipo.
+     * Ruta: GET /dashboard/maintenances/equipment/{equipment}/history-pdf
+     */
+    public function equipmentHistoryPdf(Equipment $equipment)
+    {
+        $maintenances = Maintenance::with(['companies'])
+            ->where('equipment_id', $equipment->id)
+            ->orderBy('fecha_mantenimiento', 'asc')
+            ->orderBy('hora_inicio', 'asc')
+            ->get();
+    
+        $pdf = Pdf::loadView('pdf.maintenance-history', compact('equipment', 'maintenances'));
+        $pdf->setPaper('letter', 'landscape');
+    
+        $nombreArchivo = 'HISTORIAL_' . str_replace(' ', '_', strtoupper($equipment->nombre_equipo)) . '.pdf';
+    
+        return $pdf->stream($nombreArchivo);
     }
 
     /**
@@ -72,6 +92,7 @@ class MaintenanceController extends Controller
             // 2. Crear el mantenimiento con los datos del formulario
             $maintenance = Maintenance::create([
                 'equipment_id'            => $validated['equipment_id'],
+                'user_id'                 => auth()->id(),
                 'tipo_mantenimiento'      => $validated['tipo_mantenimiento'],
                 'fecha_mantenimiento'     => $validated['fecha_mantenimiento'],
                 'hora_inicio'             => $validated['hora_inicio'],

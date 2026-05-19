@@ -85,7 +85,7 @@ const filteredLoans = computed(() => {
     if (searchQuery.value.trim() !== '') {
         const query = searchQuery.value.toLowerCase();
         filtered = filtered.filter(loan => {
-            const nombreUsuario = `${loan.borrower.nombres} ${loan.borrower.apellidos}`.toLowerCase();
+            const nombreUsuario = `${loan.borrower.nombres} ${loan.borrower.apellidoPaterno} ${loan.borrower.apellidoMaterno}`.toLowerCase();
             const cedulaUsuario = `${loan.borrower.cedula_identidad}`;
             const coincideItem = (loan.all_items || []).some(item =>
                 item.nombre_mostrar.toLowerCase().includes(query) ||
@@ -136,7 +136,10 @@ const uniqueBorrowerCI = computed(() => {
     props.loans
         .filter(l => l.estado_prestamo === 'Devuelto')
         .forEach(loan => {
-            if (loan.borrower) borrowersMap.set(loan.borrower.cedula_identidad, loan.borrower.apellidos);
+            if (loan.borrower) borrowersMap.set(
+                loan.borrower.cedula_identidad,
+                `${loan.borrower.apellidoPaterno ?? ''} ${loan.borrower.apellidoMaterno ?? ''}`.trim()
+            );
         });
     return Array.from(borrowersMap.entries()).map(([cedula_identidad, apellidos]) => ({ cedula_identidad, apellidos }));
 });
@@ -176,9 +179,9 @@ const handleGenerateReport = (id: number | string) => {
             <!-- FILTROS -->
             <div class="flex flex-col md:flex-row items-center gap-3 mb-6 w-full">
                 <SearchInput v-model="searchQuery" placeholder="Buscar por item, materia o usuario..." class="flex-1" />
-                <SelectFilter v-model="selectedSubject" label="Materias" :options="uniqueSubjects" option-value="sigla" option-label="nombre" icon="BookText" class="md:w-[165px]" />
-                <SelectFilter v-model="selectedBorrowerCI" label="Usuarios" :options="uniqueBorrowerCI" option-value="cedula_identidad" option-label="apellidos" icon="User" class="md:w-40" />
-                <SelectFilter v-model="filterMonth" label="Meses" :options="months" option-value="id" option-label="name" icon="CalendarDays" class="md:w-[150px]" />
+                <SelectFilter v-model="selectedSubject" label="Materias" :options="uniqueSubjects" option-value="sigla" option-label="nombre" combined icon="BookText" class="md:w-[165px]" />
+                <SelectFilter v-model="selectedBorrowerCI" label="Usuarios" :options="uniqueBorrowerCI" option-value="cedula_identidad" option-label="apellidos" combined icon="User" class="md:w-40" />
+                <SelectFilter v-model="filterMonth" label="Meses" :options="months" option-value="id" option-label="name" combined icon="CalendarDays" class="md:w-[150px]" />
                 <DateFilter v-model="filterDate" label="Fecha específica" />
                 <ClearFiltersButton @clear="() => { filterDate=''; filterMonth=''; selectedBorrowerCI=''; selectedSubject=''; searchQuery='' }" />
             </div>

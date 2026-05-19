@@ -17,7 +17,7 @@ class Assistant extends Model
 
     protected $fillable = [
         'id_assistant',
-        'registro_universitario',
+        'categoria',
         'fecha_inicio',
         'fecha_fin',
     ];

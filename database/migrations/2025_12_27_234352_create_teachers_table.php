@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('teachers', function (Blueprint $table) {
-            // 1. IMPORTANTE: Usamos unsignedBigInteger en lugar de id() 
+            // 1. IMPORTANTE: Usamos unsignedBigInteger en lugar de id()
             // para que NO sea auto-incremental.
             $table->unsignedBigInteger('id_teacher')->primary();
 
@@ -21,7 +21,13 @@ return new class extends Migration
                 ->references('id') // El ID de borrowers
                 ->on('borrowers')
                 ->onDelete('cascade');
-            
+
+            $table->string('titulo', 10)->nullable();
+            $table->enum('categoria', [
+                'Titular',
+                'Invitado',
+            ])->default('Titular');
+
             // Aquí podrías añadir campos específicos de docentes de la carrera si los hay
             $table->timestamps();
         });

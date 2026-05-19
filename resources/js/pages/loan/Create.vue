@@ -65,8 +65,9 @@ const form = useForm({
     borrower_id: '',
     cedula_identidad: '',
     nombres: '',
-    apellidos: '',
-    telefono: '',
+    apellidoPaterno: '',
+    apellidoMaterno: '',
+    celular: '',
     registro_universitario: '',
     motivo: '',
     archivo_nota: null as File | null,
@@ -78,10 +79,14 @@ const form = useForm({
     hora_fin_prevista: '',
 });
 
-// Sincronización de pestañas y reseteo[cite: 7]
+// Sincronización de pestañas y reseteo
 watch(activeTab, (newVal) => {
     form.tipo_prestatario = newVal === 'personal' ? 'docente' : 'estudiante';
-    form.reset('borrower_id', 'cedula_identidad', 'nombres', 'apellidos', 'registro_universitario', 'motivo', 'archivo_nota');
+    form.reset(
+        'borrower_id', 'cedula_identidad', 'nombres',
+        'apellidoPaterno', 'apellidoMaterno', 'celular',  // ← agrega celular
+        'registro_universitario', 'motivo', 'archivo_nota'
+    );
 });
 
 // Computed: bloqueo de borrower con reposiciones pendientes
@@ -98,7 +103,8 @@ watch(() => form.borrower_id, (newId) => {
         if (b) {
             form.cedula_identidad = b.cedula_identidad;
             form.nombres = b.nombres;
-            form.apellidos = b.apellidos;
+            form.apellidoPaterno = b.apellidoPaterno;
+            form.apellidoMaterno = b.apellidoMaterno;
             form.tipo_prestatario = b.teacher ? 'docente' : 'auxiliar';
         }
     }
@@ -175,7 +181,7 @@ const filteredBorrowers = computed(() => {
 
 watch(activeBorrowerTab, (newTab) => {
     form.tipo_prestatario = newTab === 'personal' ? 'docente' : 'estudiante';
-    form.reset('borrower_id', 'cedula_identidad', 'nombres', 'apellidos', 'registro_universitario', 'archivo_nota');
+    form.reset('borrower_id', 'cedula_identidad', 'nombres', 'apellidoPaterno', 'apellidoMaterno', 'registro_universitario', 'archivo_nota');
 });
 
 // Limpiar el otro campo si la selección actual lo invalida
@@ -326,7 +332,7 @@ const canSubmit = computed(() => {
                                             :value="b.id"
                                             :disabled="isBloqueado(b.id)"
                                         >
-                                            {{ isBloqueado(b.id) ? '🔒 ' : '' }}{{ b.apellidos }} {{ b.nombres }}{{ isBloqueado(b.id) ? ' — BLOQUEADO' : '' }}
+                                            {{ isBloqueado(b.id) ? '🔒 ' : '' }} {{ b.apellidoPaterno }} {{ b.apellidoMaterno }} {{ b.nombres }}{{ isBloqueado(b.id) ? ' — BLOQUEADO' : '' }}
                                         </option>
                                     </select>
 
@@ -373,11 +379,29 @@ const canSubmit = computed(() => {
                                         <InputError :message="form.errors.nombres" />
                                     </div>
                                     <div class="space-y-2">
-                                        <Label for="apellidos" class="flex items-center gap-2 font-black text-[#1a3a5a]">
-                                            <UserPen class="w-4 h-4 text-[#1a3a5a]"/> Apellido(s)
+                                        <Label for="celular" class="flex items-center gap-2 font-black text-[#1a3a5a]">
+                                            <Phone class="w-4 h-4 text-[#1a3a5a]"/> Celular
                                         </Label>
-                                        <Input id="apellidos" v-model="form.apellidos" placeholder="Apellido(s)" />
-                                        <InputError :message="form.errors.apellidos" />
+                                        <Input v-model="form.celular" placeholder="Ej: 70000000" />
+                                        <InputError :message="form.errors.celular" />
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="space-y-2">
+                                        <Label for="apellidoPaterno" class="flex items-center gap-2 font-black text-[#1a3a5a]">
+                                            <UserPen class="w-4 h-4 text-[#1a3a5a]"/> Apellido Paterno
+                                        </Label>
+                                        <Input id="apellidoPaterno" v-model="form.apellidoPaterno" placeholder="Apellido(s)" />
+                                        <InputError :message="form.errors.apellidoPaterno" />
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <Label for="apellidoMaterno" class="flex items-center gap-2 font-black text-[#1a3a5a]">
+                                            <UserPen class="w-4 h-4 text-[#1a3a5a]"/> Apellido Materna
+                                        </Label>
+                                        <Input id="apellidoMaterno" v-model="form.apellidoMaterno" placeholder="Apellido(s)" />
+                                        <InputError :message="form.errors.apellidoMaterno" />
                                     </div>
                                 </div>
 
@@ -389,13 +413,6 @@ const canSubmit = computed(() => {
                                     <InputError :message="form.errors.motivo" />
                                 </div>
 
-                                <div class="space-y-2">
-                                    <Label for="telefono" class="flex items-center gap-2 font-black text-[#1a3a5a]">
-                                        <Phone class="w-4 h-4 text-[#1a3a5a]"/> Teléfono / Celular
-                                    </Label>
-                                    <Input v-model="form.telefono" placeholder="Ej: 70000000" />
-                                    <InputError :message="form.errors.telefono" />
-                                </div>
 
                                 <div class="grid gap-2">
                                     <Label class="mb-1 flex items-center gap-2 font-black text-[#1a3a5a]">

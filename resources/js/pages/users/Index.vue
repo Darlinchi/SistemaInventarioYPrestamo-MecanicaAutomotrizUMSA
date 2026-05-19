@@ -16,6 +16,10 @@ const props = defineProps<{
         id: number;
         name: string;
         username: string;
+        celular: string;
+        cedula_identidad: string;
+        apellidoPaterno: string;
+        apellidoMaterno: string;
         email: string;
         activo: boolean;
         roles: string[];
@@ -59,8 +63,10 @@ const toggleStatus = (id: number) => {
                 <table class="w-full text-left border-separate border-spacing-0">
                     <thead class="bg-neutral-50 border-b border-neutral-200 text-[11px] font-black uppercase tracking-widest text-neutral-500">
                         <tr>
-                            <th class="p-4 pl-8">Personal</th>
+                            <th class="p-4 pl-8">C.I.</th>
+                            <th class="p-4 pl-8">Nombre Completo</th>
                             <th class="p-4">Usuario / Correo</th>
+                            <th class="p-4 pl-8">Celular</th>
                             <th class="p-4">Rol</th>
                             <th class="p-4">Estado</th>
                             <th class="p-4 text-right pr-8">Acciones</th>
@@ -80,15 +86,23 @@ const toggleStatus = (id: number) => {
                             :key="user.id"
                             :class="['hover:bg-neutral-50/50 transition-colors group', !user.activo ? 'opacity-60' : '']"
                         >
+                            <td class="p-4 pl-8">
+                                <div class="font-bold text-neutral-900">{{ user.cedula_identidad }}</div>
+                            </td>
+
                             <!-- Nombre -->
                             <td class="p-4 pl-8">
-                                <div class="font-bold text-neutral-900">{{ user.name }}</div>
+                                <div class="font-bold text-neutral-900">{{ user.apellidoPaterno }} {{ user.apellidoMaterno }} {{ user.name }} </div>
                             </td>
 
                             <!-- Username / Email -->
                             <td class="p-4">
                                 <div class="text-neutral-700 font-medium">{{ user.username }}</div>
                                 <div class="text-[11px] text-neutral-400">{{ user.email || '—' }}</div>
+                            </td>
+
+                            <td class="p-4 pl-8">
+                                <div class="font-bold text-neutral-900">{{ user.celular }}</div>
                             </td>
 
                             <!-- Rol -->

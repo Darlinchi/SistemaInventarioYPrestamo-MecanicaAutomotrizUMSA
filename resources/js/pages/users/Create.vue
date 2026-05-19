@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import {
     ArrowLeft, Save, Loader2, UserPlus, PencilLine,
-    User, Mail, KeyRound, ShieldCheck, AtSign
+    User, Mail, KeyRound, ShieldCheck, AtSign, Hash, Phone
 } from 'lucide-vue-next';
 
 const props = defineProps<{
@@ -22,12 +22,16 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const form = useForm({
-    name:     '',
-    username: '',
-    email:    '',
-    password: '',
+    cedula_identidad: '',
+    name:             '',
+    apellidoPaterno:  '',
+    apellidoMaterno:  '',
+    username:         '',
+    celular:          '',
+    email:            '',
+    password:         '',
     password_confirmation: '',
-    role:     '',
+    role:             '',
 });
 
 function submit() {
@@ -78,36 +82,61 @@ function submit() {
                     </CardTitle>
 
 
+                    <!-- Cédula + Username -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Nombre completo -->
+                        <div class="grid gap-2">
+                            <Label for="cedula_identidad">
+                                <Hash class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Cédula de Identidad
+                            </Label>
+                            <Input
+                                id="cedula_identidad"
+                                v-model="form.cedula_identidad"
+                                placeholder="Ej. 12345678"
+                                autofocus
+                            />
+                            <InputError :message="form.errors.cedula_identidad" />
+                        </div>
                         <div class="grid gap-2">
                             <Label for="name">
-                                <User class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Nombre Completo
+                                <User class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Nombre(s)
                             </Label>
                             <Input
                                 id="name"
                                 v-model="form.name"
-                                placeholder="Nombre(s) y apellido(s)"
-                                autofocus
+                                placeholder="Ej. Juan Carlos"
                             />
                             <InputError :message="form.errors.name" />
                         </div>
+                    </div>
 
-                        <!-- Username -->
+                    <!-- Apellidos -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid gap-2">
-                            <Label for="username">
-                                <AtSign class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Nombre de Usuario
+                            <Label for="apellidoPaterno">
+                                <User class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Apellido Paterno
                             </Label>
-                            <Input
-                                id="username"
-                                v-model="form.username"
-                                placeholder="Nombre corto"
-                            />
-                            <InputError :message="form.errors.username" />
+                            <Input id="apellidoPaterno" v-model="form.apellidoPaterno" placeholder="Ej. Pérez"/>
+                            <InputError :message="form.errors.apellidoPaterno" />
+                        </div>
+                        <div class="grid gap-2">
+                            <Label for="apellidoMaterno">
+                                <User class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Apellido Materno
+                            </Label>
+                            <Input id="apellidoMaterno" v-model="form.apellidoMaterno" placeholder="Ej. López"/>
+                            <InputError :message="form.errors.apellidoMaterno" />
                         </div>
                     </div>
 
+                    <!-- Username + Email -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid gap-2">
+                            <Label for="celular" class="flex items-center gap-2">
+                                <Phone class="w-4 h-4 text-[#1a3a5a]"/> Celular
+                                <span class="text-neutral-400 text-xs font-normal">(opcional)</span>
+                            </Label>
+                            <Input id="celular" v-model="form.celular" placeholder="Ej. 78945612" />
+                            <InputError :message="form.errors.celular" />
+                        </div>
                         <!-- Email -->
                         <div class="grid gap-2">
                             <Label for="email">
@@ -122,8 +151,18 @@ function submit() {
                             />
                             <InputError :message="form.errors.email" />
                         </div>
+                    </div>
 
-                        <!-- Rol -->
+                    <!-- Rol -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid gap-2">
+                            <Label for="username">
+                                <AtSign class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Nombre de Usuario
+                            </Label>
+                            <Input id="username" v-model="form.username" placeholder="Nombre corto de acceso"/>
+                            <InputError :message="form.errors.username" />
+                        </div>
+
                         <div class="grid gap-2">
                             <Label for="role">
                                 <ShieldCheck class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Rol
@@ -133,7 +172,7 @@ function submit() {
                                 v-model="form.role"
                                 class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-[#1a3a5a] outline-none"
                             >
-                                <option value="">— Seleccionar rol —</option>
+                                <option value="">Seleccionar rol </option>
                                 <option v-for="r in roles" :key="r" :value="r">
                                     {{ r }}
                                 </option>

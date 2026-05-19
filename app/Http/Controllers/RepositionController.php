@@ -44,7 +44,7 @@ class RepositionController extends Controller
                 'originable',
                 'nuevoItem',
                 'borrower',
-                'user:id,username',   // la tabla users usa 'username', no 'name'
+                'user:id,name,username',
             ])
             ->latest()
             ->get()
@@ -93,8 +93,12 @@ class RepositionController extends Controller
                     'tipo_origen'         => $tipoOrigen,
                     'equipo_padre'        => $equipoPadreNombre,
                     'estado_dano'         => $origen?->estado_devolucion ?? $origen?->estado_accesorio ?? '—',
-                    'borrower_nombre'     => ($rep->borrower->nombres ?? $rep->borrower->nombresP ?? '') . ' ' .
-                                            ($rep->borrower->apellidos ?? $rep->borrower->apellidosP ?? ''),
+                    'borrower_nombre'     => trim(
+                                            ($rep->borrower->teacher->titulo ?? '') . ' ' .
+                                            ($rep->borrower->apellidoPaterno ?? '') . ' ' .
+                                            ($rep->borrower->apellidoMaterno ?? '') . ' ' .
+                                            ($rep->borrower->nombres ?? '')
+                                        ),
                     'borrower_ci'         => $rep->borrower->cedula_identidad ?? '—',
                     'tipo_reposicion'     => $rep->tipo_reposicion,       // null = sin acuerdo definido aún
                     'sin_acuerdo'         => is_null($rep->tipo_reposicion), // true = creada automáticamente sin tipo
@@ -103,7 +107,8 @@ class RepositionController extends Controller
                     'fecha_cumplimiento'  => $rep->fecha_cumplimiento?->format('Y-m-d'),
                     'observacion'         => $rep->observacion,
                     'nombre_nuevo_item'   => $nombreNuevoItem,
-                    'registrado_por'      => $rep->user->username ?? '—',
+                    'registrado_por'      => $rep->user->name     ?? '—',
+                    'registrado_username' => $rep->user->username ?? '—',
                     'created_at'          => $rep->created_at->format('Y-m-d'),
                 ];
             })

@@ -59,7 +59,7 @@ class DatabaseSeeder extends Seeder
         // Información en consola
         $this->command->info('Usuarios creados correctamente para la UMSA:');
         $this->command->table(
-            ['Username', 'Nombre Completo', 'Rol'],
+            ['Username', 'name', 'Rol'],
             [
                 ['Darlin', 'Darlin Soliz', 'super-admin'],
                 ['Director Luis Copa', 'Luis Andrés Copa Yujra', 'director'],

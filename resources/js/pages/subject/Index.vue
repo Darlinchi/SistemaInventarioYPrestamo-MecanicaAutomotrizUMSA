@@ -68,7 +68,7 @@ const submitImport = () => {
     });
 };
 
-const columnasEjemplo = ['sigla', 'nombre_materia', 'semestre*', 'estado'];
+const columnasEjemplo = ['sigla', 'nombre_materia', 'semestre*', 'estado', 'pensum'];
 </script>
 
 <template>
@@ -98,10 +98,8 @@ const columnasEjemplo = ['sigla', 'nombre_materia', 'semestre*', 'estado'];
                 <tbody class="divide-y divide-neutral-100 text-sm">
                     <tr v-for="subject in subjects" :key="subject.id" class="hover:bg-neutral-50/50 transition-colors">
 
-                        <td class="p-4 pl-8">
-                            <span class="px-3 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg font-mono font-bold text-xs uppercase">
-                                {{ subject.sigla }}
-                            </span>
+                        <td class="p-4 font-bold text-[#1a3a5a]">
+                            {{ subject.sigla }}
                         </td>
 
                         <td class="p-4 font-bold text-[#1a3a5a]">
@@ -120,33 +118,33 @@ const columnasEjemplo = ['sigla', 'nombre_materia', 'semestre*', 'estado'];
                         </td>
 
                         <td class="p-4">
-                <span :class="[
-                    'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border',
-                    subject.activo
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                        : 'bg-red-50 text-red-700 border-red-100'
-                ]">
-                    <Check v-if="subject.activo" class="w-3 h-3"/>
-                    <X v-else class="w-3 h-3"/>
-                    {{ subject.activo ? 'Activo' : 'Inactivo' }}
-                </span>
-            </td>
+                            <span :class="[
+                                'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border',
+                                subject.activo
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                                    : 'bg-red-50 text-red-700 border-red-100'
+                            ]">
+                                <Check v-if="subject.activo" class="w-3 h-3"/>
+                                <X v-else class="w-3 h-3"/>
+                                {{ subject.activo ? 'Activo' : 'Inactivo' }}
+                            </span>
+                        </td>
 
-            <td class="p-4">
-                <button
-                    @click="toggleSubjectStatus(subject.id)"
-                    :title="subject.activo ? 'Deshabilitar materia' : 'Habilitar materia'"
-                    :class="[
-                        'p-2 rounded-xl border transition-all active:scale-90',
-                        subject.activo
-                            ? 'bg-white border-neutral-200 text-red-500 hover:bg-red-50 hover:border-red-200'
-                            : 'bg-emerald-600 border-emerald-600 text-white hover:bg-emerald-700'
-                    ]"
-                >
-                    <Power v-if="subject.activo" class="w-4 h-4" />
-                    <PowerOff v-else class="w-4 h-4" />
-                </button>
-            </td>
+                        <td class="p-4">
+                            <button
+                                @click="toggleSubjectStatus(subject.id)"
+                                :title="subject.activo ? 'Deshabilitar materia' : 'Habilitar materia'"
+                                :class="[
+                                    'p-2 rounded-xl border transition-all active:scale-90',
+                                    subject.activo
+                                        ? 'bg-white border-neutral-200 text-red-500 hover:bg-red-50 hover:border-red-200'
+                                        : 'bg-emerald-600 border-emerald-600 text-white hover:bg-emerald-700'
+                                ]"
+                            >
+                                <Power v-if="subject.activo" class="w-4 h-4" />
+                                <PowerOff v-else class="w-4 h-4" />
+                            </button>
+                        </td>
                     </tr>
                 </tbody>
             </BaseTable>
