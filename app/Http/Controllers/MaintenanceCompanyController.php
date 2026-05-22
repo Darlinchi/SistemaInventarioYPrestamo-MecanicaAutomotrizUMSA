@@ -15,8 +15,18 @@ class MaintenanceCompanyController extends Controller
      */
     public function index()
     {
-        // Cargamos con TODA su información
-        $maintenanceCompanies = MaintenanceCompany::all();
+        // Mapeamos las empresas añadiendo una propiedad calculada 'puede_eliminarse'
+        $maintenanceCompanies = MaintenanceCompany::all()->map(function ($company) {
+            return [
+                'id' => $company->id,
+                'nombre_empresa' => $company->nombre_empresa,
+                'telefono' => $company->telefono,
+                'direccion' => $company->direccion,
+                'descripcion_empresa' => $company->descripcion_empresa,
+                // Si tiene algún mantenimiento, bloqueamos la acción en el frontend
+                'puede_eliminarse' => !$company->maintenances()->exists(),
+            ];
+        });
 
         return Inertia::render('maintenanceCompany/Index', [
             'maintenanceCompanies' => $maintenanceCompanies,
@@ -113,14 +123,26 @@ class MaintenanceCompanyController extends Controller
      */
     public function destroy(MaintenanceCompany $maintenanceCompany)
     {
-        // pensar si deberiamos poner el eliminar talvez si
         try {
+            // Verificamos si la empresa está vinculada a mantenimientos 'En Proceso' o 'Completado'
+            $tieneMantenimientos = $maintenanceCompany->maintenances()
+                ->whereIn('estado_mantenimiento', ['En Proceso', 'Completado'])
+                ->exists();
+
+            if ($tieneMantenimientos) {
+                return back()->withErrors([
+                    'error' => 'No se puede eliminar la empresa "' . $maintenanceCompany->nombre_empresa . '" porque tiene historiales de mantenimiento activos o completados asignados en el taller.'
+                ]);
+            }
+
+            // Si pasa la validación, se elimina de forma segura
             $maintenanceCompany->delete();
+
             return Redirect::route('maintenanceCompanies.index')
-                ->with('success', 'Eliminado correctamente');
+                ->with('success', 'Empresa eliminada correctamente.');
+
         } catch (\Exception $e) {
-            // Esto te dirá si hay un error de base de datos (como llaves foráneas)
-            return back()->withErrors(['error' => 'No se puede eliminar: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'No se pudo realizar la acción: ' . $e->getMessage()]);
         }
     }
 }

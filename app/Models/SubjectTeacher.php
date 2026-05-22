@@ -19,4 +19,14 @@ class SubjectTeacher extends Model
     {
         return $this->belongsTo(Teacher::class, 'teacher_id', 'id_teacher');
     }
+
+    public function assistants()
+    {
+        return $this->belongsToMany(
+            \App\Models\Assistant::class,
+            'assistant_subject',
+            'subject_teacher_id',
+            'assistant_id'
+        );
+    }
 }

@@ -19,7 +19,7 @@ import MaintenanceTable from '@/components/MaintenanceTable.vue';
 import MaintenanceActiveCard from '@/components/MaintenanceActiveCard.vue';
 import FinishMaintenanceModal from '@/components/FinishMaintenanceModal.vue';
 import MaintenanceDetailModal from '@/components/MaintenanceDetailModal.vue';
-import { Package } from 'lucide-vue-next';
+import { Package, FileText } from 'lucide-vue-next';
 
 interface Maintenance {
     id: number;
@@ -41,6 +41,7 @@ interface Maintenance {
 
 const props = defineProps<{
     maintenances: Array<any>; // Recibidos del controlador
+    auth_user: { id: number; name: string; username: string };
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -318,6 +319,7 @@ const handleGenerateReport = (id: number) => {
             :show="isReturnModalOpen"
             :maint="selectedMaint"
             :form="returnForm"
+            :auth-user="auth_user"
             @close="isReturnModalOpen = false"
             @confirm="processReturn"
         />

@@ -5,7 +5,7 @@ import { router } from '@inertiajs/vue3';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { BookOpen, FileSpreadsheet, Upload, CheckCircle2, AlertCircle, TriangleAlert, Hash, Calendar,
-    Power, PowerOff, Check, X
+    Power, PowerOff, Check, X, Loader2
  } from 'lucide-vue-next';
 import AlertNotification from '@/components/AlertNotification.vue';
 import PageHeader from '@/components/PageHeader.vue';
@@ -193,10 +193,30 @@ const columnasEjemplo = ['sigla', 'nombre_materia', 'semestre*', 'estado', 'pens
                         </div>
                     </div>
 
-                    <div class="px-6 py-4 bg-neutral-50 border-t border-neutral-100 flex gap-3">
-                        <button @click="cerrarImport" class="px-5 py-2.5 bg-white border border-neutral-200 text-neutral-600 rounded-xl text-xs font-bold">Cancelar</button>
-                        <button @click="submitImport" :disabled="!importForm.archivo || importForm.processing" class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#1a3a5a] text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-md">
-                            {{ importForm.processing ? 'Importando...' : 'Subir Catálogo' }}
+                    <div class="px-6 py-4 grid grid-cols-1 md:grid-cols-2 gap-4 w-full pt-4">
+                        <button
+                            type="button"
+                            @click="cerrarImport"
+                            class="flex items-center justify-center h-14 bg-white border border-neutral-200 text-neutral-500 rounded-2xl font-semibold text-[18px] hover:bg-neutral-100 transition-all active:scale-95 shadow-sm"
+                        >
+                            Cancelar
+                        </button>
+
+                        <button
+                            type="submit"
+                            @click="submitImport"
+                            :disabled="!importForm.archivo || importForm.processing"
+                            class="flex items-center justify-center h-14 bg-[#1a3a5a] text-white rounded-2xl font-semibold text-[18px] shadow-lg shadow-blue-900/20 hover:bg-[#122a42] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none w-full"
+                        >
+                            <template v-if="importForm.processing">
+                                <Loader2 class="w-5 h-5 animate-spin mr-2" />
+                                Importando...
+                            </template>
+
+                            <template v-else>
+                                <Upload class="w-5 h-5 mr-2" />
+                                Importar
+                            </template>
                         </button>
                     </div>
                 </div>

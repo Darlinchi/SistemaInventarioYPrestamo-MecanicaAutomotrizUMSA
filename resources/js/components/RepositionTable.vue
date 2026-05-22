@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import StatusBadge from '@/components/shared/StatusBadge.vue';
-import { CheckCircle, XCircle, Clock, Wrench, RefreshCw, DollarSign, Package2 } from 'lucide-vue-next';
+import { CheckCircle, XCircle, Clock, Wrench, RefreshCw, DollarSign, RefreshCcw } from 'lucide-vue-next';
 
 interface Reposition {
     id: number;
@@ -55,7 +55,7 @@ const estaVencida = (rep: Reposition): boolean => {
         <!-- Vacío -->
         <div v-if="!repositions.length"
             class="text-center py-16 bg-neutral-50 rounded-3xl border-2 border-dashed border-neutral-200">
-            <Package2 class="w-10 h-10 mx-auto text-neutral-300 mb-3" />
+            <RefreshCcw class="w-10 h-10 mx-auto text-neutral-300 mb-3" />
             <p class="text-neutral-500 font-medium text-sm">No hay acuerdos de reposición registrados.</p>
         </div>
 

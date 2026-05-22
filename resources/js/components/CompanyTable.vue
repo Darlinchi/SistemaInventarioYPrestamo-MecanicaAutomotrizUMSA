@@ -31,20 +31,20 @@ const emit = defineEmits(['delete']);
 
                 <td class="p-4">
                     <div class="flex items-center gap-2 text-neutral-700">
-                        <Phone class="w-3.5 h-3.5 text-neutral-400" />
+                        <Phone class="w-3.5 h-3.5 text-[#1a3a5a]" />
                         <span class="font-medium">{{ company.telefono || 'Sin teléfono' }}</span>
                     </div>
                 </td>
 
                 <td class="p-4">
                     <div class="flex items-start gap-2 max-w-xs text-neutral-600">
-                        <MapPin class="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />
+                        <MapPin class="w-3.5 h-3.5 text-[#1a3a5a] shrink-0 mt-0.5" />
                         <span class="leading-tight">{{ company.direccion }}</span>
                     </div>
                 </td>
 
                 <td class="p-4">
-                    <div class="flex items-center gap-2 text-neutral-500 italic">
+                    <div class="flex items-center gap-2 text-[#1a3a5a] italic">
                         <AlignLeft class="w-3.5 h-3.5 shrink-0" />
                         <p class="max-w-[250px] truncate text-xs" :title="company.descripcion_empresa">
                             {{ company.descripcion_empresa || 'Sin descripción' }}
@@ -65,8 +65,9 @@ const emit = defineEmits(['delete']);
                         <TableAction
                             :icon="Trash"
                             variant="delete"
-                            title="Eliminar empresa"
-                            @click="$emit('delete', company.id)"
+                            :title="company.puede_eliminarse ? 'Eliminar empresa' : 'No se puede eliminar: tiene mantenimientos asociados'"
+                            :class="!company.puede_eliminarse ? 'opacity-30 cursor-not-allowed pointer-events-none' : ''"
+                            @click="company.puede_eliminarse ? $emit('delete', company.id) : null"
                         />
                     </div>
                 </td>

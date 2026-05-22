@@ -126,15 +126,15 @@ class BorrowerController extends Controller
     }
 
     public function toggleStatus(Borrower $borrower)
-{
-    $nuevoEstado = !$borrower->activo; // ← guarda el valor nuevo ANTES del update
-    $borrower->update(['activo' => $nuevoEstado]);
+    {
+        $nuevoEstado = !$borrower->activo; // ← guarda el valor nuevo ANTES del update
+        $borrower->update(['activo' => $nuevoEstado]);
 
-    $estado = $nuevoEstado ? 'habilitado' : 'deshabilitado';
+        $estado = $nuevoEstado ? 'habilitado' : 'deshabilitado';
 
-    return redirect()->route('borrowers.index')
-        ->with('success', "{$borrower->nombres} {$borrower->apellidoPaterno} ha sido {$estado}.");
-}
+        return redirect()->route('borrowers.index')
+            ->with('success', "{$borrower->nombres} {$borrower->apellidoPaterno} ha sido {$estado}.");
+    }
 
     public function edit(Borrower $borrower)
     {

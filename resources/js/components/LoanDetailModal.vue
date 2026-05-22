@@ -22,6 +22,21 @@ const tipoPrestatario = (loan: any): string => {
     if (loan?.borrower?.assistant) return 'AUXILIAR';
     return 'ESTUDIANTE';
 };
+
+const formatHora = (hora: string | null | undefined): string => {
+    if (!hora) return '---';
+    return hora.substring(0, 5);
+};
+
+const formatFecha = (fecha: string | null | undefined): string => {
+    if (!fecha) return '---';
+    const d = new Date(fecha + 'T00:00:00');
+    return d.toLocaleDateString('es-BO', {
+        day:   '2-digit',
+        month: 'short',
+        year:  'numeric'
+    });
+};
 </script>
 
 <template>
@@ -113,7 +128,7 @@ const tipoPrestatario = (loan: any): string => {
                             <BookMarked class="w-4 h-4" /> Materia Asignada
                         </p>
                         <p class="text-base font-bold text-neutral-900 leading-tight">{{ loan?.subject?.nombre_materia }}</p>
-                        <p class="text-[15px] text-[#1a3a5a] font-mono tracking-tighter">{{ loan?.subject?.sigla }}</p>
+                        <p class="text-[15px] text-[#1a3a5a] font-black tracking-witer">{{ loan?.subject?.sigla }}</p>
                     </div>
                 </div>
 
@@ -155,7 +170,7 @@ const tipoPrestatario = (loan: any): string => {
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-blue-700 uppercase tracking-widest leading-none mb-1">Fecha</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ loan?.fecha_salida ?? '—' }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatFecha(loan?.fecha_salida) ?? 'Sin Fecha' }}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
@@ -164,7 +179,7 @@ const tipoPrestatario = (loan: any): string => {
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-blue-700 uppercase tracking-widest leading-none mb-1">Hora inicio</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ loan?.hora_inicio ?? '—' }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatHora(loan?.hora_inicio) ?? 'Sin Hora' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -178,7 +193,7 @@ const tipoPrestatario = (loan: any): string => {
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-orange-700 uppercase tracking-widest leading-none mb-1">Fecha límite</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ loan?.fecha_retorno_prevista ?? '—' }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatFecha(loan?.fecha_retorno_prevista) ?? 'Sin Fecha' }}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
@@ -187,7 +202,7 @@ const tipoPrestatario = (loan: any): string => {
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-orange-700 uppercase tracking-widest leading-none mb-1">Hora fin</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ loan?.hora_fin_prevista ?? '—' }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatHora(loan?.hora_fin_prevista) ?? 'Sin Hora' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -201,7 +216,7 @@ const tipoPrestatario = (loan: any): string => {
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-green-600 uppercase tracking-widest leading-none mb-1">Fecha retorno</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ loan?.fecha_retorno ?? '—' }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatFecha(loan?.fecha_retorno) ?? 'Sin Fecha' }}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
@@ -210,7 +225,7 @@ const tipoPrestatario = (loan: any): string => {
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-green-600 uppercase tracking-widest leading-none mb-1">Hora entrada</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ loan?.hora_fin ?? '—' }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatHora(loan?.hora_fin )?? 'Sin Hora' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -250,9 +265,6 @@ const tipoPrestatario = (loan: any): string => {
                                             : 'bg-blue-50 text-blue-700 border-blue-100'
                                     ]">
                                         {{ item.es_equipo ? 'EQUIPO' : 'HERRAMIENTA' }}
-                                    </span>
-                                    <span v-if="item.codigo_qr" class="text-[12px] font-mono text-blue-400">
-                                        #{{ item.codigo_qr }}
                                     </span>
                                 </div>
                             </div>

@@ -44,6 +44,16 @@ const colorTipoOrigen = (tipo: string) => {
 const estaVencida = (rep: any) =>
     rep?.estado === 'Pendiente' && !!rep?.fecha_limite &&
     new Date(rep.fecha_limite) < new Date();
+
+const formatFecha = (fecha: string | null | undefined): string => {
+    if (!fecha) return '---';
+    const d = new Date(fecha + 'T00:00:00');
+    return d.toLocaleDateString('es-BO', {
+        day:   '2-digit',
+        month: 'short',
+        year:  'numeric'
+    });
+};
 </script>
 
 <template>
@@ -63,7 +73,7 @@ const estaVencida = (rep: any) =>
                             Detalle de Reposición
                         </h2>
                         <p class="text-neutral-500 text-sm font-medium mt-1">
-                            Registrado el {{ rep.created_at }} · por {{ rep.registrado_por }}
+                            Registrado el por: {{ rep.registrado_por }}
                             <span class="text-neutral-400">({{ rep.registrado_username }})</span>
                         </p>
                     </div>
@@ -183,7 +193,7 @@ const estaVencida = (rep: any) =>
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-blue-700 uppercase tracking-widest leading-none mb-1">Fecha</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ rep.created_at }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatFecha(rep.created_at) }}</p>
                                 </div>
                             </div>
                         </div>
@@ -196,7 +206,7 @@ const estaVencida = (rep: any) =>
                                 <div>
                                     <p class="text-[11px] font-black text-orange-700 uppercase tracking-widest leading-none mb-1">Fecha límite</p>
                                     <p :class="['text-sm font-bold', estaVencida(rep) ? 'text-red-600' : 'text-neutral-800']">
-                                        {{ rep.fecha_limite ?? 'Sin límite' }}
+                                        {{ formatFecha(rep.fecha_limite )?? 'Sin límite' }}
                                     </p>
                                 </div>
                             </div>
@@ -209,7 +219,7 @@ const estaVencida = (rep: any) =>
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-green-600 uppercase tracking-widest leading-none mb-1">Fecha resolución</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ rep.fecha_cumplimiento ?? '—' }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatFecha(rep.fecha_cumplimiento) ?? '—' }}</p>
                                 </div>
                             </div>
                         </div>

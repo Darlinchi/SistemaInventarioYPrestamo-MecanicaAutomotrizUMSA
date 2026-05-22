@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\EquipmentController;
@@ -40,12 +41,21 @@ Route::middleware(['auth', 'verified'])
     // SOLO super-admin: gestión de usuarios del sistema
     Route::middleware(['role:super-admin'])->group(function () {
         Route::get('/usuarios', fn() => Inertia::render('users/Index'))->name('users.index');
+
+        // Gestión de roles y permisos — solo super-admin
+
     });
 
     // Todos los roles autenticados acceden al grupo
-    Route::middleware(['role:super-admin|director|encargado'])->group(function () {
+    //Route::middleware(['role:super-admin|director|encargado'])->group(function () {
+    Route::middleware(['auth', 'verified'])->group(function () {
 
-        Route::middleware(['role:super-admin|director'])->group(function () {
+        Route::get('/roles',          [RoleController::class, 'index'])->name('roles.index');
+        Route::post('/roles',         [RoleController::class, 'store'])->name('roles.store');
+        Route::put('/roles/{role}',   [RoleController::class, 'update'])->name('roles.update');
+        Route::delete('/roles/{role}',[RoleController::class, 'destroy'])->name('roles.destroy');
+
+        //Route::middleware(['role:super-admin|director'])->group(function () {
 
             Route::get('/usuarios',                              [UserController::class, 'index'])->name('users.index');
             Route::get('/usuarios/create',                       [UserController::class, 'create'])->name('users.create');
@@ -60,7 +70,7 @@ Route::middleware(['auth', 'verified'])
 
             // Cambiar contraseña desde Edit (nueva ruta)
             Route::patch('/usuarios/{user}/password',            [UserController::class, 'changePassword'])->name('users.password');
-        });
+        //});
 
         // Items
         Route::get('items/{id}/pdf', [ItemController::class, 'generateFicha'])->name('items.pdf');

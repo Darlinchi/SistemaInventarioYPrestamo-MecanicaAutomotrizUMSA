@@ -9,6 +9,7 @@ use App\Models\ReturnDetailAccessory;
 use App\Models\Reposition;
 use App\Models\Equipment;
 use App\Models\Tool;
+use App\Models\SubjectTeacher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
@@ -21,7 +22,7 @@ class LoanReturnController extends Controller
         $loans = Loan::with([
                 'user',
                 'borrower.teacher',
-                'borrower.assistant.teachers.borrower',
+                'borrower.assistant',              // ← sin .teachers que no existe
                 'subject',
                 'authorization',
                 'loanReturns.user',
@@ -33,14 +34,25 @@ class LoanReturnController extends Controller
             ->get();
 
         $result = $loans->map(function ($loan) {
+
+            // ── Docente asignado al auxiliar ──────────────────────────
             $docenteNombre = null;
             if ($loan->borrower->assistant) {
-                $docenteAsignado = $loan->borrower->assistant->teachers()
-                    ->where('subject_id', $loan->subject_id)
+                // Buscar via subject_teacher → assistant_subject
+                $subjectTeacher = SubjectTeacher::where('subject_id', $loan->subject_id)
+                    ->whereHas('assistants', function ($q) use ($loan) {
+                        $q->where('assistant_id', $loan->borrower->assistant->id_assistant);
+                    })
+                    ->with('teacher.borrower')
                     ->first();
-                if ($docenteAsignado && $docenteAsignado->borrower) {
-                    $docenteNombre = ($docenteAsignado->borrower->nombres ?? $docenteAsignado->borrower->nombresP) . ' ' .
-                                    ($docenteAsignado->borrower->apellidos ?? $docenteAsignado->borrower->apellidosP);
+
+                if ($subjectTeacher && $subjectTeacher->teacher?->borrower) {
+                    $b = $subjectTeacher->teacher->borrower;
+                    $docenteNombre = trim(
+                        ($b->apellidoPaterno ?? '') . ' ' .
+                        ($b->apellidoMaterno ?? '') . ' ' .
+                        ($b->nombres ?? '')
+                    );
                 }
             }
 
@@ -55,7 +67,7 @@ class LoanReturnController extends Controller
                         $accessories = $detail->returnDetailAccessories
                             ->map(fn($rda) => [
                                 'id'                         => $rda->accessory_id,
-                                'return_detail_accessory_id' => $rda->id,              // ← para CreateRepositionModal
+                                'return_detail_accessory_id' => $rda->id,
                                 'nombre_accesorio'           => $rda->accessory->nombre_accesorio ?? '—',
                                 'foto_accesorio'             => $rda->accessory->foto_accesorio ?? null,
                                 'estado_accesorio'           => $rda->estado_accesorio,
@@ -63,7 +75,7 @@ class LoanReturnController extends Controller
 
                         return [
                             'id'                => $model->id,
-                            'return_detail_id'  => $detail->id,                        // ← para CreateRepositionModal
+                            'return_detail_id'  => $detail->id,
                             'nombre_mostrar'    => $esEquipo ? $model->nombre_equipo : $model->nombre_herramienta,
                             'codigo_qr'         => $model->codigo_qr ?? null,
                             'foto'              => $esEquipo ? ($model->foto_equipo ?? null) : ($model->foto_herramienta ?? null),
@@ -82,23 +94,23 @@ class LoanReturnController extends Controller
             }
 
             return [
-                'id'                    => $loan->id,
-                'fecha_salida'          => $loan->fecha_salida,
-                'fecha_retorno'         => $fechaRetorno,
-                'fecha_retorno_prevista'=> $loan->fecha_retorno_prevista,
-                'estado_prestamo'       => $loan->estado_prestamo,
-                'hora_inicio'           => $loan->hora_inicio,
-                'hora_fin'              => $horaFin,
-                'hora_fin_prevista'     => $loan->hora_fin_prevista,
-                'observacion'           => $observacion,
-                'borrower'              => $loan->borrower,
-                'user'                  => $loan->user,
-                'return_user' => $loan->loanReturns?->user,
-                'docente_asignado'      => $docenteNombre,
-                'archivo_autorizacion'  => $loan->authorization?->archivo_nota,
-                'motivo_autorizacion'   => $loan->authorization?->motivo,
-                'subject'               => $loan->subject,
-                'all_items'             => $allItems,
+                'id'                     => $loan->id,
+                'fecha_salida'           => $loan->fecha_salida,
+                'fecha_retorno'          => $fechaRetorno,
+                'fecha_retorno_prevista' => $loan->fecha_retorno_prevista,
+                'estado_prestamo'        => $loan->estado_prestamo,
+                'hora_inicio'            => $loan->hora_inicio,
+                'hora_fin'               => $horaFin,
+                'hora_fin_prevista'      => $loan->hora_fin_prevista,
+                'observacion'            => $observacion,
+                'borrower'               => $loan->borrower,
+                'user'                   => $loan->user,
+                'return_user'            => $loan->loanReturns?->user,
+                'docente_asignado'       => $docenteNombre,
+                'archivo_autorizacion'   => $loan->authorization?->archivo_nota,
+                'motivo_autorizacion'    => $loan->authorization?->motivo,
+                'subject'                => $loan->subject,
+                'all_items'              => $allItems,
             ];
         });
 
@@ -109,17 +121,7 @@ class LoanReturnController extends Controller
         ]);
     }
 
-    /**
-     * Registra la devolución Y los acuerdos de reposición en una sola transacción.
-     *
-     * El frontend envía:
-     *   - loan_id, items, observacion  (devolución)
-     *   - acuerdos: array de { item_index, acc_index|null, tipo_reposicion,
-     *                           originable_type, fecha_limite, observacion }
-     *     donde item_index referencia la posición en items[].
-     *     Los IDs reales de return_detail / return_detail_accessory se asignan
-     *     aquí tras crearlos, evitando el problema del originable_id=null.
-     */
+    // ── store, create, show, edit, update, destroy — sin cambios ──
     public function store(Request $request)
     {
         $request->validate([
@@ -135,7 +137,6 @@ class LoanReturnController extends Controller
             'acuerdos.*.observacion'     => 'nullable|string|max:500',
         ]);
 
-        // Estados que requieren reposición automática
         $estadosBadItem = ['Dañado', 'Extraviado', 'Baja'];
         $estadosBadAcc  = ['Dañado', 'Extraviado'];
 
@@ -144,13 +145,11 @@ class LoanReturnController extends Controller
 
             $loan = Loan::findOrFail($request->loan_id);
 
-            // Doble verificación: evitar duplicado aunque la validación pase
             if (LoanReturn::where('loan_id', $loan->id)->exists()) {
                 DB::rollBack();
                 return back()->withErrors(['error' => 'Este préstamo ya tiene una devolución registrada.']);
             }
 
-            // 1. Cabecera de la devolución
             $loanReturn = LoanReturn::create([
                 'loan_id'       => $loan->id,
                 'user_id'       => auth()->id(),
@@ -159,17 +158,11 @@ class LoanReturnController extends Controller
                 'observacion'   => $request->observacion,
             ]);
 
-            // Mapas para relacionar índices del frontend con IDs reales de BD
-            // detailsMap[item_index]          = return_detail_id
-            // accMap[item_index][acc_index]   = return_detail_accessory_id
-            // repMap[item_index]              = reposition_id (del ítem)
-            // repAccMap[item_index][acc_index]= reposition_id (del accesorio)
             $detailsMap = [];
             $accMap     = [];
             $repMap     = [];
             $repAccMap  = [];
 
-            // 2. Guardar cada ítem → return_detail + actualizar estado
             foreach ($request->items as $idx => $item) {
                 $detail = ReturnDetail::create([
                     'loan_return_id'    => $loanReturn->id,
@@ -182,7 +175,6 @@ class LoanReturnController extends Controller
                 if ($item['tipo'] === 'equipo') {
                     Equipment::findOrFail($item['id'])->update(['estado_equipo' => $item['estado_devolucion']]);
 
-                    // Accesorios
                     $tieneAccConProblema = false;
                     if (!empty($item['accessories'])) {
                         foreach ($item['accessories'] as $accIdx => $accData) {
@@ -199,7 +191,6 @@ class LoanReturnController extends Controller
                                 ->where('id', $accData['id'])
                                 ->update(['estado_accesorio' => $accData['estado_accesorio'], 'updated_at' => now()]);
 
-                            // ── Reposición automática por accesorio dañado/extraviado ──
                             if (in_array($accData['estado_accesorio'], $estadosBadAcc)) {
                                 $tieneAccConProblema = true;
                                 $rep = Reposition::create([
@@ -207,7 +198,7 @@ class LoanReturnController extends Controller
                                     'originable_type' => ReturnDetailAccessory::class,
                                     'user_id'         => auth()->id(),
                                     'borrower_id'     => $loan->borrower_id,
-                                    'tipo_reposicion' => null,   // sin definir aún
+                                    'tipo_reposicion' => null,
                                     'estado'          => 'Pendiente',
                                 ]);
                                 $repAccMap[$idx][$accIdx] = $rep->id;
@@ -215,8 +206,6 @@ class LoanReturnController extends Controller
                         }
                     }
 
-                    // ── Reposición automática por equipo dañado DIRECTAMENTE ──
-                    // Solo si el estado no fue forzado por un accesorio
                     if (!$tieneAccConProblema && in_array($item['estado_devolucion'], $estadosBadItem)) {
                         $rep = Reposition::create([
                             'originable_id'   => $detail->id,
@@ -232,7 +221,6 @@ class LoanReturnController extends Controller
                 } else {
                     Tool::findOrFail($item['id'])->update(['estado_herramienta' => $item['estado_devolucion']]);
 
-                    // ── Reposición automática por herramienta dañada ──
                     if (in_array($item['estado_devolucion'], $estadosBadItem)) {
                         $rep = Reposition::create([
                             'originable_id'   => $detail->id,
@@ -247,17 +235,13 @@ class LoanReturnController extends Controller
                 }
             }
 
-            // 3. Aplicar acuerdos del encargado (paso 2 del modal) sobre las
-            //    reposiciones ya creadas — actualiza tipo, fecha_limite y observacion.
             foreach ($request->acuerdos ?? [] as $acuerdo) {
                 $itemIdx = $acuerdo['item_index'];
                 $accIdx  = $acuerdo['acc_index'] ?? null;
 
-                if ($acuerdo['originable_type'] === 'return_detail_accessory') {
-                    $repId = $repAccMap[$itemIdx][$accIdx] ?? null;
-                } else {
-                    $repId = $repMap[$itemIdx] ?? null;
-                }
+                $repId = $acuerdo['originable_type'] === 'return_detail_accessory'
+                    ? ($repAccMap[$itemIdx][$accIdx] ?? null)
+                    : ($repMap[$itemIdx] ?? null);
 
                 if (!$repId) continue;
 
@@ -268,7 +252,6 @@ class LoanReturnController extends Controller
                 ]);
             }
 
-            // 4. Marcar préstamo como devuelto
             $loan->update(['estado_prestamo' => 'Devuelto']);
 
             DB::commit();

@@ -76,9 +76,9 @@ function submit() {
 
 </script>
 <template>
-    <Head title="Nueva Herramienta" />
+    <Head title="Registrar Herramienta" />
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="max-w-2xl mx-auto p-4 w-full">
+        <div class="max-w-3xl mx-auto p-4 w-full">
             <!-- Banner de contexto: reposición por reemplazo -->
             <div
                 v-if="esReemplazo"

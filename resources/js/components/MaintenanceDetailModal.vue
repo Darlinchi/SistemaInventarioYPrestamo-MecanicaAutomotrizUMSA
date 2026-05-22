@@ -17,6 +17,20 @@ const imprimirComprobante = () => {
     window.open(url, '_blank');
 };
 
+const formatHora = (hora: string | null | undefined): string => {
+    if (!hora) return '---';
+    return hora.substring(0, 5);
+};
+
+const formatFecha = (fecha: string | null | undefined): string => {
+    if (!fecha) return '---';
+    const d = new Date(fecha + 'T00:00:00');
+    return d.toLocaleDateString('es-BO', {
+        day:   '2-digit',
+        month: 'short',
+        year:  'numeric'
+    });
+};
 </script>
 
 <template>
@@ -71,7 +85,7 @@ const imprimirComprobante = () => {
                             <Wrench class="w-4 h-4" /> Tipo de Trabajo
                         </p>
                         <p class="text-base font-bold text-neutral-900 leading-tight">Mantenimiento {{ maint?.tipo_mantenimiento }}</p>
-                    </div>                    
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-neutral-50 rounded-3xl border border-neutral-200 shadow-sm">
@@ -92,7 +106,7 @@ const imprimirComprobante = () => {
                             <Wrench class="w-4 h-4" /> Próximo Mantenimiento
                         </p>
                         <p class="text-base font-bold text-neutral-900 leading-tight">
-                            {{ maint?.fecha_proximo_mantenimiento }}
+                            {{ formatFecha(maint?.fecha_proximo_mantenimiento)}}
                         </p>
                     </div>
                 </div>
@@ -110,7 +124,7 @@ const imprimirComprobante = () => {
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-blue-700 uppercase tracking-widest leading-none mb-1">Fecha Mantenimiento</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ maint?.fecha_mantenimiento }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatFecha(maint?.fecha_mantenimiento) }}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
@@ -119,7 +133,7 @@ const imprimirComprobante = () => {
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-blue-700 uppercase tracking-widest leading-none mb-1">Hora Inicio</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ maint?.hora_inicio }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatHora(maint?.hora_inicio) }}</p>
                                 </div>
                             </div>
                         </div>
@@ -132,7 +146,7 @@ const imprimirComprobante = () => {
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-orange-700 uppercase tracking-widest leading-none mb-1">Fecha Limite</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ maint?.fecha_retorno_estimado }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatFecha(maint?.fecha_retorno_estimado) }}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
@@ -141,7 +155,7 @@ const imprimirComprobante = () => {
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-orange-700 uppercase tracking-widest leading-none mb-1">Hora Fin</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ maint?.hora_fin_estimado }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatHora(maint?.hora_fin_estimado) }}</p>
                                 </div>
                             </div>
                         </div>
@@ -154,7 +168,7 @@ const imprimirComprobante = () => {
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-green-700 uppercase tracking-widest leading-none mb-1">Fecha Retorno</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ maint?.fecha_retorno }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatFecha(maint?.fecha_retorno) }}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
@@ -163,7 +177,7 @@ const imprimirComprobante = () => {
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-green-700 uppercase tracking-widest leading-none mb-1">Hora Entrada</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ maint?.hora_fin }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatHora(maint?.hora_fin) }}</p>
                                 </div>
                             </div>
                         </div>

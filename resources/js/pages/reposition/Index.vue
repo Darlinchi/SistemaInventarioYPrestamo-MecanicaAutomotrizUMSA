@@ -11,7 +11,7 @@ import ClearFiltersButton from '@/components/shared/ClearFiltersButton.vue';
 import StatusBadge from '@/components/shared/StatusBadge.vue';
 import TabSelector from '@/components/shared/TabSelector.vue';
 import {
-    RefreshCcw, RefreshCw, Wrench, DollarSign, Clock, CheckCircle, XCircle,
+    RefreshCcw, RefreshCw, Wrench, Clock, CheckCircle, XCircle,
     Package2, User, Calendar, CalendarCheck2, AlignLeft, ClipboardList,
     AlertTriangle, UserCheck, Loader2
 } from 'lucide-vue-next';
@@ -208,7 +208,7 @@ const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
                     v-if="repositionsFiltradas.length === 0"
                     class="text-center py-20 bg-neutral-50 rounded-3xl border-2 border-dashed border-neutral-200"
                 >
-                    <Package2 class="w-12 h-12 mx-auto text-neutral-300 mb-4" />
+                    <RefreshCcw class="w-12 h-12 mx-auto text-neutral-300 mb-4" />
                     <p class="text-neutral-500 font-medium text-sm">No hay reposiciones pendientes con esos criterios.</p>
                 </div>
                 <RepositionCard
@@ -228,7 +228,7 @@ const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
                     v-if="repositionsFiltradas.length === 0"
                     class="text-center py-20 bg-neutral-50 rounded-3xl border-2 border-dashed border-neutral-200"
                 >
-                    <Package2 class="w-12 h-12 mx-auto text-neutral-300 mb-4" />
+                    <RefreshCcw class="w-12 h-12 mx-auto text-neutral-300 mb-4" />
                     <p class="text-neutral-500 font-medium text-sm">No hay reposiciones en el historial con esos criterios.</p>
                 </div>
                 <RepositionHistoryTable
@@ -266,9 +266,6 @@ const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
                                 <h2 class="text-[15px] font-black text-neutral-900">
                                     {{ acuerdoForm.estado === 'Cumplida' ? 'Registrar cumplimiento' : 'ACUERDO DE REPOSICIÓN' }}
                                 </h2>
-                                <p v-if="repSeleccionada" class="text-xs text-neutral-400 font-medium mt-0.5">
-                                    {{ repSeleccionada.tipo_origen }} · {{ repSeleccionada.borrower_nombre }}
-                                </p>
                             </div>
                         </div>
                         <button @click="modalAcuerdo = false"
@@ -307,7 +304,7 @@ const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
 
                         <!-- Tipo de acuerdo — mismos botones del ReturnLoanModal -->
                         <div>
-                            <p class="text-[11px] font-black text-neutral-500 uppercase tracking-widest mb-3">Tipo de acuerdo</p>
+                            <p class="text-[11px] font-black text-neutral-600 uppercase tracking-widest mb-3">Tipo de acuerdo</p>
                             <div class="grid grid-cols-3 gap-3">
                                 <button
                                     v-for="tipo in tiposReposicion"
@@ -330,7 +327,7 @@ const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
                         <div v-if="acuerdoForm.tipo_reposicion && acuerdoForm.estado !== 'Cumplida'"
                             class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-[11px] font-black text-neutral-500 uppercase tracking-widest mb-1.5">
+                                <label class="block text-[11px] font-black text-neutral-600 uppercase tracking-widest mb-1.5">
                                     Fecha límite <span class="text-neutral-300 font-normal normal-case">(opcional)</span>
                                 </label>
                                 <input type="date" v-model="acuerdoForm.fecha_limite"
@@ -351,7 +348,7 @@ const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
                         <!-- Fecha cumplimiento + Observación — si es Cumplida -->
                         <div v-if="acuerdoForm.estado === 'Cumplida'" class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-[11px] font-black text-neutral-500 uppercase tracking-widest mb-1.5">
+                                <label class="block text-[11px] font-black text-neutral-600 uppercase tracking-widest mb-1.5">
                                     Fecha de cumplimiento
                                 </label>
                                 <input type="date" v-model="acuerdoForm.fecha_cumplimiento"
@@ -379,26 +376,35 @@ const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
                     </div>
 
                     <!-- Footer — mismo estilo que ReturnLoanModal -->
-                    <div class="px-7 py-4 bg-neutral-50 border-t border-neutral-100 flex gap-3 shrink-0">
+                    <div class="px-7 py-4 grid grid-cols-1 md:grid-cols-2 gap-4 w-full pt-4 shrink-0">
                         <button
+                            type="button"
                             @click="modalAcuerdo = false"
-                            class="py-3 px-5 bg-white border border-neutral-200 text-neutral-600 rounded-2xl font-bold text-sm hover:bg-neutral-100 transition-all"
+                            class="flex items-center justify-center h-14 bg-white border border-neutral-200 text-neutral-500 rounded-2xl font-semibold text-[18px] hover:bg-neutral-100 transition-all active:scale-95 shadow-sm"
                         >
                             Cancelar
                         </button>
+
                         <button
+                            type="button"
                             @click="guardarAcuerdo"
                             :disabled="acuerdoForm.processing || !acuerdoForm.tipo_reposicion"
                             :class="[
-                                'flex-1 py-3 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed',
+                                'flex items-center justify-center h-14 rounded-2xl font-semibold text-[18px] shadow-lg active:scale-95 transition-all w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none',
                                 acuerdoForm.estado === 'Cumplida'
-                                    ? 'bg-green-600 text-white hover:bg-green-700'
-                                    : 'bg-amber-500 text-white hover:bg-amber-600'
+                                    ? 'bg-green-600 text-white hover:bg-green-700 shadow-green-900/10'
+                                    : 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-900/10'
                             ]"
                         >
-                            <Loader2 v-if="acuerdoForm.processing" class="animate-spin w-4 h-4"/>
-                            <CheckCircle v-else class="w-4 h-4"/>
-                            {{ acuerdoForm.estado === 'Cumplida' ? 'Marcar Cumplida' : 'Guardar acuerdo' }}
+                            <template v-if="acuerdoForm.processing">
+                                <Loader2 class="w-5 h-5 animate-spin mr-2" />
+                                Procesando...
+                            </template>
+
+                            <template v-else>
+                                <CheckCircle class="w-5 h-5 mr-2"/>
+                                {{ acuerdoForm.estado === 'Cumplida' ? 'Marcar Cumplida' : 'Guardar acuerdo' }}
+                            </template>
                         </button>
                     </div>
                 </div>

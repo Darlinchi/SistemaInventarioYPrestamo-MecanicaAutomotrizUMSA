@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {
     Calendar, CalendarCheck2, Clock, ClockAlert, User,
-    BookMarked, List, Edit, CheckCircle, Package, UserCog
+    BookMarked, List, Edit, CheckCircle, Package, UserCog, AlertTriangle
 } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
 
@@ -29,19 +29,34 @@ const formatFecha = (fecha: string | null | undefined): string => {
         year:  'numeric'
     });
 };
+
+const estaVencido = (loan: any): boolean => {
+    if (!loan.fecha_retorno_prevista || !loan.hora_fin_prevista) return false;
+    const limite = new Date(`${loan.fecha_retorno_prevista}T${loan.hora_fin_prevista}`);
+    return new Date() > limite;
+};
 </script>
 
 <template>
-    <div
-        :class="[
-            'group border border-blue-100 bg-blue-50/50 rounded-4xl p-6 flex flex-col md:flex-row justify-between items-center transition-all duration-300 shadow-sm hover:shadow-xl hover:border-blue-300 hover:-translate-y-1 mb-6 relative',
-            isOpen ? 'z-60' : 'z-10'
-        ]"
-    >
+    <div :class="[
+        'group border rounded-4xl p-6 flex flex-col md:flex-row justify-between items-center transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 mb-6 relative',
+        estaVencido(loan)
+            ? 'border-red-300 bg-red-50/60 hover:border-red-400'
+            : 'border-blue-100 bg-blue-50/50 hover:border-blue-300',
+        isOpen ? 'z-60' : 'z-10'
+    ]">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-12 w-full">
 
             <!-- Columna 1: Fechas y horas -->
             <div class="flex flex-col justify-center space-y-4">
+                <div v-if="estaVencido(loan)"
+                    class="col-span-full flex items-center gap-2 px-4 py-2 bg-red-100 border border-red-300 rounded-2xl mb-2">
+                    <AlertTriangle class="w-4 h-4 text-red-600 shrink-0"/>
+                    <span class="text-[12px] font-black text-red-700 uppercase tracking-widest">
+                        Préstamo Vencido
+                    </span>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1">
                         <p class="flex items-center gap-2 text-[13px] font-black text-blue-700 uppercase tracking-widest leading-none">
@@ -50,10 +65,13 @@ const formatFecha = (fecha: string | null | undefined): string => {
                         <p class="text-sm font-bold text-neutral-800">{{ formatFecha(loan.fecha_salida) }}</p>
                     </div>
                     <div class="space-y-1">
-                        <p class="flex items-center gap-2 text-[13px] font-black text-orange-700 uppercase tracking-widest leading-none">
+                        <p :class="['flex items-center gap-2 text-[13px] font-black uppercase tracking-widest leading-none',
+                            estaVencido(loan) ? 'text-red-600' : 'text-orange-700']">
                             <CalendarCheck2 class="w-4 h-4" /> F. Límite
                         </p>
-                        <p class="text-sm font-bold text-neutral-800">{{ formatFecha(loan.fecha_retorno_prevista) }}</p>
+                        <p :class="['text-sm font-bold', estaVencido(loan) ? 'text-red-700' : 'text-neutral-800']">
+                            {{ formatFecha(loan.fecha_retorno_prevista) }}
+                        </p>
                     </div>
                 </div>
 
@@ -65,10 +83,13 @@ const formatFecha = (fecha: string | null | undefined): string => {
                         <p class="text-sm font-bold text-neutral-800">{{ formatHora(loan.hora_inicio) }}</p>
                     </div>
                     <div class="space-y-1">
-                        <p class="flex items-center gap-2 text-[13px] font-black text-orange-700 uppercase tracking-widest leading-none">
+                        <p :class="['flex items-center gap-2 text-[13px] font-black uppercase tracking-widest leading-none',
+                            estaVencido(loan) ? 'text-red-600' : 'text-orange-700']">
                             <ClockAlert class="w-4 h-4" /> H. Fin
                         </p>
-                        <p class="text-sm font-bold text-neutral-800">{{ formatHora(loan.hora_fin_prevista) }}</p>
+                        <p :class="['text-sm font-bold', estaVencido(loan) ? 'text-red-700' : 'text-neutral-800']">
+                            {{ formatHora(loan.hora_fin_prevista) }}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -170,9 +191,14 @@ const formatFecha = (fecha: string | null | undefined): string => {
             <button
                 v-if="canReturn"
                 @click="$emit('return', loan)"
-                class="flex-1 flex items-center justify-center gap-2 bg-[#1a3a5a] border border-[#1a3a5a] px-5 py-2.5 rounded-xl text-xs font-black text-white hover:bg-[#122a42] transition shadow-md uppercase tracking-wider active:scale-95"
+                :class="estaVencido(loan)
+                    ? 'bg-red-600 border-red-600 hover:bg-red-700'
+                    : 'bg-[#1a3a5a] border-[#1a3a5a] hover:bg-[#122a42]'"
+                class="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black text-white transition shadow-md uppercase tracking-wider active:scale-95"
             >
-                <CheckCircle class="w-3.5 h-3.5" /> Devolver
+                <AlertTriangle v-if="estaVencido(loan)" class="w-5 h-5" />
+                <CheckCircle v-else class="w-3.5 h-3.5" />
+                {{ estaVencido(loan) ? '¡Vencido! Devolver' : 'Devolver' }}
             </button>
         </div>
     </div>

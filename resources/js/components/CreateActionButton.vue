@@ -3,7 +3,7 @@ import { Link } from '@inertiajs/vue3';
 import { Plus } from 'lucide-vue-next';
 
 defineProps<{
-    href: string;
+    href?: string;
     label: string;
 }>();
 </script>

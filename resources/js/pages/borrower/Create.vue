@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import InputError from '@/components/InputError.vue';
@@ -17,6 +18,11 @@ const props = defineProps<{
     subjects: any[];
     subjectTeachers: any[];
 }>();
+
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Responsables', href: borrowerRoutes.index.url() },
+    { title: 'Registrar Responsable', href: borrowerRoutes.create.url() },
+];
 
 const tipoResponsable = ref<'docente' | 'auxiliar'>('docente');
 
@@ -54,9 +60,9 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Nuevo Responsable" />
-    <AppLayout>
-        <div class="max-w-2xl mx-auto p-4 w-full">
+    <Head title="Registrar Responsable" />
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <div class="max-w-3xl mx-auto p-4 w-full">
 
             <!-- Volver -->
             <div class="mb-6">

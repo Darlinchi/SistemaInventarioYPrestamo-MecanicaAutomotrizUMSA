@@ -87,6 +87,18 @@ class RoleSeeder extends Seeder
             'empresas_mant.editar',
             'empresas_mant.eliminar',
 
+            // Reposiciones
+            'reposiciones.ver',
+            'reposiciones.crear',
+            'reposiciones.editar',
+            'reposiciones.eliminar',
+
+            // Roles
+            'roles.ver',
+            'roles.crear',
+            'roles.editar',
+            'roles.eliminar',
+
             // Reportes
             'reportes.ver',
             'reportes.exportar',
@@ -117,6 +129,9 @@ class RoleSeeder extends Seeder
             'usuarios.editar',
             'usuarios.eliminar',
             'roles.gestionar',
+
+            'reposiciones.ver',
+            'roles.ver',
 
             // Inventario: solo lectura
             'herramientas.ver',
@@ -196,6 +211,11 @@ class RoleSeeder extends Seeder
             'empresas_mant.crear',
             'empresas_mant.editar',
             'empresas_mant.eliminar',
+
+            // encargado — agrega:
+            'reposiciones.ver',
+            'reposiciones.crear',
+            'reposiciones.editar',
 
             // Reportes
             'reportes.ver',

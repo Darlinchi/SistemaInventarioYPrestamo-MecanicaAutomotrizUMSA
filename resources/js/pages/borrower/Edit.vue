@@ -85,7 +85,7 @@ const removeMateria = (id: number) => {
 </script>
 
 <template>
-    <Head :title="'Editar — ' + borrower.nombres" />
+    <Head :title="'Editar ' + borrower.nombres" />
     <AppLayout>
         <div class="max-w-5xl mx-auto p-4 w-full">
 

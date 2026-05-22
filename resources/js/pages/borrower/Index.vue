@@ -6,7 +6,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import {
     List, UserCog, UserCheck, FileSpreadsheet, Upload, X, SquarePen,
     CheckCircle2, AlertCircle, TriangleAlert, Plus, GraduationCap, Phone,
-    CalendarCheck, Power, PowerOff, Check,
+    CalendarCheck, Power, PowerOff, Check, Loader2,
     CalendarX
 } from 'lucide-vue-next';
 import PageHeader from '@/components/PageHeader.vue';
@@ -137,8 +137,8 @@ const submitImport = () => {
 // Columnas según tipo
 const columnasEjemplo = computed(() =>
     tipoImport.value === 'docente'
-        ? ['cedula_identidad', 'celular', 'titulo', 'nombres', 'apellido_paterno', 'apellido_materno', 'materia_sigla', 'paralelo']
-        : ['cedula_identidad', 'celular', 'nombres', 'apellido_paterno', 'apellido_materno', 'registro_universitario', 'fecha_inicio*', 'fecha_fin*']
+        ? ['cedula_identidad','nombres', 'apellido_paterno', 'apellido_materno', 'celular', 'titulo',  'categoria', 'materia_sigla', 'paralelo']
+        : ['cedula_identidad', 'celular', 'nombres', 'apellido_paterno', 'apellido_materno', 'categoria', 'materia_sigla', 'docente_ci', 'fecha_inicio*', 'fecha_fin*']
 );
 
 const formatDate = (dateString: string | null) => {
@@ -414,27 +414,35 @@ const toggleBorrowerStatus = (id: number) => {
                         </div>
                     </div>
 
-                    <!-- Footer -->
-                    <div class="px-6 py-4 bg-neutral-50 border-t border-neutral-100 flex gap-3">
+                    <div class="px-6 py-4 grid grid-cols-1 md:grid-cols-2 gap-4 w-full pt-4">
                         <button
+                            type="button"
                             @click="cerrarImport"
-                            class="px-5 py-2.5 bg-white border border-neutral-200 text-neutral-600 rounded-xl text-xs font-bold hover:bg-neutral-100 transition"
+                            class="flex items-center justify-center h-14 bg-white border border-neutral-200 text-neutral-500 rounded-2xl font-semibold text-[18px] hover:bg-neutral-100 transition-all active:scale-95 shadow-sm"
                         >
                             Cancelar
                         </button>
+
                         <button
+                            type="submit"
                             @click="submitImport"
                             :disabled="!importForm.archivo || importForm.processing"
                             :class="[
-                                'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md',
+                                'flex items-center justify-center h-14 text-white rounded-2xl font-semibold text-[18px] shadow-lg active:scale-95 transition-all w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none',
                                 tipoImport === 'docente'
-                                    ? 'bg-[#1a3a5a] hover:bg-[#122a42]'
-                                    : 'bg-emerald-600 hover:bg-emerald-700'
+                                    ? 'bg-[#1a3a5a] shadow-blue-900/20 hover:bg-[#122a42]'
+                                    : 'bg-emerald-600 shadow-emerald-900/20 hover:bg-emerald-700'
                             ]"
                         >
-                            <span v-if="importForm.processing" class="animate-spin">⏳</span>
-                            <Upload v-else class="w-4 h-4"/>
-                            {{ importForm.processing ? 'Importando...' : 'Importar ahora' }}
+                            <template v-if="importForm.processing">
+                                <Loader2 class="w-5 h-5 animate-spin mr-2" />
+                                Importando...
+                            </template>
+
+                            <template v-else>
+                                <Upload class="w-5 h-5 mr-2" />
+                                Importar
+                            </template>
                         </button>
                     </div>
                 </div>

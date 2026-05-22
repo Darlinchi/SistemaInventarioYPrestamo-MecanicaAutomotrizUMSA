@@ -112,7 +112,7 @@ function submit() {
 </script>
 
 <template>
-    <Head title="Nuevo Equipo" />
+    <Head title="Registrar Equipo" />
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-3xl mx-auto p-4 w-full">
             <!-- Banner de contexto: reposición por reemplazo -->

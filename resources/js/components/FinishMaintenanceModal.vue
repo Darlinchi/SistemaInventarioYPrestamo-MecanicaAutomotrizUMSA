@@ -16,6 +16,22 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits(['close', 'confirm']);
+
+
+const formatHora = (hora: string | null | undefined): string => {
+    if (!hora) return '---';
+    return hora.substring(0, 5);
+};
+
+const formatFecha = (fecha: string | null | undefined): string => {
+    if (!fecha) return '---';
+    const d = new Date(fecha + 'T00:00:00');
+    return d.toLocaleDateString('es-BO', {
+        day:   '2-digit',
+        month: 'short',
+        year:  'numeric'
+    });
+};
 </script>
 
 <template>
@@ -82,7 +98,7 @@ const emit = defineEmits(['close', 'confirm']);
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-blue-700 uppercase tracking-widest leading-none mb-1">Fecha Salida</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ maint?.fecha_mantenimiento }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatFecha(maint?.fecha_mantenimiento) }}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
@@ -91,7 +107,7 @@ const emit = defineEmits(['close', 'confirm']);
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-blue-700 uppercase tracking-widest leading-none mb-1">Hora Inicio</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ maint?.hora_inicio }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatHora(maint?.hora_inicio )}}</p>
                                 </div>
                             </div>
                         </div>
@@ -104,7 +120,7 @@ const emit = defineEmits(['close', 'confirm']);
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-orange-700 uppercase tracking-widest leading-none mb-1">Fecha Limite</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ maint?.fecha_retorno_estimado }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatFecha(maint?.fecha_retorno_estimado) }}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3">
@@ -113,7 +129,7 @@ const emit = defineEmits(['close', 'confirm']);
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-black text-orange-700 uppercase tracking-widest leading-none mb-1">Hora Fin</p>
-                                    <p class="text-sm font-bold text-neutral-800">{{ maint?.hora_fin_estimado }}</p>
+                                    <p class="text-sm font-bold text-neutral-800">{{ formatHora(maint?.hora_fin_estimado) }}</p>
                                 </div>
                             </div>
                         </div>

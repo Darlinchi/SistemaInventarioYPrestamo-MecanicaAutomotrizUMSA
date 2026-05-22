@@ -217,6 +217,21 @@ const colorEstado = (estado: string) => {
     if (['Incompleto'].includes(estado))            return 'bg-amber-50 text-amber-700 border-amber-100';
     return 'bg-neutral-100 text-neutral-600 border-neutral-200';
 };
+
+const formatHora = (hora: string | null | undefined): string => {
+    if (!hora) return '---';
+    return hora.substring(0, 5);
+};
+
+const formatFecha = (fecha: string | null | undefined): string => {
+    if (!fecha) return '---';
+    const d = new Date(fecha + 'T00:00:00');
+    return d.toLocaleDateString('es-BO', {
+        day:   '2-digit',
+        month: 'short',
+        year:  'numeric'
+    });
+};
 </script>
 
 <template>
@@ -319,7 +334,7 @@ const colorEstado = (estado: string) => {
                             <BookMarked class="w-3.5 h-3.5" /> Materia Asignada
                         </p>
                         <p class="text-sm font-bold text-neutral-900 leading-tight">{{ loan?.subject?.nombre_materia }}</p>
-                        <p class="text-[14px] text-[#1a3a5a] font-mono tracking-tighter">{{ loan?.subject?.sigla }}</p>
+                        <p class="text-[14px] text-[#1a3a5a] font-black tracking-wider">{{ loan?.subject?.sigla }}</p>
                     </div>
                 </div>
 
@@ -333,22 +348,22 @@ const colorEstado = (estado: string) => {
                             <span class="text-[12px] font-bold text-blue-700 uppercase tracking-tighter">Salida</span>
                             <div class="flex items-center gap-2">
                                 <div class="p-1.5 bg-white rounded-lg shadow-sm shrink-0"><Calendar class="w-3.5 h-3.5 text-blue-700"/></div>
-                                <div><p class="text-[10px] font-black text-blue-700 uppercase tracking-widest leading-none mb-0.5">Fecha</p><p class="text-sm font-bold text-neutral-800">{{ loan?.fecha_salida }}</p></div>
+                                <div><p class="text-[10px] font-black text-blue-700 uppercase tracking-widest leading-none mb-0.5">Fecha</p><p class="text-sm font-bold text-neutral-800">{{ formatFecha(loan?.fecha_salida) }}</p></div>
                             </div>
                             <div class="flex items-center gap-2">
                                 <div class="p-1.5 bg-white rounded-lg shadow-sm shrink-0"><Clock class="w-3.5 h-3.5 text-blue-700"/></div>
-                                <div><p class="text-[10px] font-black text-blue-700 uppercase tracking-widest leading-none mb-0.5">Hora inicio</p><p class="text-sm font-bold text-neutral-800">{{ loan?.hora_inicio }}</p></div>
+                                <div><p class="text-[10px] font-black text-blue-700 uppercase tracking-widest leading-none mb-0.5">Hora inicio</p><p class="text-sm font-bold text-neutral-800">{{ formatHora(loan?.hora_inicio) }}</p></div>
                             </div>
                         </div>
                         <div class="flex flex-col gap-2.5 border-l border-neutral-100 pl-3">
                             <span class="text-[12px] font-bold text-orange-700 uppercase tracking-tighter">Previsto</span>
                             <div class="flex items-center gap-2">
                                 <div class="p-1.5 bg-white rounded-lg shadow-sm shrink-0"><CalendarClock class="w-3.5 h-3.5 text-orange-700"/></div>
-                                <div><p class="text-[10px] font-black text-orange-700 uppercase tracking-widest leading-none mb-0.5">Fecha límite</p><p class="text-sm font-bold text-neutral-800">{{ loan?.fecha_retorno_prevista }}</p></div>
+                                <div><p class="text-[10px] font-black text-orange-700 uppercase tracking-widest leading-none mb-0.5">Fecha límite</p><p class="text-sm font-bold text-neutral-800">{{ formatFecha(loan?.fecha_retorno_prevista) }}</p></div>
                             </div>
                             <div class="flex items-center gap-2">
                                 <div class="p-1.5 bg-white rounded-lg shadow-sm shrink-0"><ClockAlert class="w-3.5 h-3.5 text-orange-700"/></div>
-                                <div><p class="text-[10px] font-black text-orange-700 uppercase tracking-widest leading-none mb-0.5">Hora fin</p><p class="text-sm font-bold text-neutral-800">{{ loan?.hora_fin_prevista }}</p></div>
+                                <div><p class="text-[10px] font-black text-orange-700 uppercase tracking-widest leading-none mb-0.5">Hora fin</p><p class="text-sm font-bold text-neutral-800">{{ formatHora(loan?.hora_fin_prevista) }}</p></div>
                             </div>
                         </div>
                         <div class="flex flex-col gap-2.5 border-l border-neutral-100 pl-3">

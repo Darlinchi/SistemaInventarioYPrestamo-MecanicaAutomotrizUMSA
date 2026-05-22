@@ -1,169 +1,161 @@
 <script setup lang="ts">
-import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
+    Sidebar, SidebarContent, SidebarFooter,
+    SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import AppLogo from './AppLogo.vue';
-
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-// Aqui estan los iconos utilizados
-import { Users, Package, Building2, LayoutDashboard, ClipboardList, Settings, FileText, UsersIcon,
-    NotebookPen, NotebookText, RefreshCcw, BookMarked
- } from 'lucide-vue-next';
-// Rutas del inventario
-import itemsRoutes from '@/routes/items';
-// Rutas de los responsables
-import borrowersRoutes from '@/routes/borrowers';
-// Rutas de los materias
-import subjectRoutes from '@/routes/subjects';
-// Rutas de los prestamos
-import loansRoutes from '@/routes/loans';
-// Rutas de las devoluciones
-import loanReturnRoutes from '@/routes/loan-returns';
-// Rutas de reposiciones
-import repositionRoutes from '@/routes/repositions';
-// Rutas de las mantenimiento
-import maintenancesRoutes from '@/routes/maintenances';
-// Rutas de las empresas de mantenimiento
+
+import {
+    Users, Package, Building2, LayoutDashboard,
+    NotebookPen, NotebookText, RefreshCcw, BookMarked,
+    FileText, Settings, Key, UsersIcon
+} from 'lucide-vue-next';
+
+import userRoutes           from '@/routes/users';
+import rolRoutes            from '@/routes/roles';
+import itemsRoutes          from '@/routes/items';
+import borrowersRoutes      from '@/routes/borrowers';
+import subjectRoutes        from '@/routes/subjects';
+import loansRoutes          from '@/routes/loans';
+import loanReturnRoutes     from '@/routes/loan-returns';
+import repositionRoutes     from '@/routes/repositions';
+import maintenancesRoutes   from '@/routes/maintenances';
 import maintenanceCompanyRoutes from '@/routes/maintenanceCompanies';
-// Rutas de los reportes
-import reportRoutes from '@/routes/reports';
+import reportRoutes         from '@/routes/reports';
 
 const page = usePage();
 
-// Helper: verifica si el usuario tiene alguno de los roles indicados
+// ── Helpers ───────────────────────────────────────────────────────
+
+// Verifica rol (para acciones que solo aplican a roles base)
 const hasRole = (...roles: string[]): boolean => {
     const userRoles = (page.props.auth as any)?.user?.roles ?? [];
     return roles.some(r => userRoles.includes(r));
 };
 
+// Verifica permiso — ESTA es la función correcta para el sidebar
+// Funciona para cualquier rol, incluidos los nuevos que se creen
+const can = (permission: string): boolean => {
+    const userPermissions = (page.props.auth as any)?.user?.permissions ?? [];
+    return userPermissions.includes(permission);
+};
+
+// ── Menú dinámico basado en PERMISOS ─────────────────────────────
+// Así, cualquier rol nuevo que tenga los permisos correctos
+// automáticamente ve los items correspondientes, sin tocar este archivo.
 const mainNavItems = computed((): NavItem[] => {
     const items: NavItem[] = [
         {
             title: 'Panel Principal',
-            href: dashboard(),
-            icon: LayoutDashboard,
+            href:  dashboard(),
+            icon:  LayoutDashboard,
         },
     ];
 
-    const userRoles = (page.props.auth as any)?.user?.roles || [];
-
-    // Se agrego gestionar personal solo para los que son administradores
-    // Gestionar Personal — solo super-admin
+    // ── Usuarios — solo super-admin ve y gestiona usuarios ──────
     if (hasRole('super-admin')) {
         items.push({
             title: 'Gestión de Usuarios',
-            href: '/dashboard/usuarios',
-            icon: Users,
+            href:  userRoutes.index.url(),
+            icon:  Users,
+        });
+        items.push({
+            title: 'Gestión de Roles',
+            href:  rolRoutes.index.url(),
+            icon:  Key,
         });
     }
 
-    // Inventario — super-admin, director (lectura) y encargado (completo)
-    // El director ve el mismo enlace pero las acciones de crear/editar
-    // están bloqueadas en el backend por los permisos de Spatie.
-    if (hasRole('super-admin', 'director', 'encargado')) {
+    // ── Inventario ──────────────────────────────────────────────
+    if (can('equipos.ver') || can('herramientas.ver')) {
         items.push({
             title: 'Inventario',
-            href: itemsRoutes.index.url(),
-            icon: Package,
+            href:  itemsRoutes.index.url(),
+            icon:  Package,
         });
     }
 
-    // Préstamos — super-admin, director (lectura) y encargado (completo)
-    if (hasRole('super-admin', 'director', 'encargado')) {
+    // ── Préstamos ───────────────────────────────────────────────
+    if (can('prestamos.ver')) {
         items.push({
             title: 'Préstamos',
-            href: loansRoutes.index.url(),
-            icon: NotebookPen,
+            href:  loansRoutes.index.url(),
+            icon:  NotebookPen,
         });
     }
 
-    // Devoluciones — super-admin, director (lectura) y encargado (completo)
-    if (hasRole('super-admin', 'director', 'encargado')) {
+    // ── Devoluciones ─────────────────────────────────────────────
+    if (can('prestamos.ver')) {
         items.push({
             title: 'Devoluciones',
-            href: loanReturnRoutes.index.url(),
-            icon: NotebookText,
+            href:  loanReturnRoutes.index.url(),
+            icon:  NotebookText,
         });
     }
 
-    // Reposiciones — super-admin, director (lectura) y encargado (completo)
-    if (hasRole('super-admin', 'director', 'encargado')) {
+    // ── Reposiciones ─────────────────────────────────────────────
+    if (can('prestamos.ver')) {
         items.push({
             title: 'Reposiciones',
-            href: repositionRoutes.index.url(),
-            icon: RefreshCcw,
+            href:  repositionRoutes.index.url(),
+            icon:  RefreshCcw,
         });
     }
 
-    // Prestamistas — super-admin, director (lectura) y encargado (completo)
-    if (hasRole('super-admin', 'director', 'encargado')) {
+    // ── Responsables ─────────────────────────────────────────────
+    if (can('prestatarios.ver')) {
         items.push({
             title: 'Responsables',
-            href: borrowersRoutes.index.url(),
-            icon: UsersIcon,
+            href:  borrowersRoutes.index.url(),
+            icon:  UsersIcon,
         });
     }
 
-    // Materias — super-admin, director (lectura) y encargado (completo)
-    if (hasRole('super-admin', 'director', 'encargado')) {
+    // ── Materias ─────────────────────────────────────────────────
+    if (can('materias.ver')) {
         items.push({
             title: 'Materias',
-            href: subjectRoutes.index.url(),
-            icon: BookMarked,
+            href:  subjectRoutes.index.url(),
+            icon:  BookMarked,
         });
     }
 
-    // Mantenimiento — super-admin y encargado (el director no opera esto)
-    if (hasRole('super-admin', 'encargado')) {
+    // ── Mantenimientos ───────────────────────────────────────────
+    if (can('mantenimientos.ver')) {
         items.push({
             title: 'Mantenimientos',
-            href: maintenancesRoutes.index.url(),
-            icon: Settings,
+            href:  maintenancesRoutes.index.url(),
+            icon:  Settings,
         });
+    }
 
+    // ── Empresas de mantenimiento ────────────────────────────────
+    if (can('empresas_mant.ver')) {
         items.push({
             title: 'Emp. de Mantenimiento',
-            href: maintenanceCompanyRoutes.index.url(),
-            icon: Building2,
+            href:  maintenanceCompanyRoutes.index.url(),
+            icon:  Building2,
         });
     }
 
-    // Reportes — todos los roles los ven
-    if (hasRole('super-admin', 'director', 'encargado')) {
+    // ── Reportes ─────────────────────────────────────────────────
+    if (can('reportes.ver')) {
         items.push({
             title: 'Reportes',
-            href: reportRoutes.index.url(),
-            icon: FileText,
+            href:  reportRoutes.index.url(),
+            icon:  FileText,
         });
     }
+
     return items;
 });
-
-/*const footerNavItems: NavItem[] = [
-    {
-        title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-    },
-];*/
 </script>
 
 <template>
@@ -185,7 +177,6 @@ const mainNavItems = computed((): NavItem[] => {
         </SidebarContent>
 
         <SidebarFooter>
-            <!--<NavFooter :items="footerNavItems" /> -->
             <NavUser />
         </SidebarFooter>
     </Sidebar>

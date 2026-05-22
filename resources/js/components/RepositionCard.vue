@@ -56,6 +56,15 @@ const estaVencida = (rep: any) =>
     rep.estado === 'Pendiente' && !!rep.fecha_limite &&
     new Date(rep.fecha_limite) < new Date();
 
+const formatFecha = (fecha: string | null | undefined): string => {
+    if (!fecha) return '---';
+    const d = new Date(fecha + 'T00:00:00');
+    return d.toLocaleDateString('es-BO', {
+        day:   '2-digit',
+        month: 'short',
+        year:  'numeric'
+    });
+};
 </script>
 
 <template>
@@ -75,7 +84,7 @@ const estaVencida = (rep: any) =>
                         <p class="flex items-center gap-2 text-[13px] font-black text-blue-700 uppercase tracking-widest leading-none">
                             <Calendar class="w-4 h-4"/> Registro
                         </p>
-                        <p class="text-sm font-bold text-neutral-800">{{ rep.created_at }}</p>
+                        <p class="text-sm font-bold text-neutral-800">{{ formatFecha(rep.created_at) }}</p>
                     </div>
                     <!-- Fecha límite -->
                     <div class="space-y-1">
@@ -83,7 +92,7 @@ const estaVencida = (rep: any) =>
                             <ClockAlert class="w-4 h-4"/> F. Límite
                         </p>
                         <p :class="['text-sm font-bold', estaVencida(rep) ? 'text-red-600' : 'text-neutral-800']">
-                            {{ rep.fecha_limite ?? 'Sin límite' }}
+                            {{ formatFecha(rep.fecha_limite )?? 'Sin límite' }}
                         </p>
                     </div>
                 </div>
@@ -104,15 +113,6 @@ const estaVencida = (rep: any) =>
                             {{ labelTipo(rep.tipo_reposicion) }}
                         </span>
                     </div>
-                    <!-- Fecha cumplimiento
-                    <div class="space-y-1">
-                        <p class="flex items-center gap-2 text-[13px] font-black text-orange-700 uppercase tracking-widest leading-none">
-                            <CalendarCheck2 class="w-4 h-4"/> Cumplida
-                        </p>
-                        <p class="text-sm font-bold" :class="rep.fecha_cumplimiento ? 'text-green-700' : 'text-neutral-400'">
-                            {{ rep.fecha_cumplimiento ?? '—' }}
-                        </p>
-                    </div> -->
                 </div>
             </div>
 
@@ -142,19 +142,6 @@ const estaVencida = (rep: any) =>
                 <!-- COLUMNA 2 — Registrado por (reemplaza líneas 141-147): -->
                 <div class="space-y-1">
                     <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
-                        <UserCheck class="w-4 h-4"/> Registrado por
-                    </p>
-                    <p class="text-sm font-bold text-neutral-800">{{ rep.registrado_por }}</p>
-                    <span class="px-2 py-0.5 rounded-lg bg-emerald-50 text-[11px] font-black text-[#1a3a5a] border border-emerald-100">
-                        {{ rep.registrado_username }}
-                    </span>
-                </div>
-            </div>
-
-            <!-- COLUMNA 3: Observación + registrado por + nuevo ítem -->
-            <div class="space-y-4">
-                <div class="space-y-1">
-                    <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
                         <User class="w-4 h-4"/> Responsable
                     </p>
                     <p class="text-[14px] font-bold text-neutral-800 leading-tight mt-1">
@@ -163,6 +150,19 @@ const estaVencida = (rep: any) =>
                             CI: {{ rep.borrower_ci }}
                         </span>
                     </p>
+                </div>
+            </div>
+
+            <!-- COLUMNA 3: Observación + registrado por + nuevo ítem -->
+            <div class="space-y-4">
+                <div class="space-y-1">
+                    <p class="flex items-center gap-2 text-[13px] font-black text-[#1a3a5a] uppercase tracking-widest">
+                        <UserCheck class="w-4 h-4"/> Registrado por
+                    </p>
+                    <p class="text-sm font-bold text-neutral-800">{{ rep.registrado_por }}</p>
+                    <span class="px-2 py-0.5 rounded-lg bg-emerald-50 text-[11px] font-black text-[#1a3a5a] border border-emerald-100">
+                        {{ rep.registrado_username }}
+                    </span>
                 </div>
 
                 <!-- Ítem nuevo (Reemplazo cumplido) -->
