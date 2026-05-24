@@ -2,7 +2,6 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
 import { CardTitle } from '@/components/ui/card';
 import InputError from '@/components/InputError.vue';
 import { Input } from '@/components/ui/input';

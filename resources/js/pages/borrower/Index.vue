@@ -186,7 +186,7 @@ const toggleBorrowerStatus = (id: number) => {
                         </button>
 
                         <CreateActionButton
-                            v-if="activeTab !== 'estudiantes' && (can('usuarios.crear') || true)"
+                            v-if="activeTab !== 'estudiantes' && can('usuarios.crear')"
                             :href="borrowerRoutes.create.url()"
                             label="Registrar Responsable"
                         />

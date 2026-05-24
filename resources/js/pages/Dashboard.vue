@@ -76,9 +76,7 @@ const openReturnModal = (loan: any) => {
     returnForm.items = itemsToProcess.map((i: any) => ({
         id: i.id,
         nombre_mostrar: i.nombre_mostrar,
-        foto_equipo: i.foto_equipo || i.foto_herramienta || i.foto,
-        foto_herramienta: i.foto_herramienta || i.foto_equipo || i.foto,
-        foto: i.foto || i.foto_equipo || i.foto_herramienta,
+        foto: i.foto_equipo ?? i.foto_herramienta ?? i.foto ?? null,
         // El 'type' debe ser exacto para el controlador
         type: i.es_equipo ? 'App\\Models\\Equipment' : 'App\\Models\\Tool',
         es_equipo: i.es_equipo,
@@ -98,7 +96,7 @@ const openReturnModal = (loan: any) => {
 };
 
 const processReturn = () => {
-    returnForm.post(`/dashboard/loans/${selectedLoan.value.id}/return`, {
+    returnForm.post(loanRoutes.return.url(selectedLoan.value.id), {
         preserveScroll: true,
         onSuccess: () => {
             isReturnModalOpen.value = false;

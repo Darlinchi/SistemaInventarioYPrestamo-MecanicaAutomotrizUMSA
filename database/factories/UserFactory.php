@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -11,32 +12,46 @@ use Illuminate\Support\Str;
  */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
+    protected $model = User::class;
     protected static ?string $password;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
-            'two_factor_secret' => Str::random(10),
-            'two_factor_recovery_codes' => Str::random(10),
-            'two_factor_confirmed_at' => now(),
+            'username'                  => fake()->unique()->userName(),
+            'cedula_identidad'          => fake()->unique()->numerify('#######'),
+            'name'                      => fake()->firstName() . ' ' . fake()->firstName(),
+            'apellidoPaterno'           => fake()->lastName(),
+            'apellidoMaterno'           => fake()->lastName(),
+            'celular'                   => fake()->numerify('7#######'),
+            'email'                     => fake()->unique()->safeEmail(),
+            'email_verified_at'         => now(),
+            'password'                  => static::$password ??= Hash::make('password'),
+            'two_factor_secret'         => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at'   => null,
+            'activo'                    => 1,
+            'remember_token'            => Str::random(10),
         ];
     }
 
     /**
-     * Indicate that the model's email address should be unverified.
+     * Usuario sin 2FA activo (el más común en pruebas).
+     * Equivale al estado por defecto del factory, pero
+     * se declara explícitamente para compatibilidad con
+     * los tests de Fortify y los tests del sistema.
+     */
+    public function withoutTwoFactor(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'two_factor_secret'         => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at'   => null,
+        ]);
+    }
+
+    /**
+     * Usuario sin verificar email.
      */
     public function unverified(): static
     {
@@ -46,14 +61,12 @@ class UserFactory extends Factory
     }
 
     /**
-     * Indicate that the model does not have two-factor authentication configured.
+     * Usuario deshabilitado por el administrador.
      */
-    public function withoutTwoFactor(): static
+    public function disabled(): static
     {
         return $this->state(fn (array $attributes) => [
-            'two_factor_secret' => null,
-            'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at' => null,
+            'activo' => 0,
         ]);
     }
 }

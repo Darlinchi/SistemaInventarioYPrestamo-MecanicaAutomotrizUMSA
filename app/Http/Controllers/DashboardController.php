@@ -49,7 +49,12 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', [
             'stats' => $stats,
             'recentLoans' => $recentLoans,
-            'recentEquipments' => $recentEquipments
+            'recentEquipments' => $recentEquipments,
+            'auth_user'        => [                    // ← AGREGAR ESTO
+                'id'       => auth()->id(),
+                'name'     => auth()->user()->name,
+                'username' => auth()->user()->username,
+            ],
         ]);
     }
 }

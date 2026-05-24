@@ -29,21 +29,17 @@ class TwoFactorChallengeTest extends TestCase
             $this->markTestSkipped('Two-factor authentication is not enabled.');
         }
 
-        Features::twoFactorAuthentication([
-            'confirm' => true,
-            'confirmPassword' => true,
-        ]);
-
         $user = User::factory()->create();
 
         $user->forceFill([
-            'two_factor_secret' => encrypt('test-secret'),
+            'two_factor_secret'         => encrypt('test-secret'),
             'two_factor_recovery_codes' => encrypt(json_encode(['code1', 'code2'])),
-            'two_factor_confirmed_at' => now(),
+            'two_factor_confirmed_at'   => now(),
         ])->save();
 
+        // Login con username — igual que el resto del sistema
         $this->post(route('login'), [
-            'email' => $user->email,
+            'username' => $user->username,
             'password' => 'password',
         ]);
 

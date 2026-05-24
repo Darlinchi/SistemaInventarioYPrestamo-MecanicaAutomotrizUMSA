@@ -162,7 +162,7 @@ const openReturnModal = (loan: any) => {
     returnForm.items = (loan.all_items || []).map((i: any) => ({
         id: i.id,
         nombre_mostrar: i.nombre_mostrar,
-        foto: i.foto || i.foto_equipo || i.foto_herramienta,
+        foto: i.foto_equipo ?? i.foto_herramienta ?? i.foto ?? null,
         tipo: i.es_equipo ? 'equipo' : 'herramienta',
         es_equipo: i.es_equipo,
         estado_devolucion: 'Disponible',

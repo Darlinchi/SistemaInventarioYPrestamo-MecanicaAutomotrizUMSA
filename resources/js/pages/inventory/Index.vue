@@ -3,10 +3,6 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage, router } from '@inertiajs/vue3';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
-import {
-    Package, Wrench, SquarePen, Ban, Search, List, Image, Plus, CircleCheck, XIcon, Eye, Hash, BookText,
-    QrCode, CalendarDays, Rows3, AlignLeft, PaintBucket, FileText, Layers
-} from 'lucide-vue-next';
 import AlertNotification from '@/components/AlertNotification.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import TabSelector from '@/components/shared/TabSelector.vue';
