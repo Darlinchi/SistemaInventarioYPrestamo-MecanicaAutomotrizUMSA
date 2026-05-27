@@ -29,7 +29,6 @@ class ReportController extends Controller
 
         // 1. Datos para Inventario con cruce de Mantenimientos
         $equipos = Equipment::all()->map(function ($item) {
-            // Buscamos la fecha del último mantenimiento completado
             $ultimoMantenimiento = DB::table('maintenances')
                 ->where('equipment_id', $item->id)
                 ->where('estado_mantenimiento', 'Completado')
@@ -46,6 +45,8 @@ class ReportController extends Controller
                 'ubicacion_item' => $item->ubicacion_equipo,
                 'observacion_item' => $item->observacion_equipo,
                 'proximo_mantenimiento' => $ultimoMantenimiento ? $ultimoMantenimiento->fecha_proximo_mantenimiento : null,
+                // CORRECCIÓN CLAVE: Pasamos el rubro real del equipo a la vista
+                'rubro' => $item->rubro ?? 'General',
             ];
         });
 
@@ -58,13 +59,15 @@ class ReportController extends Controller
                 'tipo' => 'herramienta',
                 'estado' => $item->estado_herramienta,
                 'ubicacion_item' => $item->ubicacion_herramienta,
-                'proximo_mantenimiento' => null, // Herramientas no suelen tener preventivo programado
+                'proximo_mantenimiento' => null,
+                // CORRECCIÓN CLAVE: Las herramientas no tienen rubro en tu BD, les asignamos un identificador base
+                'rubro' => 'Herramienta',
             ];
         });
 
         $allItems = $equipos->concat($herramientas);
 
-        // 2. Historial de Préstamos
+        // ... EL RESTO DE TU CÓDIGO (History, Issues y el return de Inertia) SE QUEDA EXACTAMENTE IGUAL ...
         $history = Loan::with([
             'borrower.teacher',
             'borrower.assistant',
@@ -101,24 +104,15 @@ class ReportController extends Controller
             ];
         });
 
-        // 3. LÓGICA DE ALERTA DE MANTENIMIENTO (Issues)
         $issues = $allItems->filter(function ($item) use ($hoy, $limiteMantenimiento) {
-            // Condición A: Estado crítico
-            //$esCritico = in_array($item['estado'], ['Dañado', 'Extraviado', 'Incompleto']);
-
-            // Condición B: Mantenimiento próximo (30 días)
             $esAlertaFecha = false;
             if ($item['proximo_mantenimiento']) {
                 $fechaProg = Carbon::parse($item['proximo_mantenimiento']);
-                // Se muestra si la fecha está entre hoy y los próximos 30 días
                 $esAlertaFecha = $fechaProg->lte($limiteMantenimiento) && $fechaProg->gte($hoy);
             }
-
-            //return $esCritico || $esAlertaFecha;
             return $esAlertaFecha;
         })->map(function($item) use ($hoy, $limiteMantenimiento) {
             $fechaProg = $item['proximo_mantenimiento'] ? Carbon::parse($item['proximo_mantenimiento']) : null;
-            // Marcamos para el frontend si es por fecha o por daño
             $item['es_alerta_mantenimiento'] = $fechaProg && $fechaProg->lte($limiteMantenimiento) && $fechaProg->gte($hoy);
             return $item;
         })->values();
@@ -133,62 +127,131 @@ class ReportController extends Controller
         ]);
     }
 
+    /**
+     * Genera el Reporte de Inventario General aplicando filtros combinados.
+     */
     public function exportInventory(Request $request)
     {
+        // Captura de parámetros desde el Request
         $category = $request->query('category', 'Todas');
+        $status   = $request->query('status', 'Todos');
+        $rubro    = $request->query('rubro', 'Todos');
+
         $items = collect();
 
+        // 1. Procesamiento Segmentado de Equipos
         if ($category === 'Todas' || $category === 'Equipo') {
-            $equipos = Equipment::with('accessories')->get()->map(function($e) {
+            $queryEquipos = Equipment::with('accessories');
+
+            // Filtro dinámico por estado de equipo
+            if ($status !== 'Todos') {
+                $queryEquipos->where('estado_equipo', $status);
+            }
+
+            // Filtro dinámico por rubro técnico
+            if ($rubro !== 'Todos') {
+                $queryEquipos->where('rubro', $rubro);
+            }
+
+            $equipos = $queryEquipos->get()->map(function($e) {
                 return [
-                    'nombre' => $e->nombre_equipo,
-                    'codigo' => $e->codigo_qr,
-                    'estado' => $e->estado_equipo,
-                    'ubicacion' => $e->ubicacion_equipo,
+                    'nombre'       => $e->nombre_equipo,
+                    'codigo'       => $e->codigo_qr,
+                    'estado'       => $e->estado_equipo,
+                    'ubicacion'    => $e->ubicacion_equipo,
                     'marca_modelo' => $e->marca . ' / ' . $e->modelo,
-                    'fecha_adq' => $e->fecha_adquisicion ? \Carbon\Carbon::parse($e->fecha_adquisicion)->format('d/m/Y') : 'S/R',
-                    'accesorios' => $e->accessories->pluck('nombre_accesorio')->toArray(),
-                    'tipo' => 'EQUIPO'
+                    'fecha_adq'    => $e->fecha_adquisicion ? \Carbon\Carbon::parse($e->fecha_adquisicion)->format('d/m/Y') : 'S/R',
+                    'accesorios'   => $e->accessories->pluck('nombre_accesorio')->toArray(),
+                    'tipo'         => 'EQUIPO',
+                    'rubro'        => $e->rubro ?? 'General'
                 ];
             });
             $items = $items->concat($equipos);
         }
 
-        if ($category === 'Todas' || $category === 'Herramienta') {
-            $herramientas = Tool::all()->map(function($t) {
+        // 2. Procesamiento Segmentado de Herramientas
+        // Si el usuario busca un rubro específico, las herramientas se omiten automáticamente
+        if (($category === 'Todas' || $category === 'Herramienta') && $rubro === 'Todos') {
+            $queryTools = Tool::query();
+
+            if ($status !== 'Todos') {
+                $queryTools->where('estado_herramienta', $status);
+            }
+
+            $herramientas = $queryTools->get()->map(function($t) {
                 return [
-                    'nombre' => $t->nombre_herramienta,
-                    'codigo' => $t->codigo_qr,
-                    'estado' => $t->estado_herramienta,
-                    'ubicacion' => $t->ubicacion_herramienta,
+                    'nombre'       => $t->nombre_herramienta,
+                    'codigo'       => $t->codigo_qr,
+                    'estado'       => $t->estado_herramienta,
+                    'ubicacion'    => $t->ubicacion_herramienta,
                     'marca_modelo' => $t->marca_modelo,
-                    'observacion' => $t->descripcion_herramienta ?? 'Sin observaciones',
-                    'tipo' => 'HERRAMIENTA'
+                    'observacion'  => $t->descripcion_herramienta ?? 'Sin observaciones',
+                    'tipo'         => 'HERRAMIENTA',
+                    'rubro'        => 'N/A'
                 ];
             });
             $items = $items->concat($herramientas);
         }
 
+        // 3. Renderizado y Envío del Stream de Datos PDF
         $pdf = Pdf::loadView('pdf.inventory-general', [
-            'items' => $items,
+            'items'    => $items,
             'category' => $category,
-            'date' => now()->format('d/m/Y H:i')
+            'status'   => $status,
+            'rubro'    => $rubro,
+            'date'     => now()->format('d/m/Y H:i')
         ]);
 
-        return $pdf->stream('Reporte_Inventario.pdf');
+        return $pdf->stream('Reporte_Inventario_Filtrado.pdf');
     }
 
-    public function exportHistory()
+    /**
+     * Exporta el historial cronológico de préstamos aplicando filtros de auditoría.
+     */
+    public function exportHistory(Request $request)
     {
-        $loans = Loan::with([
-            'borrower',
+        $search = $request->query('search');
+        $state  = $request->query('state', 'Todos');
+        $start  = $request->query('start');
+        $end    = $request->query('end');
+
+        // 1. Cargamos el préstamo con el usuario que lo creó (entrega)
+        // y con el loanReturns.user (quien recibe la devolución)
+        $queryLoans = Loan::with([
             'borrower.teacher',
+            'borrower.assistant',
             'subject',
-            'user',                                      // ← agrega esto para el encargado
+            'user', // Encargado que entrega
+            'loanReturns.user', // Encargado que recibe la devolución
             'loanReturns.returnDetails.returnable'
-        ])
-        ->orderBy('fecha_salida', 'desc')
-        ->get();
+        ]);
+
+        if (!empty($start)) {
+            $queryLoans->whereDate('fecha_salida', '>=', $start);
+        }
+        if (!empty($end)) {
+            $queryLoans->whereDate('fecha_salida', '<=', $end);
+        }
+
+        if ($state !== 'Todos') {
+            if ($state === 'Completado') {
+                $queryLoans->where('estado_prestamo', 'Devuelto');
+            } elseif ($state === 'Activo') {
+                $queryLoans->where('estado_prestamo', 'Activo');
+            } else {
+                $queryLoans->where('estado_prestamo', $state);
+            }
+        }
+
+        if (!empty($search)) {
+            $queryLoans->whereHas('borrower', function ($q) use ($search) {
+                $q->where('nombres', 'LIKE', "%{$search}%")
+                  ->orWhere('apellidoPaterno', 'LIKE', "%{$search}%")
+                  ->orWhere('apellidoMaterno', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $loans = $queryLoans->orderBy('fecha_salida', 'desc')->get();
 
         $history = $loans->map(function ($loan) {
             $return = null;
@@ -198,9 +261,8 @@ class ReportController extends Controller
                     : $loan->loanReturns;
             }
 
-            // ── Nombre del responsable (docente, auxiliar o estudiante) ──
             $borrower = $loan->borrower;
-            $titulo   = $borrower->teacher?->titulo ?? '';  // ← null-safe, no rompe si no es docente
+            $titulo   = $borrower->teacher?->titulo ?? '';
             $nombre   = trim(
                 ($titulo ? $titulo . ' ' : '') .
                 ($borrower->apellidoPaterno ?? '') . ' ' .
@@ -213,7 +275,9 @@ class ReportController extends Controller
                 'materia'     => $loan->subject
                     ? "{$loan->subject->nombre_materia} ({$loan->subject->sigla})"
                     : 'Sin materia',
-                'encargado'   => $loan->user?->name ?? 'Sistema',   // ← quien registró el préstamo
+                // ── CORRECCIÓN AUDITORÍA: Asignamos ambos encargados ──
+                'encargado_entrega' => $loan->user?->name ?? 'Sistema',
+                'encargado_recibe'  => $return?->user?->name ?? 'Pendiente',
                 'salida'      => \Carbon\Carbon::parse($loan->fecha_salida)->format('d/m/Y'),
                 'retorno'     => ($return && $return->fecha_retorno)
                                 ? \Carbon\Carbon::parse($return->fecha_retorno)->format('d/m/Y')
@@ -230,7 +294,7 @@ class ReportController extends Controller
             'date'    => now()->format('d/m/Y H:i')
         ]);
 
-        return $pdf->setPaper('letter', 'landscape')->stream('Historial_Prestamos.pdf');
+        return $pdf->setPaper('letter', 'landscape')->stream('Historial_Prestamos_Filtrado.pdf');
     }
 
     private function mapItemsForHistory($loan, $return)

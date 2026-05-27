@@ -25,6 +25,11 @@ class MaintenanceController extends Controller
 
         return Inertia::render('maintenance/Index', [
             'maintenances' => $maintenances,
+            'auth_user'      => [
+                'id'       => auth()->user()->id,
+                'name'     => auth()->user()->name,
+                'username' => auth()->user()->username,
+            ],
         ]);
     }
 
@@ -50,12 +55,12 @@ class MaintenanceController extends Controller
             ->orderBy('fecha_mantenimiento', 'asc')
             ->orderBy('hora_inicio', 'asc')
             ->get();
-    
+
         $pdf = Pdf::loadView('pdf.maintenance-history', compact('equipment', 'maintenances'));
         $pdf->setPaper('letter', 'landscape');
-    
+
         $nombreArchivo = 'HISTORIAL_' . str_replace(' ', '_', strtoupper($equipment->nombre_equipo)) . '.pdf';
-    
+
         return $pdf->stream($nombreArchivo);
     }
 

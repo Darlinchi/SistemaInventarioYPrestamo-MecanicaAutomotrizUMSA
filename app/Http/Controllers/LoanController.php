@@ -40,22 +40,24 @@ class LoanController extends Controller
         ]);
     }
 
+    /**
+     * Genera el reporte/comprobante individual de devolución de un préstamo.
+     */
     public function generateReport($id)
     {
-        // 1. Cargamos el préstamo con las relaciones de la DB
-        // Importante: Cargamos accessories dentro de equipments para que tu accesor los encuentre
+        // 1. Cargamos el préstamo con todas las relaciones de auditoría necesarias
         $loan = Loan::with([
             'borrower',
             'borrower.teacher',
-            'user',
+            'borrower.assistant',
+            'user', // Encargado que registró la entrega
             'subject',
-            'loanReturns.user',
-            'loanReturns.returnDetails.returnable', // Indispensable para el PDF
+            'loanReturns.user', // Encargado que recepcionó el retorno
+            'loanReturns.returnDetails.returnable',
             'loanReturns.returnDetails.returnDetailAccessories.accessory'
         ])->findOrFail($id);
 
-        // 2. Generar el PDF
-        // Al pasar $loan, el Blade ya podrá acceder a $loan->all_items automáticamente
+        // 2. Generar el PDF usando la vista Blade
         $pdf = Pdf::loadView('pdf.loan-report', compact('loan'));
         $pdf->setPaper('letter', 'portrait');
 
