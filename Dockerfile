@@ -21,13 +21,12 @@ RUN npm install
 
 RUN touch database/database.sqlite
 RUN cp .env.example .env
+RUN sed -i 's/APP_ENV=.*/APP_ENV=production/' .env
+RUN sed -i 's/APP_DEBUG=.*/APP_DEBUG=true/' .env
 RUN php artisan key:generate --force
 RUN php artisan migrate --force --seed
-RUN php artisan config:cache
-RUN php artisan route:cache
-RUN php artisan view:cache
 RUN php artisan storage:link
 
 EXPOSE 8000
 
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+CMD php artisan config:clear && php artisan serve --host=0.0.0.0 --port=$PORT
