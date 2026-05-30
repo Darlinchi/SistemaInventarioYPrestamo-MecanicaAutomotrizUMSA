@@ -17,18 +17,10 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
 
-RUN npm install
-
-RUN touch database/database.sqlite
 RUN cp .env.example .env
-RUN sed -i 's/APP_ENV=.*/APP_ENV=production/' .env
-RUN sed -i 's/APP_DEBUG=.*/APP_DEBUG=true/' .env
 RUN php artisan key:generate --force
-RUN php artisan migrate --force --seed
 RUN php artisan storage:link
-
-RUN php artisan migrate:fresh --force --seed
 
 EXPOSE 8000
 
-CMD php artisan config:clear && php artisan serve --host=0.0.0.0 --port=$PORT
+CMD touch database/database.sqlite && php artisan config:clear && php artisan migrate:fresh --force --seed && php artisan serve --host=0.0.0.0 --port=$PORT
