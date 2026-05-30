@@ -1,0 +1,1 @@
+import{d as e,c as o,o as a}from"./app-D9elbgRG.js";const c={src:"/images/logo-carrera.png",alt:"Logo Carrera de Mecánica",class:"h-100 w-auto object-contain"},p=e({inheritAttrs:!1,__name:"AppLogoIcon",props:{className:{}},setup(r){return(s,t)=>(a(),o("img",c))}});export{p as _};
