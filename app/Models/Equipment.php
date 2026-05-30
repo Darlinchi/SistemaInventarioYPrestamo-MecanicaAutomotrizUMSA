@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Equipment extends Model
 {
@@ -12,7 +12,7 @@ class Equipment extends Model
 
     protected $table = 'equipment';
 
-    //public $incrementing = true; // El ID no aumenta solo, lo hereda.
+    // public $incrementing = true; // El ID no aumenta solo, lo hereda.
 
     protected $casts = [
         'fecha_adquisicion' => 'date',
@@ -22,7 +22,7 @@ class Equipment extends Model
     protected $fillable = [
         'codigo_qr', 'nombre_equipo', 'foto_equipo', 'ubicacion_equipo',
         'descripcion_equipo', 'observacion_equipo', 'estado_equipo',
-        'color', 'marca', 'modelo', 'serie', 'rubro', 'fecha_adquisicion'
+        'color', 'marca', 'modelo', 'serie', 'rubro', 'fecha_adquisicion',
     ];
 
     public function accessories(): HasMany
@@ -38,7 +38,7 @@ class Equipment extends Model
 
     public function loans()
     {
-        //return $this->morphToMany(Loan::class, 'loanable', 'item_loan')
+        // return $this->morphToMany(Loan::class, 'loanable', 'item_loan')
         //            ->withPivot('estado_devolucion')
         //            ->withTimestamps();
         return $this->morphMany(Loan::class, 'loanable', 'item_loan');

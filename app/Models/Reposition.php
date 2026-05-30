@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
@@ -30,7 +30,7 @@ class Reposition extends Model
     protected function casts(): array
     {
         return [
-            'fecha_limite'       => 'date',
+            'fecha_limite' => 'date',
             'fecha_cumplimiento' => 'date',
         ];
     }
@@ -66,9 +66,20 @@ class Reposition extends Model
     }
 
     // ─── Helpers ──────────────────────────────────────────────────
-    public function isPendiente(): bool  { return $this->estado === 'Pendiente'; }
-    public function isCumplida(): bool   { return $this->estado === 'Cumplida'; }
-    public function isIncumplida(): bool { return $this->estado === 'Incumplida'; }
+    public function isPendiente(): bool
+    {
+        return $this->estado === 'Pendiente';
+    }
+
+    public function isCumplida(): bool
+    {
+        return $this->estado === 'Cumplida';
+    }
+
+    public function isIncumplida(): bool
+    {
+        return $this->estado === 'Incumplida';
+    }
 
     public function estaVencida(): bool
     {

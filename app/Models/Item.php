@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Item extends Model
 {
     // Definicion de los campos que se pueden llenar masivamente
-    protected $fillable = ['codigo_qr', 'nombre_item', 'foto', 'observacion_item', 'descripcion_item', 'ubicacion_item' ];
+    protected $fillable = ['codigo_qr', 'nombre_item', 'foto', 'observacion_item', 'descripcion_item', 'ubicacion_item'];
 
     // Un Item puede ser un Equipo
     public function equipment(): HasOne
@@ -26,7 +26,8 @@ class Item extends Model
     }
 
     // Acceder a accesorios desde el item pasando por Equipo
-    public function accessories() {
+    public function accessories()
+    {
         return $this->hasManyThrough(
             Accessory::class,
             Equipment::class,
@@ -41,7 +42,7 @@ class Item extends Model
     public function loans(): BelongsToMany
     {
         return $this->belongsToMany(Loan::class, 'item_loan')
-                    ->withPivot('estado_devolucion')
-                    ->withTimestamps();
+            ->withPivot('estado_devolucion')
+            ->withTimestamps();
     }
 }

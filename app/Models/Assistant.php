@@ -2,17 +2,18 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Assistant extends Model
 {
     use HasFactory;
 
-    protected $table      = 'assistants';
+    protected $table = 'assistants';
+
     protected $primaryKey = 'id_assistant'; // Llave personalizada
+
     public $incrementing = false;        // No es auto-incremental
 
     protected $fillable = [
@@ -24,7 +25,7 @@ class Assistant extends Model
 
     protected $casts = [
         'fecha_inicio' => 'date',
-        'fecha_fin'    => 'date',
+        'fecha_fin' => 'date',
     ];
 
     public function borrower(): BelongsTo

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ReturnDetailAccessory;
 use Illuminate\Http\Request;
 
 class ReturnDetailAccessoryController extends Controller

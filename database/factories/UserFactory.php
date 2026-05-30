@@ -13,25 +13,26 @@ use Illuminate\Support\Str;
 class UserFactory extends Factory
 {
     protected $model = User::class;
+
     protected static ?string $password;
 
     public function definition(): array
     {
         return [
-            'username'                  => fake()->unique()->userName(),
-            'cedula_identidad'          => fake()->unique()->numerify('#######'),
-            'name'                      => fake()->firstName() . ' ' . fake()->firstName(),
-            'apellidoPaterno'           => fake()->lastName(),
-            'apellidoMaterno'           => fake()->lastName(),
-            'celular'                   => fake()->numerify('7#######'),
-            'email'                     => fake()->unique()->safeEmail(),
-            'email_verified_at'         => now(),
-            'password'                  => static::$password ??= Hash::make('password'),
-            'two_factor_secret'         => null,
+            'username' => fake()->unique()->userName(),
+            'cedula_identidad' => fake()->unique()->numerify('#######'),
+            'name' => fake()->firstName().' '.fake()->firstName(),
+            'apellidoPaterno' => fake()->lastName(),
+            'apellidoMaterno' => fake()->lastName(),
+            'celular' => fake()->numerify('7#######'),
+            'email' => fake()->unique()->safeEmail(),
+            'email_verified_at' => now(),
+            'password' => static::$password ??= Hash::make('password'),
+            'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at'   => null,
-            'activo'                    => 1,
-            'remember_token'            => Str::random(10),
+            'two_factor_confirmed_at' => null,
+            'activo' => 1,
+            'remember_token' => Str::random(10),
         ];
     }
 
@@ -44,9 +45,9 @@ class UserFactory extends Factory
     public function withoutTwoFactor(): static
     {
         return $this->state(fn (array $attributes) => [
-            'two_factor_secret'         => null,
+            'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at'   => null,
+            'two_factor_confirmed_at' => null,
         ]);
     }
 

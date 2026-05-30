@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('loans', function (Blueprint $table) {
-            $table->id();// id_prestamo
+            $table->id(); // id_prestamo
 
             // Quién entrega (El usuario logueado en el sistema)
             $table->foreignId('user_id')
@@ -31,12 +31,12 @@ return new class extends Migration
 
             // Datos del préstamo
             $table->date('fecha_salida');
-            //$table->date('fecha_retorno')->nullable();
+            // $table->date('fecha_retorno')->nullable();
             $table->date('fecha_retorno_prevista')->nullable();
             $table->time('hora_inicio');
             $table->time('hora_fin_prevista');
-            //$table->time('hora_fin')->nullable();
-            //$table->text('observacion')->nullable();
+            // $table->time('hora_fin')->nullable();
+            // $table->text('observacion')->nullable();
 
             // Estado del préstamo (opcional pero muy útil)
             $table->enum('estado_prestamo', ['Activo', 'Devuelto', 'Vencido'])

@@ -18,14 +18,14 @@ return new class extends Migration
             // loanable_type: guardará el modelo (App\Models\Equipment o App\Models\Tool)
             $table->morphs('loanable');
 
-            //$table->enum('estado_salida', [
+            // $table->enum('estado_salida', [
             //    'Prestado',
             //    'Disponible',
             //    'Dañado',
             //    'Extraviado',
             //    'Incompleto',
             //    'Baja'
-            //])->default('Prestado');
+            // ])->default('Prestado');
             $table->timestamps();
         });
     }

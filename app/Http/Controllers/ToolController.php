@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Tool;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redirect; // Para el redireccionamiento
+// Para el redireccionamiento
 use Illuminate\Support\Facades\Storage;  // Para las fotos
 use Inertia\Inertia;                     // Para renderizar las vistas
 
@@ -34,14 +34,14 @@ class ToolController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nombre'             => 'required|string|max:255',
-            'ubicacion'          => 'required|string|max:255',
-            'codigo_qr'          => 'nullable|string|max:100|unique:tools,codigo_qr',
-            'descripcion'        => 'nullable|string',
-            'observacion'        => 'nullable|string',
-            'foto'               => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'marca_modelo'       => 'required|string|max:255',
-            'cantidad_piezas'    => 'required|integer|min:1',
+            'nombre' => 'required|string|max:255',
+            'ubicacion' => 'required|string|max:255',
+            'codigo_qr' => 'nullable|string|max:100|unique:tools,codigo_qr',
+            'descripcion' => 'nullable|string',
+            'observacion' => 'nullable|string',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'marca_modelo' => 'required|string|max:255',
+            'cantidad_piezas' => 'required|integer|min:1',
             'estado_herramienta' => 'required|string',
         ]);
 
@@ -53,15 +53,15 @@ class ToolController extends Controller
                 }
 
                 Tool::create([
-                    'codigo_qr'               => $validated['codigo_qr'],
-                    'nombre_herramienta'      => $validated['nombre'],
+                    'codigo_qr' => $validated['codigo_qr'],
+                    'nombre_herramienta' => $validated['nombre'],
                     'descripcion_herramienta' => $validated['descripcion'],
-                    'ubicacion_herramienta'   => $validated['ubicacion'],
+                    'ubicacion_herramienta' => $validated['ubicacion'],
                     'observacion_herramienta' => $validated['observacion'],
-                    'foto_herramienta'                    => $fotoPath,
-                    'marca_modelo'            => $validated['marca_modelo'],
-                    'cantidad_piezas'         => $validated['cantidad_piezas'],
-                    'estado_herramienta'      => $validated['estado_herramienta'],
+                    'foto_herramienta' => $fotoPath,
+                    'marca_modelo' => $validated['marca_modelo'],
+                    'cantidad_piezas' => $validated['cantidad_piezas'],
+                    'estado_herramienta' => $validated['estado_herramienta'],
                 ]);
 
                 // ── Si viene de una reposición por Reemplazo ──────────────────
@@ -70,12 +70,13 @@ class ToolController extends Controller
                     $rep = \App\Models\Reposition::find($request->reposition_id);
                     if ($rep && $rep->estado === 'Pendiente') {
                         $rep->update([
-                            'estado'             => 'Cumplida',
+                            'estado' => 'Cumplida',
                             'fecha_cumplimiento' => now()->toDateString(),
-                            'nuevo_item_id'      => $tool_created->id,
-                            'nuevo_item_type'    => Tool::class,
+                            'nuevo_item_id' => $tool_created->id,
+                            'nuevo_item_type' => Tool::class,
                         ]);
                     }
+
                     return redirect()->route('repositions.index')
                         ->with('success', 'Herramienta de reemplazo registrada y reposición marcada como cumplida.');
                 }
@@ -83,8 +84,11 @@ class ToolController extends Controller
                 return redirect()->route('items.index')->with('success', 'Herramienta registrada con éxito');
             });
         } catch (\Exception $e) {
-            if (isset($fotoPath)) Storage::disk('public')->delete($fotoPath);
-            return back()->withErrors(['error' => 'Error al guardar: ' . $e->getMessage()])->withInput();
+            if (isset($fotoPath)) {
+                Storage::disk('public')->delete($fotoPath);
+            }
+
+            return back()->withErrors(['error' => 'Error al guardar: '.$e->getMessage()])->withInput();
         }
     }
 
@@ -104,9 +108,10 @@ class ToolController extends Controller
         if (in_array($tool->estado_herramienta, ['Mantenimiento', 'Préstamo'])) {
             return redirect()->back()->with('error', 'No se puede editar una herramienta en este estado.');
         }
+
         // Como Tool es un modelo independiente ahora, solo lo pasamos
         return Inertia::render('inventory/tool/Edit', [
-            'tool' => $tool
+            'tool' => $tool,
         ]);
     }
 
@@ -123,18 +128,18 @@ class ToolController extends Controller
             ]);
 
             return redirect()->route('items.index', ['tab' => 'bajas'])
-                     ->with('success', 'La herramienta ' . $tool->nombre_herramienta . ' ha sido dada de baja con éxito!');
+                ->with('success', 'La herramienta '.$tool->nombre_herramienta.' ha sido dada de baja con éxito!');
         }
 
         $validated = $request->validate([
-            'codigo_qr'          => 'nullable|string|max:100|unique:tools,codigo_qr,' . $tool->id,
-            'nombre'             => 'required|string|max:255',
-            'foto'               => 'nullable|image|max:2048',
-            'ubicacion'          => 'required|string|max:255',
-            'descripcion'        => 'nullable|string',
-            'observacion'        => 'nullable|string',
-            'marca_modelo'       => 'required|string|max:255',
-            'cantidad_piezas'    => 'required|integer|min:0',
+            'codigo_qr' => 'nullable|string|max:100|unique:tools,codigo_qr,'.$tool->id,
+            'nombre' => 'required|string|max:255',
+            'foto' => 'nullable|image|max:2048',
+            'ubicacion' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+            'observacion' => 'nullable|string',
+            'marca_modelo' => 'required|string|max:255',
+            'cantidad_piezas' => 'required|integer|min:0',
             'estado_herramienta' => 'required|string',
         ]);
 
@@ -152,22 +157,22 @@ class ToolController extends Controller
                 }
 
                 $tool->update([
-                    'codigo_qr'               => $validated['codigo_qr'],
-                    'nombre_herramienta'      => $validated['nombre'],
-                    'foto_herramienta'        => $fotoPath,
+                    'codigo_qr' => $validated['codigo_qr'],
+                    'nombre_herramienta' => $validated['nombre'],
+                    'foto_herramienta' => $fotoPath,
                     'descripcion_herramienta' => $validated['descripcion'],
-                    'ubicacion_herramienta'   => $validated['ubicacion'],
+                    'ubicacion_herramienta' => $validated['ubicacion'],
                     'observacion_herramienta' => $validated['observacion'],
-                    'marca_modelo'            => $validated['marca_modelo'],
-                    'cantidad_piezas'         => $validated['cantidad_piezas'],
-                    'estado_herramienta'      => $validated['estado_herramienta'],
+                    'marca_modelo' => $validated['marca_modelo'],
+                    'cantidad_piezas' => $validated['cantidad_piezas'],
+                    'estado_herramienta' => $validated['estado_herramienta'],
                 ]);
 
                 return redirect()->route('items.index', ['tab' => 'herramientas'])
-                     ->with('success', '¡Registro de ' . $tool->nombre_herramienta . ' actualizado con éxito!');
+                    ->with('success', '¡Registro de '.$tool->nombre_herramienta.' actualizado con éxito!');
             });
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Error al actualizar: ' . $e->getMessage()])->withInput();
+            return back()->withErrors(['error' => 'Error al actualizar: '.$e->getMessage()])->withInput();
         }
     }
 

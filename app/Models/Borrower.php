@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Borrower extends Model
 {
@@ -26,13 +26,13 @@ class Borrower extends Model
         'activo' => 'boolean',
     ];
 
-    //Relación con el Docente
+    // Relación con el Docente
     public function teacher(): HasOne
     {
         return $this->hasOne(Teacher::class, 'id_teacher');
     }
 
-    //Relación con el Auxiliar
+    // Relación con el Auxiliar
     public function assistant(): HasOne
     {
         // El segundo parámetro es la llave foránea en la tabla assistants
@@ -59,9 +59,16 @@ class Borrower extends Model
 
     public function getTipoAttribute(): string
     {
-        if ($this->teacher) return 'docente';
-        if ($this->assistant) return 'auxiliar';
-        if ($this->student) return 'estudiante';
+        if ($this->teacher) {
+            return 'docente';
+        }
+        if ($this->assistant) {
+            return 'auxiliar';
+        }
+        if ($this->student) {
+            return 'estudiante';
+        }
+
         return 'desconocido';
     }
 }

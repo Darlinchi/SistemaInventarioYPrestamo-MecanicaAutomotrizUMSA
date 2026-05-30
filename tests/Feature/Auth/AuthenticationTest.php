@@ -41,9 +41,9 @@ class AuthenticationTest extends TestCase
         $user = User::factory()->create();
 
         $user->forceFill([
-            'two_factor_secret'         => encrypt('test-secret'),
+            'two_factor_secret' => encrypt('test-secret'),
             'two_factor_recovery_codes' => encrypt(json_encode(['code1', 'code2'])),
-            'two_factor_confirmed_at'   => now(),
+            'two_factor_confirmed_at' => now(),
         ])->save();
 
         $response = $this->post(route('login'), [
@@ -83,7 +83,7 @@ class AuthenticationTest extends TestCase
         $user = User::factory()->create();
 
         // El rate limiter de Fortify usa username + IP
-        RateLimiter::increment(md5('login' . implode('|', [$user->username, '127.0.0.1'])), amount: 5);
+        RateLimiter::increment(md5('login'.implode('|', [$user->username, '127.0.0.1'])), amount: 5);
 
         $response = $this->post(route('login.store'), [
             'username' => $user->username,

@@ -24,7 +24,7 @@ return new class extends Migration
             $table->enum('estado_accesorio', [
                 'Bueno',
                 'Dañado',
-                'Extraviado'
+                'Extraviado',
             ])->default('Bueno');
             $table->timestamps();
         });

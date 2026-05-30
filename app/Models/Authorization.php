@@ -26,7 +26,7 @@ class Authorization extends Model
     public function getArchivoUrlAttribute(): ?string
     {
         return $this->archivo_nota
-            ? asset('storage/' . $this->archivo_nota)
+            ? asset('storage/'.$this->archivo_nota)
             : null;
     }
 }

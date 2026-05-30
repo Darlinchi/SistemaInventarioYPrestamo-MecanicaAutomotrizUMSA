@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('maintenance_maintenance_company', function (Blueprint $table) {
             $table->foreignId('maintenance_id')->constrained('maintenances')->onDelete('cascade');
             $table->foreignId('maintenance_company_id')->constrained('maintenance_companies')->onDelete('cascade');
-            
+
             $table->primary(['maintenance_id', 'maintenance_company_id'], 'maint_comp_primary');
             $table->timestamps();
         });

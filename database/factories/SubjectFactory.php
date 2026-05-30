@@ -15,11 +15,11 @@ class SubjectFactory extends Factory
     public function definition(): array
     {
         return [
-            'sigla'          => strtoupper(fake()->lexify('???-###')),
+            'sigla' => strtoupper(fake()->lexify('???-###')),
             'nombre_materia' => fake()->words(3, true),
-            'semestre'       => fake()->numberBetween(1, 10),
-            'pensum'         => 'Actual',
-            'activo'         => 1,
+            'semestre' => fake()->numberBetween(1, 10),
+            'pensum' => 'Actual',
+            'activo' => 1,
         ];
     }
 }

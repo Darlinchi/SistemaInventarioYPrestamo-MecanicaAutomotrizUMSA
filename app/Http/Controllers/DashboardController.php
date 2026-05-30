@@ -6,7 +6,6 @@ use App\Models\Equipment;
 use App\Models\Loan;
 use App\Models\Maintenance;
 use App\Models\Tool; // Asegúrate de que este modelo exista
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -32,17 +31,17 @@ class DashboardController extends Controller
             'borrower.teacher',
             'subject',
             'equipments.accessories', // ← ya lo tienes
-            'tools'                   // ← ya lo tienes
+            'tools',                   // ← ya lo tienes
         ])
-        ->where('estado_prestamo', 'Activo')
-        ->orderBy('created_at', 'desc')
-        ->take(5)
-        ->get()
-        ->map(function ($loan) {          // ← AGREGA este map
-            return array_merge($loan->toArray(), [
-                'all_items' => $loan->buildAllItemsFromLoan(),
-            ]);
-        });
+            ->where('estado_prestamo', 'Activo')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get()
+            ->map(function ($loan) {          // ← AGREGA este map
+                return array_merge($loan->toArray(), [
+                    'all_items' => $loan->buildAllItemsFromLoan(),
+                ]);
+            });
 
         $recentEquipments = Equipment::orderBy('created_at', 'desc')->take(4)->get();
 
@@ -50,9 +49,9 @@ class DashboardController extends Controller
             'stats' => $stats,
             'recentLoans' => $recentLoans,
             'recentEquipments' => $recentEquipments,
-            'auth_user'        => [                    // ← AGREGAR ESTO
-                'id'       => auth()->id(),
-                'name'     => auth()->user()->name,
+            'auth_user' => [                    // ← AGREGAR ESTO
+                'id' => auth()->id(),
+                'name' => auth()->user()->name,
                 'username' => auth()->user()->username,
             ],
         ]);

@@ -2,22 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Item;
 use App\Models\Equipment;
+use App\Models\Item;
 use App\Models\Tool;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redirect; // Para el redireccionamiento
-use Illuminate\Support\Facades\Storage;  // Para las fotos
-use Inertia\Inertia;                     // Para renderizar las vistas
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+// Para el redireccionamiento
+use Illuminate\Support\Facades\DB;  // Para las fotos
+use Illuminate\Support\Facades\Storage;                     // Para renderizar las vistas
+use Inertia\Inertia;
 
 class ItemController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-
     public function index()
     {
         // 1. Obtenemos los equipos con sus relaciones (si aún tienes accesorios)
@@ -29,6 +28,7 @@ class ItemController extends Controller
             ->get()
             ->map(function ($item) {
                 $item->tipo = 'equipo';
+
                 return $item;
             });
 
@@ -36,6 +36,7 @@ class ItemController extends Controller
         $tools = Tool::all()
             ->map(function ($item) {
                 $item->tipo = 'herramienta';
+
                 return $item;
             });
 
@@ -48,10 +49,10 @@ class ItemController extends Controller
             // Obtenemos los enums directamente de la base de datos o definidos manualmente
             'estados_equipo' => [
                 'Nuevo', 'Disponible', 'Prestado', 'Mantenimiento',
-                'Reparado', 'Dañado', 'Extraviado', 'Incompleto', 'Baja'
+                'Reparado', 'Dañado', 'Extraviado', 'Incompleto', 'Baja',
             ],
             'estados_herramienta' => [
-                'Nuevo', 'Disponible', 'Prestado', 'Dañado', 'Extraviado', 'Baja'
+                'Nuevo', 'Disponible', 'Prestado', 'Dañado', 'Extraviado', 'Baja',
             ],
         ]);
     }
@@ -108,28 +109,27 @@ class ItemController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-
     public function store(Request $request)
     {
         // 1. Reglas comunes usando los nombres que vienen de Vue
         $rules = [
-            'tipo'        => 'required|in:equipo,herramienta',
-            'nombre'      => 'required|string|max:255', // Coincide con Vue
-            'ubicacion'   => 'required|string|max:255', // Coincide con Vue
-            'codigo_qr'   => 'nullable|string|max:100|unique:equipment,codigo_qr|unique:tools,codigo_qr',
+            'tipo' => 'required|in:equipo,herramienta',
+            'nombre' => 'required|string|max:255', // Coincide con Vue
+            'ubicacion' => 'required|string|max:255', // Coincide con Vue
+            'codigo_qr' => 'nullable|string|max:100|unique:equipment,codigo_qr|unique:tools,codigo_qr',
             'descripcion' => 'nullable|string',
             'observacion' => 'nullable|string',
-            'foto'        => 'nullable|image|max:2048',
+            'foto' => 'nullable|image|max:2048',
         ];
 
         // 2. Reglas Condicionales
         if ($request->tipo === 'equipo') {
             $rules['estado_equipo'] = 'required|string';
-            $rules['marca']         = 'required|string';
-            $rules['modelo']        = 'required|string';
-            $rules['serie']         = 'required|string';
+            $rules['marca'] = 'required|string';
+            $rules['modelo'] = 'required|string';
+            $rules['serie'] = 'required|string';
         } else {
-            $rules['marca_modelo']       = 'required|string';
+            $rules['marca_modelo'] = 'required|string';
             $rules['estado_herramienta'] = 'required|string';
         }
 
@@ -141,25 +141,25 @@ class ItemController extends Controller
 
                 if ($request->tipo === 'equipo') {
                     $item = Equipment::create([
-                        'codigo_qr'          => $validated['codigo_qr'],
-                        'nombre_equipo'      => $validated['nombre'],      // Mapeo: nombre -> nombre_equipo
+                        'codigo_qr' => $validated['codigo_qr'],
+                        'nombre_equipo' => $validated['nombre'],      // Mapeo: nombre -> nombre_equipo
                         'descripcion_equipo' => $validated['descripcion'],
-                        'ubicacion_equipo'   => $validated['ubicacion'],
+                        'ubicacion_equipo' => $validated['ubicacion'],
                         'observacion_equipo' => $validated['observacion'],
-                        'foto_equipo'        => $fotoPath,
-                        'estado_equipo'      => $validated['estado_equipo'],
-                        'marca'              => $validated['marca'],
-                        'modelo'             => $validated['modelo'],
-                        'serie'              => $validated['serie'],
-                        'color'              => $request->color,
-                        'rubro'              => $request->rubro,
-                        'fecha_adquisicion'  => $request->fecha_adquisicion,
+                        'foto_equipo' => $fotoPath,
+                        'estado_equipo' => $validated['estado_equipo'],
+                        'marca' => $validated['marca'],
+                        'modelo' => $validated['modelo'],
+                        'serie' => $validated['serie'],
+                        'color' => $request->color,
+                        'rubro' => $request->rubro,
+                        'fecha_adquisicion' => $request->fecha_adquisicion,
                     ]);
 
                     // Accesorios
                     if ($request->has('accesorios')) {
                         foreach ($request->accesorios as $acc) {
-                            if (!empty($acc['nombre'])) {
+                            if (! empty($acc['nombre'])) {
                                 $item->accessories()->create([
                                     'nombre_accesorio' => $acc['nombre'],
                                     'estado_accesorio' => $acc['estado'] ?? 'Bueno',
@@ -169,29 +169,32 @@ class ItemController extends Controller
                     }
                 } else {
                     $item = Tool::create([
-                        'codigo_qr'               => $validated['codigo_qr'],
-                        'nombre_herramienta'      => $validated['nombre'],
+                        'codigo_qr' => $validated['codigo_qr'],
+                        'nombre_herramienta' => $validated['nombre'],
                         'descripcion_herramienta' => $validated['descripcion'],
-                        'ubicacion_herramienta'   => $validated['ubicacion'],
+                        'ubicacion_herramienta' => $validated['ubicacion'],
                         'observacion_herramienta' => $validated['observacion'],
-                        'foto_herramienta'        => $fotoPath,
-                        'marca_modelo'            => $validated['marca_modelo'],
-                        'estado_herramienta'      => $validated['estado_herramienta'],
+                        'foto_herramienta' => $fotoPath,
+                        'marca_modelo' => $validated['marca_modelo'],
+                        'estado_herramienta' => $validated['estado_herramienta'],
                     ]);
                 }
 
                 return redirect()->route('items.index')->with('success', 'Registrado correctamente');
             });
         } catch (\Exception $e) {
-            if (isset($fotoPath)) Storage::disk('public')->delete($fotoPath);
-            return back()->withErrors(['error' => 'Error: ' . $e->getMessage()])->withInput();
+            if (isset($fotoPath)) {
+                Storage::disk('public')->delete($fotoPath);
+            }
+
+            return back()->withErrors(['error' => 'Error: '.$e->getMessage()])->withInput();
         }
     }
 
     public function storee(Request $request)
     {
         $request->merge([
-            'es_herramienta' => ! (bool) $request->es_equipo
+            'es_herramienta' => ! (bool) $request->es_equipo,
         ]);
         // Validacion de los campos
         $validated = $request->validate([
@@ -243,7 +246,7 @@ class ItemController extends Controller
 
                     if ($request->has('accesorios')) {
                         foreach ($request->accesorios as $acc) {
-                            if (!empty($acc['nombre'])) {
+                            if (! empty($acc['nombre'])) {
                                 $equipment->accessories()->create([
                                     'nombre_accesorio' => $acc['nombre'],
                                     'estado_accesorio' => $acc['estado'] ?? 'Bueno',
@@ -251,21 +254,23 @@ class ItemController extends Controller
                             }
                         }
                     }
-                }else {
+                } else {
                     // Crear Herramienta
                     $item->tool()->create([
                         'marca_modelo' => $request->marca_modelo,
                         'estado_herramienta' => 'Disponible',
                     ]);
                 }
+
                 return $item;
 
             });
+
             return redirect()->route('items.index')->with('success', "¡{$item->nombre_item} creado exitosamente!");
 
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'No se pudo crear el registro. Intente de nuevo.'])
-                        ->withInput();
+                ->withInput();
         }
     }
 
@@ -293,7 +298,7 @@ class ItemController extends Controller
         }
 
         return Inertia::render('inventory/Edit', [
-            'item' => $item
+            'item' => $item,
         ]);
     }
 
@@ -304,13 +309,13 @@ class ItemController extends Controller
         $tipo = 'equipo';
 
         // 2. Si no está en Equipment, buscamos en Tool
-        if (!$item) {
+        if (! $item) {
             $item = \App\Models\Tool::find($id);
             $tipo = 'herramienta';
         }
 
         // 3. Si no existe en ninguno, soltamos el 404
-        if (!$item) {
+        if (! $item) {
             abort(404, 'Item no encontrado en ninguna categoría.');
         }
 
@@ -327,7 +332,7 @@ class ItemController extends Controller
         }
 
         return \Inertia\Inertia::render('inventory/Edit', [
-            'item' => $item
+            'item' => $item,
         ]);
     }
 
@@ -337,27 +342,27 @@ class ItemController extends Controller
     public function updatee(Request $request, Item $item)
     {
         $request->merge([
-            'es_herramienta' => ! (bool) $request->es_equipo
+            'es_herramienta' => ! (bool) $request->es_equipo,
         ]);
 
         $validated = $request->validate([
-            'codigo_qr'          => 'nullable|string|max:100|unique:items,codigo_qr,' . $item->id,
-            'nombre_item'        => 'required|string|max:255',
-            'ubicacion_item'     => 'required|string|max:100',
-            'foto'               => 'nullable|image|max:2048',
-            'descripcion_item'   => 'nullable|string',
-            'observacion_item'   => 'nullable|string',
-            'es_equipo'          => 'required|boolean',
-            'es_herramienta'     => 'required|boolean',
-            'estado_equipo'      => 'required_if:es_equipo,true|string',
-            'marca'              => 'required_if:es_equipo,true|nullable|string',
-            'modelo'             => 'required_if:es_equipo,true|nullable|string',
-            'serie'              => 'required_if:es_equipo,true|nullable|string|unique:equipment,serie,' . ($item->equipment->id ?? 'null'),
-            'color'              => 'nullable|string',
-            'rubro'              => 'nullable|string',
-            'fecha_adquisicion'  => 'nullable|date',
-            'accesorios'         => 'nullable|array',
-            'marca_modelo'       => 'required_if:es_herramienta,true|nullable|string',
+            'codigo_qr' => 'nullable|string|max:100|unique:items,codigo_qr,'.$item->id,
+            'nombre_item' => 'required|string|max:255',
+            'ubicacion_item' => 'required|string|max:100',
+            'foto' => 'nullable|image|max:2048',
+            'descripcion_item' => 'nullable|string',
+            'observacion_item' => 'nullable|string',
+            'es_equipo' => 'required|boolean',
+            'es_herramienta' => 'required|boolean',
+            'estado_equipo' => 'required_if:es_equipo,true|string',
+            'marca' => 'required_if:es_equipo,true|nullable|string',
+            'modelo' => 'required_if:es_equipo,true|nullable|string',
+            'serie' => 'required_if:es_equipo,true|nullable|string|unique:equipment,serie,'.($item->equipment->id ?? 'null'),
+            'color' => 'nullable|string',
+            'rubro' => 'nullable|string',
+            'fecha_adquisicion' => 'nullable|date',
+            'accesorios' => 'nullable|array',
+            'marca_modelo' => 'required_if:es_herramienta,true|nullable|string',
             'estado_herramienta' => 'required_if:es_herramienta,true|string',
         ]);
 
@@ -367,18 +372,20 @@ class ItemController extends Controller
                 // Manejo de Foto
                 $fotoPath = $item->foto;
                 if ($request->hasFile('foto')) {
-                    if ($item->foto) Storage::disk('public')->delete($item->foto);
+                    if ($item->foto) {
+                        Storage::disk('public')->delete($item->foto);
+                    }
                     $fotoPath = $request->file('foto')->store('items', 'public');
                 }
 
                 // Actualizar Item
                 $item->update([
-                    'codigo_qr'        => $validated['codigo_qr'],
-                    'nombre_item'      => $validated['nombre_item'],
-                    'ubicacion_item'   => $validated['ubicacion_item'],
+                    'codigo_qr' => $validated['codigo_qr'],
+                    'nombre_item' => $validated['nombre_item'],
+                    'ubicacion_item' => $validated['ubicacion_item'],
                     'descripcion_item' => $validated['descripcion_item'],
                     'observacion_item' => $validated['observacion_item'],
-                    'foto'             => $fotoPath,
+                    'foto' => $fotoPath,
                 ]);
 
                 if ($request->es_equipo) {
@@ -390,7 +397,7 @@ class ItemController extends Controller
 
                     // --- INICIO SINCRONIZACIÓN DE ACCESORIOS ---
                     if ($request->has('accesorios')) {
-                        $accesoriosData = collect($request->accesorios)->filter(fn($acc) => !empty($acc['nombre']));
+                        $accesoriosData = collect($request->accesorios)->filter(fn ($acc) => ! empty($acc['nombre']));
 
                         // 1. Obtener IDs que deben permanecer
                         $idsParaMantener = $accesoriosData->pluck('id')->filter()->toArray();
@@ -421,10 +428,11 @@ class ItemController extends Controller
                         $request->only(['marca_modelo', 'estado_herramienta'])
                     );
                 }
-                return redirect()->route('items.index')->with('success', '¡Registro de ' . $item->nombre_item . ' actualizado con éxito!');
+
+                return redirect()->route('items.index')->with('success', '¡Registro de '.$item->nombre_item.' actualizado con éxito!');
             });
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Error: ' . $e->getMessage()])->withInput();
+            return back()->withErrors(['error' => 'Error: '.$e->getMessage()])->withInput();
         }
     }
 
@@ -434,25 +442,25 @@ class ItemController extends Controller
 
         // 1. Reglas de Validación (Sincronizadas con los nombres de Vue)
         $rules = [
-            'tipo'        => 'required|in:equipo,herramienta',
-            'nombre'      => 'required|string|max:255',
-            'ubicacion'   => 'required|string|max:255',
-            'codigo_qr'   => "nullable|string|max:100|unique:equipment,codigo_qr,{$id}|unique:tools,codigo_qr,{$id}",
+            'tipo' => 'required|in:equipo,herramienta',
+            'nombre' => 'required|string|max:255',
+            'ubicacion' => 'required|string|max:255',
+            'codigo_qr' => "nullable|string|max:100|unique:equipment,codigo_qr,{$id}|unique:tools,codigo_qr,{$id}",
             'descripcion' => 'nullable|string',
             'observacion' => 'nullable|string',
-            'foto'        => 'nullable|image|max:2048',
+            'foto' => 'nullable|image|max:2048',
         ];
 
         if ($tipo === 'equipo') {
             $rules += [
                 'estado_equipo' => 'required|string',
-                'marca'         => 'required|string',
-                'modelo'        => 'required|string',
-                'serie'         => "required|string|unique:equipment,serie,{$id}",
+                'marca' => 'required|string',
+                'modelo' => 'required|string',
+                'serie' => "required|string|unique:equipment,serie,{$id}",
             ];
         } else {
             $rules += [
-                'marca_modelo'       => 'required|string',
+                'marca_modelo' => 'required|string',
                 'estado_herramienta' => 'required|string',
             ];
         }
@@ -468,30 +476,32 @@ class ItemController extends Controller
                 // Manejo de Foto
                 $fotoPath = ($tipo === 'equipo') ? $model->foto_equipo : $model->foto_herramienta;
                 if ($request->hasFile('foto')) {
-                    if ($fotoPath) Storage::disk('public')->delete($fotoPath);
+                    if ($fotoPath) {
+                        Storage::disk('public')->delete($fotoPath);
+                    }
                     $fotoPath = $request->file('foto')->store('inventario', 'public');
                 }
 
                 if ($tipo === 'equipo') {
                     $model->update([
-                        'codigo_qr'          => $validated['codigo_qr'],
-                        'nombre_equipo'      => $validated['nombre'],
+                        'codigo_qr' => $validated['codigo_qr'],
+                        'nombre_equipo' => $validated['nombre'],
                         'descripcion_equipo' => $validated['descripcion'],
-                        'ubicacion_equipo'   => $validated['ubicacion'],
+                        'ubicacion_equipo' => $validated['ubicacion'],
                         'observacion_equipo' => $validated['observacion'],
-                        'foto_equipo'        => $fotoPath,
-                        'estado_equipo'      => $validated['estado_equipo'],
-                        'marca'              => $validated['marca'],
-                        'modelo'             => $validated['modelo'],
-                        'serie'              => $validated['serie'],
-                        'color'              => $request->color,
-                        'rubro'              => $request->rubro,
-                        'fecha_adquisicion'  => $request->fecha_adquisicion,
+                        'foto_equipo' => $fotoPath,
+                        'estado_equipo' => $validated['estado_equipo'],
+                        'marca' => $validated['marca'],
+                        'modelo' => $validated['modelo'],
+                        'serie' => $validated['serie'],
+                        'color' => $request->color,
+                        'rubro' => $request->rubro,
+                        'fecha_adquisicion' => $request->fecha_adquisicion,
                     ]);
 
                     // Sincronizar Accesorios
                     if ($request->has('accesorios')) {
-                        $accesoriosData = collect($request->accesorios)->filter(fn($acc) => !empty($acc['nombre']));
+                        $accesoriosData = collect($request->accesorios)->filter(fn ($acc) => ! empty($acc['nombre']));
                         $idsParaMantener = $accesoriosData->pluck('id')->filter()->toArray();
                         $model->accessories()->whereNotIn('id', $idsParaMantener)->delete();
 
@@ -507,21 +517,21 @@ class ItemController extends Controller
                     }
                 } else {
                     $model->update([
-                        'codigo_qr'               => $validated['codigo_qr'],
-                        'nombre_herramienta'      => $validated['nombre'],
+                        'codigo_qr' => $validated['codigo_qr'],
+                        'nombre_herramienta' => $validated['nombre'],
                         'descripcion_herramienta' => $validated['descripcion'],
-                        'ubicacion_herramienta'   => $validated['ubicacion'],
+                        'ubicacion_herramienta' => $validated['ubicacion'],
                         'observacion_herramienta' => $validated['observacion'],
-                        'foto_herramienta'        => $fotoPath,
-                        'marca_modelo'            => $validated['marca_modelo'],
-                        'estado_herramienta'      => $validated['estado_herramienta'],
+                        'foto_herramienta' => $fotoPath,
+                        'marca_modelo' => $validated['marca_modelo'],
+                        'estado_herramienta' => $validated['estado_herramienta'],
                     ]);
                 }
 
                 return redirect()->route('items.index')->with('success', 'Actualizado correctamente');
             });
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Error: ' . $e->getMessage()])->withInput();
+            return back()->withErrors(['error' => 'Error: '.$e->getMessage()])->withInput();
         }
     }
 

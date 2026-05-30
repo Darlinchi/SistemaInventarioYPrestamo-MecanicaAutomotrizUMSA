@@ -19,16 +19,16 @@ return new class extends Migration
 
             // Polimórfico: Equipment o Tool (mismo que en loan_items)
             $table->morphs('returnable'); // returnable_id + returnable_type
-            //$table->unsignedInteger('cantidad')->default(1);
+            // $table->unsignedInteger('cantidad')->default(1);
             $table->enum('estado_devolucion', [
                 'Disponible',
                 'Dañado',
                 'Extraviado',
                 'Incompleto',
-                'Baja'
+                'Baja',
             ])->default('Disponible');
 
-            //$table->text('observacion_devolucion')->nullable();
+            // $table->text('observacion_devolucion')->nullable();
             $table->timestamps();
         });
     }

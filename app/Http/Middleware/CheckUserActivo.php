@@ -10,7 +10,7 @@ class CheckUserActivo
 {
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && !Auth::user()->activo) {
+        if (Auth::check() && ! Auth::user()->activo) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

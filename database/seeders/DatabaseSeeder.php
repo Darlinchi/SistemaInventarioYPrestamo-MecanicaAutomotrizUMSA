@@ -19,8 +19,8 @@ class DatabaseSeeder extends Seeder
         $admin = User::firstOrCreate(
             ['username' => 'Darlin'], // 1er array: Lo que se busca
             [                         // 2do array: Lo que se inserta si no existe
-                'name'     => 'Darlin Soliz',
-                'email'    => 'admin@gmail.com',
+                'name' => 'Darlin Soliz',
+                'email' => 'admin@gmail.com',
                 'password' => bcrypt('12345678'),
             ]
         );
@@ -30,8 +30,8 @@ class DatabaseSeeder extends Seeder
         $director = User::firstOrCreate(
             ['username' => 'Director Luis Copa'],
             [
-                'name'     => 'Luis Andrés Copa Yujra',
-                'email'    => 'director@gmail.com',
+                'name' => 'Luis Andrés Copa Yujra',
+                'email' => 'director@gmail.com',
                 'password' => bcrypt('12345678'),
             ]
         );
@@ -41,8 +41,8 @@ class DatabaseSeeder extends Seeder
         $encargado = User::firstOrCreate(
             ['username' => 'Encargado'],
             [
-                'name'     => 'Encargados de taller',
-                'email'    => 'encargado@gmail.com',
+                'name' => 'Encargados de taller',
+                'email' => 'encargado@gmail.com',
                 'password' => bcrypt('12345678'),
             ]
         );
@@ -52,7 +52,7 @@ class DatabaseSeeder extends Seeder
         if (! $encargado->staff()->exists()) {
             $encargado->staff()->create([
                 'horario_manana' => '07:00 - 12:00',
-                'horario_tarde'  => '14:00 - 18:00',
+                'horario_tarde' => '14:00 - 18:00',
             ]);
         }
 

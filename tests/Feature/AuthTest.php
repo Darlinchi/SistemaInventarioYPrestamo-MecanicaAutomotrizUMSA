@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 /**
  * Pruebas funcionales – Módulo Autenticación y Roles (Sprint 1)
@@ -20,7 +20,7 @@ class AuthTest extends TestCase
     use RefreshDatabase;
 
     // PF-01  Login con username válido → dashboard
-    public function test_PF01_login_con_username_valido(): void
+    public function test_p_f01_login_con_username_valido(): void
     {
         $user = User::factory()->withoutTwoFactor()->create();
         $response = $this->post(route('login.store'), [
@@ -32,7 +32,7 @@ class AuthTest extends TestCase
     }
 
     // PF-02  Login con contraseña incorrecta → guest
-    public function test_PF02_login_con_password_incorrecto_falla(): void
+    public function test_p_f02_login_con_password_incorrecto_falla(): void
     {
         $user = User::factory()->withoutTwoFactor()->create();
         $this->post(route('login.store'), [
@@ -43,7 +43,7 @@ class AuthTest extends TestCase
     }
 
     // PF-03  Rutas protegidas redirigen al login sin autenticación
-    public function test_PF03_acceso_sin_autenticacion_redirige_al_login(): void
+    public function test_p_f03_acceso_sin_autenticacion_redirige_al_login(): void
     {
         $rutasProtegidas = [
             route('dashboard'),
@@ -60,7 +60,7 @@ class AuthTest extends TestCase
     }
 
     // PF-04  Ruta usuarios accesible para usuario autenticado (comportamiento real)
-    public function test_PF04_ruta_usuarios_accesible_para_autenticado(): void
+    public function test_p_f04_ruta_usuarios_accesible_para_autenticado(): void
     {
         $user = User::factory()->withoutTwoFactor()->create();
         $response = $this->actingAs($user)->get(route('users.index'));
@@ -68,7 +68,7 @@ class AuthTest extends TestCase
     }
 
     // PF-05  Cierre de sesión redirige a home
-    public function test_PF05_cierre_sesion_correcto(): void
+    public function test_p_f05_cierre_sesion_correcto(): void
     {
         $user = User::factory()->withoutTwoFactor()->create();
         $response = $this->actingAs($user)->post(route('logout'));
@@ -77,7 +77,7 @@ class AuthTest extends TestCase
     }
 
     // PF-06  Usuario autenticado accede al dashboard (HTTP 200)
-    public function test_PF06_usuario_autenticado_accede_al_dashboard(): void
+    public function test_p_f06_usuario_autenticado_accede_al_dashboard(): void
     {
         $user = User::factory()->withoutTwoFactor()->create();
         $response = $this->actingAs($user)->get(route('dashboard'));

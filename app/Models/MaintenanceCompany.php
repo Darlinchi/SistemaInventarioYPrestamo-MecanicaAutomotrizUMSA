@@ -10,7 +10,7 @@ class MaintenanceCompany extends Model
     // Definicion de los campos que se pueden llenar masivamente
     protected $fillable = [
         'id', 'nombre_empresa', 'telefono',
-        'descripcion_empresa', 'direccion'
+        'descripcion_empresa', 'direccion',
     ];
 
     public function maintenances(): BelongsToMany

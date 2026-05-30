@@ -16,10 +16,10 @@ class SubjectImport implements ToModel, WithHeadingRow, WithValidation
             ['sigla' => trim($row['sigla'])],
             [
                 'nombre_materia' => trim($row['nombre_materia']),
-                'semestre'       => $row['semestre'] ?? null,
+                'semestre' => $row['semestre'] ?? null,
                 // Nuevos campos para control de Pensum
-                'activo'         => $row['activo'] ?? true,
-                'pensum'         => trim($row['pensum'] ?? 'Plan ' . date('Y')),
+                'activo' => $row['activo'] ?? true,
+                'pensum' => trim($row['pensum'] ?? 'Plan '.date('Y')),
             ]
         );
     }
@@ -27,11 +27,11 @@ class SubjectImport implements ToModel, WithHeadingRow, WithValidation
     public function rules(): array
     {
         return [
-            'sigla'          => 'required|max:20',
+            'sigla' => 'required|max:20',
             'nombre_materia' => 'required|string|max:100',
-            'semestre'       => 'nullable|numeric',
-            'activo'         => 'nullable|boolean', // 1 o 0 en el Excel
-            'pensum'         => 'nullable|string|max:20',
+            'semestre' => 'nullable|numeric',
+            'activo' => 'nullable|boolean', // 1 o 0 en el Excel
+            'pensum' => 'nullable|string|max:20',
         ];
     }
 }

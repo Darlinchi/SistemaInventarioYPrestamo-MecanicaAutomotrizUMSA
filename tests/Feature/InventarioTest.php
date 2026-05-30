@@ -2,14 +2,14 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
 use App\Models\Equipment;
 use App\Models\Tool;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Permission;
+use Tests\TestCase;
 
 /**
  * Pruebas funcionales – Módulo de Inventario (Sprint 2)
@@ -40,40 +40,41 @@ class InventarioTest extends TestCase
     {
         $user = User::factory()->withoutTwoFactor()->create();
         $permisos = [
-            'equipos.ver','equipos.crear','equipos.editar','equipos.eliminar',
-            'herramientas.ver','herramientas.crear','herramientas.editar','herramientas.eliminar',
+            'equipos.ver', 'equipos.crear', 'equipos.editar', 'equipos.eliminar',
+            'herramientas.ver', 'herramientas.crear', 'herramientas.editar', 'herramientas.eliminar',
         ];
         foreach ($permisos as $p) {
             Permission::findOrCreate($p, 'web');
         }
         $user->givePermissionTo($permisos);
+
         return $user;
     }
 
     // ══════════════════════════════════════════════════════════════════════════
     // PF-07  Registro de equipo con datos completos
     // ══════════════════════════════════════════════════════════════════════════
-    public function test_PF07_registrar_equipo_con_datos_completos(): void
+    public function test_p_f07_registrar_equipo_con_datos_completos(): void
     {
         Storage::fake('public');
         $user = $this->usuarioConPermisos();
 
         $response = $this->actingAs($user)
             ->post(route('equipments.store'), [
-                'nombre'        => 'Escáner Launch X431',
-                'ubicacion'     => 'Gabinete A',
+                'nombre' => 'Escáner Launch X431',
+                'ubicacion' => 'Gabinete A',
                 'estado_equipo' => 'Nuevo',
-                'marca'         => 'Launch',
-                'modelo'        => 'X431 Pro',
-                'serie'         => 'LNC-2025-001',
-                'rubro'         => 'Diagnóstico',
-                'foto'          => UploadedFile::fake()->image('equipo.jpg'),
+                'marca' => 'Launch',
+                'modelo' => 'X431 Pro',
+                'serie' => 'LNC-2025-001',
+                'rubro' => 'Diagnóstico',
+                'foto' => UploadedFile::fake()->image('equipo.jpg'),
             ]);
 
         $response->assertRedirect();
         $this->assertDatabaseHas('equipment', [
             'nombre_equipo' => 'Escáner Launch X431',
-            'marca'         => 'Launch',
+            'marca' => 'Launch',
             'estado_equipo' => 'Nuevo',
         ]);
     }
@@ -81,18 +82,18 @@ class InventarioTest extends TestCase
     // ══════════════════════════════════════════════════════════════════════════
     // PF-08  Registro de equipo sin nombre → falla validación
     // ══════════════════════════════════════════════════════════════════════════
-    public function test_PF08_registrar_equipo_sin_nombre_falla_validacion(): void
+    public function test_p_f08_registrar_equipo_sin_nombre_falla_validacion(): void
     {
         $user = $this->usuarioConPermisos();
 
         $response = $this->actingAs($user)
             ->post(route('equipments.store'), [
-                'nombre'        => '',
-                'ubicacion'     => 'Gabinete A',
+                'nombre' => '',
+                'ubicacion' => 'Gabinete A',
                 'estado_equipo' => 'Nuevo',
-                'marca'         => 'Launch',
-                'modelo'        => 'X431 Pro',
-                'serie'         => 'LNC-2025-001',
+                'marca' => 'Launch',
+                'modelo' => 'X431 Pro',
+                'serie' => 'LNC-2025-001',
             ]);
 
         $response->assertSessionHasErrors(['nombre']);
@@ -101,7 +102,7 @@ class InventarioTest extends TestCase
     // ══════════════════════════════════════════════════════════════════════════
     // PF-09  Listado de equipos accesible para usuario autenticado
     // ══════════════════════════════════════════════════════════════════════════
-    public function test_PF09_listado_equipos_accesible_para_autenticado(): void
+    public function test_p_f09_listado_equipos_accesible_para_autenticado(): void
     {
         $user = User::factory()->withoutTwoFactor()->create();
         $this->actingAs($user)->get(route('equipments.index'))->assertStatus(200);
@@ -110,7 +111,7 @@ class InventarioTest extends TestCase
     // ══════════════════════════════════════════════════════════════════════════
     // PF-10  Listado de equipos redirige sin autenticación
     // ══════════════════════════════════════════════════════════════════════════
-    public function test_PF10_listado_equipos_redirige_sin_autenticacion(): void
+    public function test_p_f10_listado_equipos_redirige_sin_autenticacion(): void
     {
         $this->get(route('equipments.index'))->assertRedirect(route('login'));
     }
@@ -118,21 +119,21 @@ class InventarioTest extends TestCase
     // ══════════════════════════════════════════════════════════════════════════
     // PF-11  Cambio de estado de equipo usando el caso especial 'solo_estado'
     // ══════════════════════════════════════════════════════════════════════════
-    public function test_PF11_cambiar_estado_equipo(): void
+    public function test_p_f11_cambiar_estado_equipo(): void
     {
-        $user   = $this->usuarioConPermisos();
+        $user = $this->usuarioConPermisos();
         $equipo = Equipment::factory()->create(['estado_equipo' => 'Disponible']);
 
         $response = $this->actingAs($user)
             ->put(route('equipments.update', $equipo->id), [
-                'solo_estado'        => true,
-                'estado_equipo'      => 'Baja',
+                'solo_estado' => true,
+                'estado_equipo' => 'Baja',
                 'observacion_equipo' => 'Dado de baja por prueba funcional',
             ]);
 
         $response->assertRedirect();
         $this->assertDatabaseHas('equipment', [
-            'id'            => $equipo->id,
+            'id' => $equipo->id,
             'estado_equipo' => 'Baja',
         ]);
     }
@@ -150,33 +151,33 @@ class InventarioTest extends TestCase
     //  SOLUCIÓN: Enviar 'codigo_qr' explícitamente como null para que
     //  Laravel lo incluya en $validated y el controlador no falle.
     // ══════════════════════════════════════════════════════════════════════════
-    public function test_PF12_registrar_herramienta_con_datos_completos(): void
+    public function test_p_f12_registrar_herramienta_con_datos_completos(): void
     {
         Storage::fake('public');
         $user = $this->usuarioConPermisos();
 
         $response = $this->actingAs($user)
             ->post(route('tools.store'), [
-                'nombre'             => 'Juego de llaves mixtas',
-                'ubicacion'          => 'Estante B',
-                'marca_modelo'       => 'Stanley 12 piezas',
-                'cantidad_piezas'    => 12,
+                'nombre' => 'Juego de llaves mixtas',
+                'ubicacion' => 'Estante B',
+                'marca_modelo' => 'Stanley 12 piezas',
+                'cantidad_piezas' => 12,
                 'estado_herramienta' => 'Nuevo',
-                'codigo_qr'          => null,   // CLAVE: enviar explícitamente
-                'descripcion'        => null,   // para que $validated los incluya
-                'observacion'        => null,
-                'foto'               => UploadedFile::fake()->image('llave.jpg'),
+                'codigo_qr' => null,   // CLAVE: enviar explícitamente
+                'descripcion' => null,   // para que $validated los incluya
+                'observacion' => null,
+                'foto' => UploadedFile::fake()->image('llave.jpg'),
             ]);
 
         // Si aún falla, muestra el error real para diagnóstico
         if (session('errors')) {
-            $this->fail('Errores de validación: ' . implode(', ', session('errors')->all()));
+            $this->fail('Errores de validación: '.implode(', ', session('errors')->all()));
         }
 
         $response->assertRedirect();
         $this->assertDatabaseHas('tools', [
             'nombre_herramienta' => 'Juego de llaves mixtas',
-            'cantidad_piezas'    => 12,
+            'cantidad_piezas' => 12,
             'estado_herramienta' => 'Nuevo',
         ]);
     }
@@ -184,7 +185,7 @@ class InventarioTest extends TestCase
     // ══════════════════════════════════════════════════════════════════════════
     // PF-13  Listado de ítems combinado accesible
     // ══════════════════════════════════════════════════════════════════════════
-    public function test_PF13_listado_items_accesible(): void
+    public function test_p_f13_listado_items_accesible(): void
     {
         $user = User::factory()->withoutTwoFactor()->create();
         $this->actingAs($user)->get(route('items.index'))->assertStatus(200);

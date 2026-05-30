@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
@@ -14,9 +14,9 @@ class RoleController extends Controller
         $roles = Role::with('permissions')
             ->orderBy('name')
             ->get()
-            ->map(fn($role) => [
-                'id'          => $role->id,
-                'name'        => $role->name,
+            ->map(fn ($role) => [
+                'id' => $role->id,
+                'name' => $role->name,
                 'permissions' => $role->permissions->pluck('name'),
                 'users_count' => $role->users()->count(),
             ]);
@@ -24,11 +24,11 @@ class RoleController extends Controller
         // Agrupamos permisos por módulo para mostrarlos organizados en la UI
         $permissionGroups = Permission::orderBy('name')
             ->get()
-            ->groupBy(fn($p) => explode('.', $p->name)[0])
-            ->map(fn($group) => $group->pluck('name')->values());
+            ->groupBy(fn ($p) => explode('.', $p->name)[0])
+            ->map(fn ($group) => $group->pluck('name')->values());
 
         return Inertia::render('users/roles/Index', [
-            'roles'            => $roles,
+            'roles' => $roles,
             'permissionGroups' => $permissionGroups,
         ]);
     }
@@ -36,8 +36,8 @@ class RoleController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'          => 'required|string|max:50|unique:roles,name',
-            'permissions'   => 'nullable|array',
+            'name' => 'required|string|max:50|unique:roles,name',
+            'permissions' => 'nullable|array',
             'permissions.*' => 'exists:permissions,name',
         ]);
 
@@ -59,8 +59,8 @@ class RoleController extends Controller
         }
 
         $request->validate([
-            'name'          => 'required|string|max:50|unique:roles,name,' . $role->id,
-            'permissions'   => 'nullable|array',
+            'name' => 'required|string|max:50|unique:roles,name,'.$role->id,
+            'permissions' => 'nullable|array',
             'permissions.*' => 'exists:permissions,name',
         ]);
 
@@ -84,6 +84,7 @@ class RoleController extends Controller
         }
 
         $role->delete();
+
         return back()->with('success', 'Rol eliminado correctamente.');
     }
 }

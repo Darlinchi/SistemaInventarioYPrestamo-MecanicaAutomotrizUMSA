@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LoanReturn extends Model
 {
@@ -15,7 +15,7 @@ class LoanReturn extends Model
 
     // Definicion de los campos que se pueden llenar masivamente
     protected $fillable = [
-        'loan_id' , 'user_id', 'fecha_retorno', 'hora_fin', 'observacion'
+        'loan_id', 'user_id', 'fecha_retorno', 'hora_fin', 'observacion',
     ];
 
     protected function casts(): array

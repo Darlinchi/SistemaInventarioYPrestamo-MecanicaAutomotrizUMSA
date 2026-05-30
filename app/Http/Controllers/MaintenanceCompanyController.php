@@ -24,7 +24,7 @@ class MaintenanceCompanyController extends Controller
                 'direccion' => $company->direccion,
                 'descripcion_empresa' => $company->descripcion_empresa,
                 // Si tiene algún mantenimiento, bloqueamos la acción en el frontend
-                'puede_eliminarse' => !$company->maintenances()->exists(),
+                'puede_eliminarse' => ! $company->maintenances()->exists(),
             ];
         });
 
@@ -55,7 +55,7 @@ class MaintenanceCompanyController extends Controller
         ]);
 
         try {
-            return DB::transaction(function () use ($request, $validated) {
+            return DB::transaction(function () use ($validated) {
                 // Crear Empresa
                 MaintenanceCompany::create([
                     'nombre_empresa' => $validated['nombre_empresa'],
@@ -70,7 +70,7 @@ class MaintenanceCompanyController extends Controller
             });
         } catch (\Exception $e) {
             // Muestra el error real si la transaccion falla
-            return back()->withErrors(['error' => 'Error al guardar: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Error al guardar: '.$e->getMessage()]);
         }
     }
 
@@ -89,7 +89,7 @@ class MaintenanceCompanyController extends Controller
     {
 
         return Inertia::render('maintenanceCompany/Edit', [
-            'maintenanceCompany' => $maintenanceCompany
+            'maintenanceCompany' => $maintenanceCompany,
         ]);
     }
 
@@ -114,7 +114,7 @@ class MaintenanceCompanyController extends Controller
                     ->with('success', 'Registro actualizado exitosamente');
             });
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'No se pudo actualizar: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'No se pudo actualizar: '.$e->getMessage()]);
         }
     }
 
@@ -131,7 +131,7 @@ class MaintenanceCompanyController extends Controller
 
             if ($tieneMantenimientos) {
                 return back()->withErrors([
-                    'error' => 'No se puede eliminar la empresa "' . $maintenanceCompany->nombre_empresa . '" porque tiene historiales de mantenimiento activos o completados asignados en el taller.'
+                    'error' => 'No se puede eliminar la empresa "'.$maintenanceCompany->nombre_empresa.'" porque tiene historiales de mantenimiento activos o completados asignados en el taller.',
                 ]);
             }
 
@@ -142,7 +142,7 @@ class MaintenanceCompanyController extends Controller
                 ->with('success', 'Empresa eliminada correctamente.');
 
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'No se pudo realizar la acción: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'No se pudo realizar la acción: '.$e->getMessage()]);
         }
     }
 }

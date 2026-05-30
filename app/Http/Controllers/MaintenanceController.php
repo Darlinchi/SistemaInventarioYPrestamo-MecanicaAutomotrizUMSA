@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Maintenance;
 use App\Models\Equipment;
+use App\Models\Maintenance;
 use App\Models\MaintenanceCompany;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class MaintenanceController extends Controller
 {
@@ -19,15 +19,15 @@ class MaintenanceController extends Controller
     public function index()
     {
         $maintenances = Maintenance::with(['equipment', 'companies', 'user'])
-        ->orderBy('fecha_mantenimiento', 'desc')
-        ->orderBy('hora_inicio', 'desc')
-        ->get();
+            ->orderBy('fecha_mantenimiento', 'desc')
+            ->orderBy('hora_inicio', 'desc')
+            ->get();
 
         return Inertia::render('maintenance/Index', [
             'maintenances' => $maintenances,
-            'auth_user'      => [
-                'id'       => auth()->user()->id,
-                'name'     => auth()->user()->name,
+            'auth_user' => [
+                'id' => auth()->user()->id,
+                'name' => auth()->user()->name,
                 'username' => auth()->user()->username,
             ],
         ]);
@@ -59,7 +59,7 @@ class MaintenanceController extends Controller
         $pdf = Pdf::loadView('pdf.maintenance-history', compact('equipment', 'maintenances'));
         $pdf->setPaper('letter', 'landscape');
 
-        $nombreArchivo = 'HISTORIAL_' . str_replace(' ', '_', strtoupper($equipment->nombre_equipo)) . '.pdf';
+        $nombreArchivo = 'HISTORIAL_'.str_replace(' ', '_', strtoupper($equipment->nombre_equipo)).'.pdf';
 
         return $pdf->stream($nombreArchivo);
     }
@@ -71,7 +71,7 @@ class MaintenanceController extends Controller
     {
         return Inertia::render('maintenance/Create', [
             'equipment' => Equipment::whereIn('estado_equipo', ['Disponible', 'Incompleto', 'Dañado'])->get(),
-            'companies' => MaintenanceCompany::all() // Para seleccionar la empresa
+            'companies' => MaintenanceCompany::all(), // Para seleccionar la empresa
         ]);
     }
 
@@ -82,13 +82,13 @@ class MaintenanceController extends Controller
     {
         // 1. Validamos TODO lo que viene del formulario
         $validated = $request->validate([
-            'equipment_id'           => 'required|exists:equipment,id',
+            'equipment_id' => 'required|exists:equipment,id',
             'maintenance_company_id' => 'required|exists:maintenance_companies,id',
-            'tipo_mantenimiento'     => 'required|in:Preventivo,Correctivo',
-            'fecha_mantenimiento'    => 'required|date',
-            'hora_inicio'            => 'required',
+            'tipo_mantenimiento' => 'required|in:Preventivo,Correctivo',
+            'fecha_mantenimiento' => 'required|date',
+            'hora_inicio' => 'required',
             'fecha_retorno_estimado' => 'nullable|date',
-            'hora_fin_estimado'      => 'nullable',
+            'hora_fin_estimado' => 'nullable',
         ]);
 
         try {
@@ -96,15 +96,15 @@ class MaintenanceController extends Controller
 
             // 2. Crear el mantenimiento con los datos del formulario
             $maintenance = Maintenance::create([
-                'equipment_id'            => $validated['equipment_id'],
-                'user_id'                 => auth()->id(),
-                'tipo_mantenimiento'      => $validated['tipo_mantenimiento'],
-                'fecha_mantenimiento'     => $validated['fecha_mantenimiento'],
-                'hora_inicio'             => $validated['hora_inicio'],
-                'fecha_retorno_estimado'  => $validated['fecha_retorno_estimado'],
-                'hora_fin_estimado'       => $validated['hora_fin_estimado'],
-                'estado_mantenimiento'    => 'En Proceso',
-                'actividad'               => 'Mantenimiento iniciado', // Valor inicial
+                'equipment_id' => $validated['equipment_id'],
+                'user_id' => auth()->id(),
+                'tipo_mantenimiento' => $validated['tipo_mantenimiento'],
+                'fecha_mantenimiento' => $validated['fecha_mantenimiento'],
+                'hora_inicio' => $validated['hora_inicio'],
+                'fecha_retorno_estimado' => $validated['fecha_retorno_estimado'],
+                'hora_fin_estimado' => $validated['hora_fin_estimado'],
+                'estado_mantenimiento' => 'En Proceso',
+                'actividad' => 'Mantenimiento iniciado', // Valor inicial
             ]);
 
             // 3. Vincular empresa
@@ -112,7 +112,7 @@ class MaintenanceController extends Controller
 
             // 4. Actualizar estado del equipo a 'Mantenimiento'
             Equipment::where('id', $validated['equipment_id'])->update([
-                'estado_equipo' => 'Mantenimiento'
+                'estado_equipo' => 'Mantenimiento',
             ]);
 
             DB::commit();
@@ -122,8 +122,9 @@ class MaintenanceController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             // IMPORTANTE: Devolvemos el error para que Vue lo muestre y deje de "cargar"
-            return back()->withErrors(['error' => 'Error: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Error: '.$e->getMessage()]);
         }
     }
 
@@ -152,9 +153,9 @@ class MaintenanceController extends Controller
         $request->validate([
             'fecha_proximo_mantenimiento' => 'required|date',
             'fecha_retorno' => 'required|date',
-            'hora_fin'      => 'required|date_format:H:i:s',
+            'hora_fin' => 'required|date_format:H:i:s',
             'estado_equipo' => 'required|in:Disponible,Reparado,Dañado,Incompleto,Baja',
-            'observacion'   => 'required|string|min:5|max:1000',
+            'observacion' => 'required|string|min:5|max:1000',
         ]);
 
         try {
@@ -163,16 +164,16 @@ class MaintenanceController extends Controller
             // 1. Finalizamos el mantenimiento
             $maintenance->update([
                 'fecha_proximo_mantenimiento' => $request->fecha_proximo_mantenimiento,
-                'fecha_retorno'        => $request->fecha_retorno,
-                'hora_fin'             => $request->hora_fin,
-                'actividad'            => $request->observacion,
+                'fecha_retorno' => $request->fecha_retorno,
+                'hora_fin' => $request->hora_fin,
+                'actividad' => $request->observacion,
                 'estado_mantenimiento' => 'Completado',
-                'estado_final_equipo'  => $request->estado_equipo,
+                'estado_final_equipo' => $request->estado_equipo,
             ]);
 
             // 2. Actualizamos el estado del item (vinculado al equipo)
             $maintenance->equipment->update([
-                'estado_equipo' => $request->estado_equipo
+                'estado_equipo' => $request->estado_equipo,
             ]);
 
             DB::commit();
@@ -182,7 +183,8 @@ class MaintenanceController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Error al finalizar: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Error al finalizar: '.$e->getMessage()]);
         }
     }
 

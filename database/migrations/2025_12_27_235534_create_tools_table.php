@@ -28,7 +28,7 @@ return new class extends Migration
                 'Prestado',
                 'Dañado',
                 'Extraviado',
-                'Baja'
+                'Baja',
             ])->default('Disponible');
             $table->timestamps();
         });

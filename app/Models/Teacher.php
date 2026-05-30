@@ -2,19 +2,22 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Teacher extends Model
 {
     use HasFactory;
 
-    protected $table    = 'teachers';
+    protected $table = 'teachers';
+
     protected $fillable = ['id_teacher', 'titulo', 'categoria'];
+
     protected $primaryKey = 'id_teacher'; // Llave personalizada
+
     public $incrementing = false;        // No es auto-incremental
 
     public function borrower(): BelongsTo

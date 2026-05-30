@@ -30,7 +30,7 @@ return new class extends Migration
                 'Dañado',
                 'Extraviado',
                 'Incompleto',
-                'Baja'
+                'Baja',
             ])->default('Disponible');
             $table->string('color', 50)->nullable();
             $table->string('marca', 100)->nullable();

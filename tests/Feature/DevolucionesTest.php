@@ -2,17 +2,17 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Equipment;
-use App\Models\Tool;
 use App\Models\Borrower;
+use App\Models\Equipment;
 use App\Models\Loan;
-use App\Models\Subject;
 use App\Models\LoanReturn;
+use App\Models\Subject;
+use App\Models\Tool;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
+use Tests\TestCase;
 
 /**
  * Pruebas funcionales – Módulo de Devoluciones (Sprint 3)
@@ -49,30 +49,31 @@ class DevolucionesTest extends TestCase
             Permission::findOrCreate($p, 'web');
         }
         $user->givePermissionTo($permisos);
+
         return $user;
     }
 
     // ── Helper: crea préstamo activo con equipo en la tabla item_loan ─────────
     private function crearPrestamoActivoConEquipo(User $user): array
     {
-        $subject  = Subject::factory()->create(['activo' => true]);
+        $subject = Subject::factory()->create(['activo' => true]);
         $borrower = Borrower::factory()->create();
-        $equipo   = Equipment::factory()->create(['estado_equipo' => 'Prestado']);
+        $equipo = Equipment::factory()->create(['estado_equipo' => 'Prestado']);
 
         $loan = Loan::factory()->create([
-            'user_id'         => $user->id,
-            'borrower_id'     => $borrower->id,
-            'subject_id'      => $subject->id,
+            'user_id' => $user->id,
+            'borrower_id' => $borrower->id,
+            'subject_id' => $subject->id,
             'estado_prestamo' => 'Activo',
         ]);
 
         // Insertar en tabla polimórfica item_loan
         DB::table('item_loan')->insert([
-            'loan_id'       => $loan->id,
+            'loan_id' => $loan->id,
             'loanable_type' => Equipment::class,
-            'loanable_id'   => $equipo->id,
-            'created_at'    => now(),
-            'updated_at'    => now(),
+            'loanable_id' => $equipo->id,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         return ['loan' => $loan, 'equipo' => $equipo, 'borrower' => $borrower];
@@ -81,23 +82,23 @@ class DevolucionesTest extends TestCase
     // ── Helper: crea préstamo activo con herramienta ──────────────────────────
     private function crearPrestamoActivoConHerramienta(User $user): array
     {
-        $subject      = Subject::factory()->create(['activo' => true]);
-        $borrower     = Borrower::factory()->create();
-        $herramienta  = Tool::factory()->create(['estado_herramienta' => 'Prestado']);
+        $subject = Subject::factory()->create(['activo' => true]);
+        $borrower = Borrower::factory()->create();
+        $herramienta = Tool::factory()->create(['estado_herramienta' => 'Prestado']);
 
         $loan = Loan::factory()->create([
-            'user_id'         => $user->id,
-            'borrower_id'     => $borrower->id,
-            'subject_id'      => $subject->id,
+            'user_id' => $user->id,
+            'borrower_id' => $borrower->id,
+            'subject_id' => $subject->id,
             'estado_prestamo' => 'Activo',
         ]);
 
         DB::table('item_loan')->insert([
-            'loan_id'       => $loan->id,
+            'loan_id' => $loan->id,
             'loanable_type' => Tool::class,
-            'loanable_id'   => $herramienta->id,
-            'created_at'    => now(),
-            'updated_at'    => now(),
+            'loanable_id' => $herramienta->id,
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         return ['loan' => $loan, 'herramienta' => $herramienta, 'borrower' => $borrower];
@@ -106,7 +107,7 @@ class DevolucionesTest extends TestCase
     // ══════════════════════════════════════════════════════════════════════════
     // PF-31  Listado de devoluciones es accesible para usuario autenticado
     // ══════════════════════════════════════════════════════════════════════════
-    public function test_PF31_listado_devoluciones_accesible(): void
+    public function test_p_f31_listado_devoluciones_accesible(): void
     {
         $user = User::factory()->withoutTwoFactor()->create();
         $this->actingAs($user)
@@ -117,7 +118,7 @@ class DevolucionesTest extends TestCase
     // ══════════════════════════════════════════════════════════════════════════
     // PF-32  Listado de devoluciones redirige sin autenticación
     // ══════════════════════════════════════════════════════════════════════════
-    public function test_PF32_listado_devoluciones_redirige_sin_autenticacion(): void
+    public function test_p_f32_listado_devoluciones_redirige_sin_autenticacion(): void
     {
         $this->get(route('loan-returns.index'))
             ->assertRedirect(route('login'));
@@ -130,24 +131,24 @@ class DevolucionesTest extends TestCase
     //        → equipment.estado_equipo = Disponible
     //        → loan.estado_prestamo = Devuelto
     // ══════════════════════════════════════════════════════════════════════════
-    public function test_PF33_devolucion_equipo_en_estado_disponible(): void
+    public function test_p_f33_devolucion_equipo_en_estado_disponible(): void
     {
-        $user  = $this->usuarioConPermisos();
+        $user = $this->usuarioConPermisos();
         $datos = $this->crearPrestamoActivoConEquipo($user);
-        $loan  = $datos['loan'];
+        $loan = $datos['loan'];
         $equipo = $datos['equipo'];
 
         $response = $this->actingAs($user)
             ->post(route('loan-returns.store'), [
-                'loan_id'    => $loan->id,
-                'observacion'=> 'Devolución en buen estado.',
-                'items'      => [
+                'loan_id' => $loan->id,
+                'observacion' => 'Devolución en buen estado.',
+                'items' => [
                     [
-                        'id'               => $equipo->id,
-                        'tipo'             => 'equipo',
-                        'estado_devolucion'=> 'Disponible',
-                        'accessories'      => [],
-                    ]
+                        'id' => $equipo->id,
+                        'tipo' => 'equipo',
+                        'estado_devolucion' => 'Disponible',
+                        'accessories' => [],
+                    ],
                 ],
             ]);
 
@@ -160,19 +161,19 @@ class DevolucionesTest extends TestCase
 
         // 2. Se creó el detalle de devolución
         $this->assertDatabaseHas('return_details', [
-            'returnable_id'     => $equipo->id,
+            'returnable_id' => $equipo->id,
             'estado_devolucion' => 'Disponible',
         ]);
 
         // 3. El equipo volvió a Disponible
         $this->assertDatabaseHas('equipment', [
-            'id'            => $equipo->id,
+            'id' => $equipo->id,
             'estado_equipo' => 'Disponible',
         ]);
 
         // 4. El préstamo cambió a Devuelto
         $this->assertDatabaseHas('loans', [
-            'id'              => $loan->id,
+            'id' => $loan->id,
             'estado_prestamo' => 'Devuelto',
         ]);
     }
@@ -182,24 +183,24 @@ class DevolucionesTest extends TestCase
     //        → equipment.estado_equipo = Dañado
     //        → Se crea Reposition automáticamente en estado Pendiente
     // ══════════════════════════════════════════════════════════════════════════
-    public function test_PF34_devolucion_equipo_danado_genera_reposicion(): void
+    public function test_p_f34_devolucion_equipo_danado_genera_reposicion(): void
     {
-        $user   = $this->usuarioConPermisos();
-        $datos  = $this->crearPrestamoActivoConEquipo($user);
-        $loan   = $datos['loan'];
+        $user = $this->usuarioConPermisos();
+        $datos = $this->crearPrestamoActivoConEquipo($user);
+        $loan = $datos['loan'];
         $equipo = $datos['equipo'];
 
         $response = $this->actingAs($user)
             ->post(route('loan-returns.store'), [
-                'loan_id'    => $loan->id,
-                'observacion'=> 'Equipo devuelto con daños visibles en la pantalla.',
-                'items'      => [
+                'loan_id' => $loan->id,
+                'observacion' => 'Equipo devuelto con daños visibles en la pantalla.',
+                'items' => [
                     [
-                        'id'               => $equipo->id,
-                        'tipo'             => 'equipo',
-                        'estado_devolucion'=> 'Dañado',
-                        'accessories'      => [],
-                    ]
+                        'id' => $equipo->id,
+                        'tipo' => 'equipo',
+                        'estado_devolucion' => 'Dañado',
+                        'accessories' => [],
+                    ],
                 ],
             ]);
 
@@ -207,14 +208,14 @@ class DevolucionesTest extends TestCase
 
         // El equipo queda en estado Dañado
         $this->assertDatabaseHas('equipment', [
-            'id'            => $equipo->id,
+            'id' => $equipo->id,
             'estado_equipo' => 'Dañado',
         ]);
 
         // El controlador crea reposición automática en estado Pendiente
         $this->assertDatabaseHas('repositions', [
             'borrower_id' => $datos['borrower']->id,
-            'estado'      => 'Pendiente',
+            'estado' => 'Pendiente',
         ]);
     }
 
@@ -223,23 +224,23 @@ class DevolucionesTest extends TestCase
     //        → tools.estado_herramienta = Disponible
     //        → loan.estado_prestamo = Devuelto
     // ══════════════════════════════════════════════════════════════════════════
-    public function test_PF35_devolucion_herramienta_en_estado_disponible(): void
+    public function test_p_f35_devolucion_herramienta_en_estado_disponible(): void
     {
-        $user         = $this->usuarioConPermisos();
-        $datos        = $this->crearPrestamoActivoConHerramienta($user);
-        $loan         = $datos['loan'];
-        $herramienta  = $datos['herramienta'];
+        $user = $this->usuarioConPermisos();
+        $datos = $this->crearPrestamoActivoConHerramienta($user);
+        $loan = $datos['loan'];
+        $herramienta = $datos['herramienta'];
 
         $response = $this->actingAs($user)
             ->post(route('loan-returns.store'), [
-                'loan_id'    => $loan->id,
-                'observacion'=> null,
-                'items'      => [
+                'loan_id' => $loan->id,
+                'observacion' => null,
+                'items' => [
                     [
-                        'id'               => $herramienta->id,
-                        'tipo'             => 'herramienta',
-                        'estado_devolucion'=> 'Disponible',
-                    ]
+                        'id' => $herramienta->id,
+                        'tipo' => 'herramienta',
+                        'estado_devolucion' => 'Disponible',
+                    ],
                 ],
             ]);
 
@@ -247,13 +248,13 @@ class DevolucionesTest extends TestCase
 
         // La herramienta vuelve a Disponible
         $this->assertDatabaseHas('tools', [
-            'id'                 => $herramienta->id,
+            'id' => $herramienta->id,
             'estado_herramienta' => 'Disponible',
         ]);
 
         // El préstamo queda Devuelto
         $this->assertDatabaseHas('loans', [
-            'id'              => $loan->id,
+            'id' => $loan->id,
             'estado_prestamo' => 'Devuelto',
         ]);
     }
@@ -261,14 +262,14 @@ class DevolucionesTest extends TestCase
     // ══════════════════════════════════════════════════════════════════════════
     // PF-36  No se puede registrar devolución sin loan_id → falla validación
     // ══════════════════════════════════════════════════════════════════════════
-    public function test_PF36_devolucion_sin_loan_id_falla_validacion(): void
+    public function test_p_f36_devolucion_sin_loan_id_falla_validacion(): void
     {
         $user = $this->usuarioConPermisos();
 
         $response = $this->actingAs($user)
             ->post(route('loan-returns.store'), [
                 'loan_id' => null,   // campo requerido vacío
-                'items'   => [['id' => 1, 'tipo' => 'equipo', 'estado_devolucion' => 'Disponible']],
+                'items' => [['id' => 1, 'tipo' => 'equipo', 'estado_devolucion' => 'Disponible']],
             ]);
 
         $response->assertSessionHasErrors(['loan_id']);
@@ -277,21 +278,21 @@ class DevolucionesTest extends TestCase
     // ══════════════════════════════════════════════════════════════════════════
     // PF-37  No se puede registrar devolución sin ítems → falla validación
     // ══════════════════════════════════════════════════════════════════════════
-    public function test_PF37_devolucion_sin_items_falla_validacion(): void
+    public function test_p_f37_devolucion_sin_items_falla_validacion(): void
     {
-        $user    = $this->usuarioConPermisos();
+        $user = $this->usuarioConPermisos();
         $subject = Subject::factory()->create(['activo' => true]);
-        $loan    = Loan::factory()->create([
-            'user_id'         => $user->id,
-            'borrower_id'     => Borrower::factory()->create()->id,
-            'subject_id'      => $subject->id,
+        $loan = Loan::factory()->create([
+            'user_id' => $user->id,
+            'borrower_id' => Borrower::factory()->create()->id,
+            'subject_id' => $subject->id,
             'estado_prestamo' => 'Activo',
         ]);
 
         $response = $this->actingAs($user)
             ->post(route('loan-returns.store'), [
                 'loan_id' => $loan->id,
-                'items'   => [],   // array vacío → falla required|min:1
+                'items' => [],   // array vacío → falla required|min:1
             ]);
 
         $response->assertSessionHasErrors(['items']);
@@ -301,26 +302,26 @@ class DevolucionesTest extends TestCase
     // PF-38  No se puede registrar devolución duplicada del mismo préstamo
     //        (unique:loan_returns,loan_id)
     // ══════════════════════════════════════════════════════════════════════════
-    public function test_PF38_devolucion_duplicada_falla_validacion(): void
+    public function test_p_f38_devolucion_duplicada_falla_validacion(): void
     {
-        $user   = $this->usuarioConPermisos();
-        $datos  = $this->crearPrestamoActivoConEquipo($user);
-        $loan   = $datos['loan'];
+        $user = $this->usuarioConPermisos();
+        $datos = $this->crearPrestamoActivoConEquipo($user);
+        $loan = $datos['loan'];
 
         // Crear ya una devolución para ese préstamo
         LoanReturn::create([
-            'loan_id'       => $loan->id,
-            'user_id'       => $user->id,
+            'loan_id' => $loan->id,
+            'user_id' => $user->id,
             'fecha_retorno' => now()->toDateString(),
-            'hora_fin'      => now()->toTimeString(),
+            'hora_fin' => now()->toTimeString(),
         ]);
 
         // Intentar registrar una segunda devolución del mismo préstamo
         $response = $this->actingAs($user)
             ->post(route('loan-returns.store'), [
                 'loan_id' => $loan->id,
-                'items'   => [
-                    ['id' => $datos['equipo']->id, 'tipo' => 'equipo', 'estado_devolucion' => 'Disponible']
+                'items' => [
+                    ['id' => $datos['equipo']->id, 'tipo' => 'equipo', 'estado_devolucion' => 'Disponible'],
                 ],
             ]);
 

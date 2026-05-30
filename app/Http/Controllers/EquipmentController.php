@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Equipment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redirect; // Para el redireccionamiento
+// Para el redireccionamiento
 use Illuminate\Support\Facades\Storage;  // Para las fotos
 use Inertia\Inertia;                     // Para renderizar las vistas
 
@@ -55,25 +55,27 @@ class EquipmentController extends Controller
 
                 // Crear el Equipo
                 $equipment = Equipment::create([
-                    'codigo_qr'          => $request->codigo_qr,
-                    'nombre_equipo'      => $request->nombre,
+                    'codigo_qr' => $request->codigo_qr,
+                    'nombre_equipo' => $request->nombre,
                     'descripcion_equipo' => $request->descripcion,
                     'observacion_equipo' => $request->observacion,
-                    'ubicacion_equipo'   => $request->ubicacion,
-                    'foto_equipo'        => $fotoPath,
-                    'estado_equipo'      => $request->estado_equipo,
-                    'marca'              => $request->marca,
-                    'modelo'             => $request->modelo,
-                    'serie'              => $request->serie,
-                    'color'              => $request->color,
-                    'rubro'              => $request->rubro,
-                    'fecha_adquisicion'  => $request->fecha_adquisicion,
+                    'ubicacion_equipo' => $request->ubicacion,
+                    'foto_equipo' => $fotoPath,
+                    'estado_equipo' => $request->estado_equipo,
+                    'marca' => $request->marca,
+                    'modelo' => $request->modelo,
+                    'serie' => $request->serie,
+                    'color' => $request->color,
+                    'rubro' => $request->rubro,
+                    'fecha_adquisicion' => $request->fecha_adquisicion,
                 ]);
 
                 // Guardar Accesorios
                 if ($request->has('accesorios')) {
                     foreach ($request->accesorios as $index => $acc) {
-                        if (empty($acc['nombre'])) continue;
+                        if (empty($acc['nombre'])) {
+                            continue;
+                        }
 
                         $fotoAccPath = null;
 
@@ -88,7 +90,7 @@ class EquipmentController extends Controller
                         $equipment->accessories()->create([
                             'nombre_accesorio' => $acc['nombre'],
                             'estado_accesorio' => $acc['estado'] ?? 'Bueno',
-                            'foto_accesorio'   => $fotoAccPath,
+                            'foto_accesorio' => $fotoAccPath,
                         ]);
                     }
                 }
@@ -98,12 +100,13 @@ class EquipmentController extends Controller
                     $rep = \App\Models\Reposition::find($request->reposition_id);
                     if ($rep && $rep->estado === 'Pendiente') {
                         $rep->update([
-                            'estado'             => 'Cumplida',
+                            'estado' => 'Cumplida',
                             'fecha_cumplimiento' => now()->toDateString(),
-                            'nuevo_item_id'      => $equipment->id,
-                            'nuevo_item_type'    => Equipment::class,
+                            'nuevo_item_id' => $equipment->id,
+                            'nuevo_item_type' => Equipment::class,
                         ]);
                     }
+
                     return redirect()->route('repositions.index')
                         ->with('success', 'Equipo de reemplazo registrado y reposición marcada como cumplida.');
                 }
@@ -111,8 +114,9 @@ class EquipmentController extends Controller
                 return redirect()->route('items.index')->with('success', 'Equipo registrado con éxito');
             });
         } catch (\Exception $e) {
-            \Log::error("Error al guardar equipo: " . $e->getMessage());
-            return back()->withErrors(['error' => 'Error interno: ' . $e->getMessage()])->withInput();
+            \Log::error('Error al guardar equipo: '.$e->getMessage());
+
+            return back()->withErrors(['error' => 'Error interno: '.$e->getMessage()])->withInput();
         }
     }
 
@@ -125,7 +129,7 @@ class EquipmentController extends Controller
         // 1. Cargamos las relaciones necesarias para la ficha técnica
         // 'accessories' para la lista de partes
         // 'maintenances' para el historial que se muestra en el modal
-        $equipment->load(['accessories', 'maintenances' => function($query) {
+        $equipment->load(['accessories', 'maintenances' => function ($query) {
             $query->orderBy('fecha_retorno', 'desc'); // Traemos el último mantenimiento primero
         }]);
 
@@ -149,7 +153,7 @@ class EquipmentController extends Controller
         // Si prefieres que redirija al inventario con el modal abierto (opcional)
         return Inertia::render('inventory/Index', [
             'selectedItem' => $equipment,
-            'openModal' => true
+            'openModal' => true,
         ]);
     }
 
@@ -166,8 +170,9 @@ class EquipmentController extends Controller
         if ($equipment->fecha_adquisicion) {
             $equipment->fecha_adquisicion = \Carbon\Carbon::parse($equipment->fecha_adquisicion)->format('Y-m-d');
         }
+
         return Inertia::render('inventory/equipment/Edit', [
-            'equipment' => $equipment
+            'equipment' => $equipment,
         ]);
     }
 
@@ -184,30 +189,30 @@ class EquipmentController extends Controller
             ]);
 
             return redirect()->route('items.index', ['tab' => 'bajas'])
-                ->with('success', 'El equipo ' . $equipment->nombre_equipo . ' ha sido dado de baja.');
+                ->with('success', 'El equipo '.$equipment->nombre_equipo.' ha sido dado de baja.');
         }
 
         // 2. Validación
         $validated = $request->validate([
-            'nombre'            => 'required|string|max:255',
-            'ubicacion'         => 'required|string|max:255',
-            'codigo_qr'         => 'nullable|string|max:100|unique:equipment,codigo_qr,' . $equipment->id,
-            'serie'             => 'required|string|unique:equipment,serie,' . $equipment->id,
-            'foto'              => 'nullable|image|max:2048', // Foto del equipo
-            'estado_equipo'     => 'required|string',
-            'marca'             => 'nullable|string',
-            'modelo'            => 'nullable|string',
-            'color'             => 'nullable|string',
-            'rubro'             => 'nullable|string',
-            'descripcion'       => 'nullable|string',
-            'observacion'       => 'nullable|string',
+            'nombre' => 'required|string|max:255',
+            'ubicacion' => 'required|string|max:255',
+            'codigo_qr' => 'nullable|string|max:100|unique:equipment,codigo_qr,'.$equipment->id,
+            'serie' => 'required|string|unique:equipment,serie,'.$equipment->id,
+            'foto' => 'nullable|image|max:2048', // Foto del equipo
+            'estado_equipo' => 'required|string',
+            'marca' => 'nullable|string',
+            'modelo' => 'nullable|string',
+            'color' => 'nullable|string',
+            'rubro' => 'nullable|string',
+            'descripcion' => 'nullable|string',
+            'observacion' => 'nullable|string',
             'fecha_adquisicion' => 'nullable|date',
 
             // Validación de accesorios
-            'accesorios'          => 'nullable|array',
-            'accesorios.*.id'     => 'nullable|integer',
+            'accesorios' => 'nullable|array',
+            'accesorios.*.id' => 'nullable|integer',
             'accesorios.*.nombre' => 'required_with:accesorios|string',
-            'accesorios.*.foto'   => 'nullable|image|max:2048', // Foto individual del accesorio
+            'accesorios.*.foto' => 'nullable|image|max:2048', // Foto individual del accesorio
         ]);
 
         try {
@@ -225,19 +230,19 @@ class EquipmentController extends Controller
 
                 // --- ACTUALIZACIÓN DEL EQUIPO ---
                 $equipment->update([
-                    'codigo_qr'          => $validated['codigo_qr'],
-                    'nombre_equipo'      => $validated['nombre'],
+                    'codigo_qr' => $validated['codigo_qr'],
+                    'nombre_equipo' => $validated['nombre'],
                     'descripcion_equipo' => $validated['descripcion'],
                     'observacion_equipo' => $validated['observacion'],
-                    'ubicacion_equipo'   => $validated['ubicacion'],
-                    'foto_equipo'        => $fotoPath, // Nombre corregido
-                    'estado_equipo'      => $validated['estado_equipo'],
-                    'marca'              => $validated['marca'],
-                    'modelo'             => $validated['modelo'],
-                    'serie'              => $validated['serie'],
-                    'color'              => $validated['color'],
-                    'rubro'              => $validated['rubro'],
-                    'fecha_adquisicion'  => $validated['fecha_adquisicion'],
+                    'ubicacion_equipo' => $validated['ubicacion'],
+                    'foto_equipo' => $fotoPath, // Nombre corregido
+                    'estado_equipo' => $validated['estado_equipo'],
+                    'marca' => $validated['marca'],
+                    'modelo' => $validated['modelo'],
+                    'serie' => $validated['serie'],
+                    'color' => $validated['color'],
+                    'rubro' => $validated['rubro'],
+                    'fecha_adquisicion' => $validated['fecha_adquisicion'],
                 ]);
 
                 // --- MANEJO DE ACCESORIOS ---
@@ -278,14 +283,16 @@ class EquipmentController extends Controller
                             [
                                 'nombre_accesorio' => $accData['nombre'],
                                 'estado_accesorio' => $accData['estado'] ?? 'Bueno',
-                                'foto_accesorio'   => $pathAccesorio, // Nombre corregido
+                                'foto_accesorio' => $pathAccesorio, // Nombre corregido
                             ]
                         );
                     }
                 } else {
                     // Si no mandan el array de accesorios, borramos todos los existentes y sus fotos
                     foreach ($equipment->accessories as $acc) {
-                        if ($acc->foto_accesorio) Storage::disk('public')->delete($acc->foto_accesorio);
+                        if ($acc->foto_accesorio) {
+                            Storage::disk('public')->delete($acc->foto_accesorio);
+                        }
                         $acc->delete();
                     }
                 }
@@ -294,8 +301,9 @@ class EquipmentController extends Controller
                     ->with('success', "¡El equipo {$equipment->nombre_equipo} fue actualizado con éxito!");
             });
         } catch (\Exception $e) {
-            \Log::error("Error en Update Equipment: " . $e->getMessage());
-            return back()->withErrors(['error' => 'Error al actualizar: ' . $e->getMessage()])->withInput();
+            \Log::error('Error en Update Equipment: '.$e->getMessage());
+
+            return back()->withErrors(['error' => 'Error al actualizar: '.$e->getMessage()])->withInput();
         }
     }
 

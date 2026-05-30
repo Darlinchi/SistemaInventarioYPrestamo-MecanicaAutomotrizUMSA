@@ -16,11 +16,11 @@ class BorrowerFactory extends Factory
     {
         return [
             'cedula_identidad' => fake()->unique()->numerify('#######'),
-            'nombres'          => strtoupper(fake()->firstName() . ' ' . fake()->firstName()),
-            'apellidoPaterno'  => strtoupper(fake()->lastName()),
-            'apellidoMaterno'  => strtoupper(fake()->lastName()),
-            'celular'          => fake()->optional()->numerify('7#######'),
-            'activo'           => 1,
+            'nombres' => strtoupper(fake()->firstName().' '.fake()->firstName()),
+            'apellidoPaterno' => strtoupper(fake()->lastName()),
+            'apellidoMaterno' => strtoupper(fake()->lastName()),
+            'celular' => fake()->optional()->numerify('7#######'),
+            'activo' => 1,
         ];
     }
 }

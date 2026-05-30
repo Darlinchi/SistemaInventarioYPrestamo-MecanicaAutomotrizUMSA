@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Loan;
 use App\Models\Equipment;
+use App\Models\Loan;
 use App\Models\Tool;
-use App\Models\Maintenance;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redirect;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Inertia\Inertia;
-use Carbon\Carbon;
 
 class ReportController extends Controller
 {
@@ -71,38 +69,41 @@ class ReportController extends Controller
         $history = Loan::with([
             'borrower.teacher',
             'borrower.assistant',
-            'loanReturns.returnDetails.returnable'
+            'loanReturns.returnDetails.returnable',
         ])
-        ->latest()
-        ->get()
-        ->map(function ($loan) {
-            $retorno = $loan->loanReturns instanceof \Illuminate\Database\Eloquent\Collection
-                       ? $loan->loanReturns->first()
-                       : $loan->loanReturns;
+            ->latest()
+            ->get()
+            ->map(function ($loan) {
+                $retorno = $loan->loanReturns instanceof \Illuminate\Database\Eloquent\Collection
+                           ? $loan->loanReturns->first()
+                           : $loan->loanReturns;
 
-            $items_mostrar = [];
-            if ($retorno && $retorno->returnDetails) {
-                $items_mostrar = $retorno->returnDetails->map(function ($detail) {
-                    $model = $detail->returnable;
-                    if (!$model) return null;
-                    $esEquipo = str_contains($detail->returnable_type, 'Equipment');
-                    return [
-                        'nombre_mostrar' => $esEquipo ? $model->nombre_equipo : $model->nombre_herramienta,
-                        'estado_devolucion' => $detail->estado_devolucion
-                    ];
-                })->filter()->values();
-            } else {
-                $items_mostrar = $loan->all_items;
-            }
+                $items_mostrar = [];
+                if ($retorno && $retorno->returnDetails) {
+                    $items_mostrar = $retorno->returnDetails->map(function ($detail) {
+                        $model = $detail->returnable;
+                        if (! $model) {
+                            return null;
+                        }
+                        $esEquipo = str_contains($detail->returnable_type, 'Equipment');
 
-            return [
-                'id' => $loan->id,
-                'fecha_salida' => $loan->fecha_salida,
-                'fecha_retorno' => $retorno ? $retorno->fecha_retorno : null,
-                'borrower' => $loan->borrower,
-                'items_prestados' => $items_mostrar,
-            ];
-        });
+                        return [
+                            'nombre_mostrar' => $esEquipo ? $model->nombre_equipo : $model->nombre_herramienta,
+                            'estado_devolucion' => $detail->estado_devolucion,
+                        ];
+                    })->filter()->values();
+                } else {
+                    $items_mostrar = $loan->all_items;
+                }
+
+                return [
+                    'id' => $loan->id,
+                    'fecha_salida' => $loan->fecha_salida,
+                    'fecha_retorno' => $retorno ? $retorno->fecha_retorno : null,
+                    'borrower' => $loan->borrower,
+                    'items_prestados' => $items_mostrar,
+                ];
+            });
 
         $issues = $allItems->filter(function ($item) use ($hoy, $limiteMantenimiento) {
             $esAlertaFecha = false;
@@ -110,20 +111,22 @@ class ReportController extends Controller
                 $fechaProg = Carbon::parse($item['proximo_mantenimiento']);
                 $esAlertaFecha = $fechaProg->lte($limiteMantenimiento) && $fechaProg->gte($hoy);
             }
+
             return $esAlertaFecha;
-        })->map(function($item) use ($hoy, $limiteMantenimiento) {
+        })->map(function ($item) use ($hoy, $limiteMantenimiento) {
             $fechaProg = $item['proximo_mantenimiento'] ? Carbon::parse($item['proximo_mantenimiento']) : null;
             $item['es_alerta_mantenimiento'] = $fechaProg && $fechaProg->lte($limiteMantenimiento) && $fechaProg->gte($hoy);
+
             return $item;
         })->values();
 
         return Inertia::render('report/Index', [
             'totalPrestamos' => $totalPrestamos,
-            'activos'        => $activos,
-            'devueltos'      => $devueltos,
-            'items'          => $allItems,
-            'history'        => $history,
-            'issues'         => $issues,
+            'activos' => $activos,
+            'devueltos' => $devueltos,
+            'items' => $allItems,
+            'history' => $history,
+            'issues' => $issues,
         ]);
     }
 
@@ -134,8 +137,8 @@ class ReportController extends Controller
     {
         // Captura de parámetros desde el Request
         $category = $request->query('category', 'Todas');
-        $status   = $request->query('status', 'Todos');
-        $rubro    = $request->query('rubro', 'Todos');
+        $status = $request->query('status', 'Todos');
+        $rubro = $request->query('rubro', 'Todos');
 
         $items = collect();
 
@@ -153,17 +156,17 @@ class ReportController extends Controller
                 $queryEquipos->where('rubro', $rubro);
             }
 
-            $equipos = $queryEquipos->get()->map(function($e) {
+            $equipos = $queryEquipos->get()->map(function ($e) {
                 return [
-                    'nombre'       => $e->nombre_equipo,
-                    'codigo'       => $e->codigo_qr,
-                    'estado'       => $e->estado_equipo,
-                    'ubicacion'    => $e->ubicacion_equipo,
-                    'marca_modelo' => $e->marca . ' / ' . $e->modelo,
-                    'fecha_adq'    => $e->fecha_adquisicion ? \Carbon\Carbon::parse($e->fecha_adquisicion)->format('d/m/Y') : 'S/R',
-                    'accesorios'   => $e->accessories->pluck('nombre_accesorio')->toArray(),
-                    'tipo'         => 'EQUIPO',
-                    'rubro'        => $e->rubro ?? 'General'
+                    'nombre' => $e->nombre_equipo,
+                    'codigo' => $e->codigo_qr,
+                    'estado' => $e->estado_equipo,
+                    'ubicacion' => $e->ubicacion_equipo,
+                    'marca_modelo' => $e->marca.' / '.$e->modelo,
+                    'fecha_adq' => $e->fecha_adquisicion ? \Carbon\Carbon::parse($e->fecha_adquisicion)->format('d/m/Y') : 'S/R',
+                    'accesorios' => $e->accessories->pluck('nombre_accesorio')->toArray(),
+                    'tipo' => 'EQUIPO',
+                    'rubro' => $e->rubro ?? 'General',
                 ];
             });
             $items = $items->concat($equipos);
@@ -178,16 +181,16 @@ class ReportController extends Controller
                 $queryTools->where('estado_herramienta', $status);
             }
 
-            $herramientas = $queryTools->get()->map(function($t) {
+            $herramientas = $queryTools->get()->map(function ($t) {
                 return [
-                    'nombre'       => $t->nombre_herramienta,
-                    'codigo'       => $t->codigo_qr,
-                    'estado'       => $t->estado_herramienta,
-                    'ubicacion'    => $t->ubicacion_herramienta,
+                    'nombre' => $t->nombre_herramienta,
+                    'codigo' => $t->codigo_qr,
+                    'estado' => $t->estado_herramienta,
+                    'ubicacion' => $t->ubicacion_herramienta,
                     'marca_modelo' => $t->marca_modelo,
-                    'observacion'  => $t->descripcion_herramienta ?? 'Sin observaciones',
-                    'tipo'         => 'HERRAMIENTA',
-                    'rubro'        => 'N/A'
+                    'observacion' => $t->descripcion_herramienta ?? 'Sin observaciones',
+                    'tipo' => 'HERRAMIENTA',
+                    'rubro' => 'N/A',
                 ];
             });
             $items = $items->concat($herramientas);
@@ -195,11 +198,11 @@ class ReportController extends Controller
 
         // 3. Renderizado y Envío del Stream de Datos PDF
         $pdf = Pdf::loadView('pdf.inventory-general', [
-            'items'    => $items,
+            'items' => $items,
             'category' => $category,
-            'status'   => $status,
-            'rubro'    => $rubro,
-            'date'     => now()->format('d/m/Y H:i')
+            'status' => $status,
+            'rubro' => $rubro,
+            'date' => now()->format('d/m/Y H:i'),
         ]);
 
         return $pdf->stream('Reporte_Inventario_Filtrado.pdf');
@@ -211,9 +214,9 @@ class ReportController extends Controller
     public function exportHistory(Request $request)
     {
         $search = $request->query('search');
-        $state  = $request->query('state', 'Todos');
-        $start  = $request->query('start');
-        $end    = $request->query('end');
+        $state = $request->query('state', 'Todos');
+        $start = $request->query('start');
+        $end = $request->query('end');
 
         // 1. Cargamos el préstamo con el usuario que lo creó (entrega)
         // y con el loanReturns.user (quien recibe la devolución)
@@ -223,13 +226,13 @@ class ReportController extends Controller
             'subject',
             'user', // Encargado que entrega
             'loanReturns.user', // Encargado que recibe la devolución
-            'loanReturns.returnDetails.returnable'
+            'loanReturns.returnDetails.returnable',
         ]);
 
-        if (!empty($start)) {
+        if (! empty($start)) {
             $queryLoans->whereDate('fecha_salida', '>=', $start);
         }
-        if (!empty($end)) {
+        if (! empty($end)) {
             $queryLoans->whereDate('fecha_salida', '<=', $end);
         }
 
@@ -243,11 +246,11 @@ class ReportController extends Controller
             }
         }
 
-        if (!empty($search)) {
+        if (! empty($search)) {
             $queryLoans->whereHas('borrower', function ($q) use ($search) {
                 $q->where('nombres', 'LIKE', "%{$search}%")
-                  ->orWhere('apellidoPaterno', 'LIKE', "%{$search}%")
-                  ->orWhere('apellidoMaterno', 'LIKE', "%{$search}%");
+                    ->orWhere('apellidoPaterno', 'LIKE', "%{$search}%")
+                    ->orWhere('apellidoMaterno', 'LIKE', "%{$search}%");
             });
         }
 
@@ -262,36 +265,36 @@ class ReportController extends Controller
             }
 
             $borrower = $loan->borrower;
-            $titulo   = $borrower->teacher?->titulo ?? '';
-            $nombre   = trim(
-                ($titulo ? $titulo . ' ' : '') .
-                ($borrower->apellidoPaterno ?? '') . ' ' .
-                ($borrower->apellidoMaterno ?? '') . ' ' .
+            $titulo = $borrower->teacher?->titulo ?? '';
+            $nombre = trim(
+                ($titulo ? $titulo.' ' : '').
+                ($borrower->apellidoPaterno ?? '').' '.
+                ($borrower->apellidoMaterno ?? '').' '.
                 ($borrower->nombres ?? '')
             );
 
             return [
                 'responsable' => $nombre,
-                'materia'     => $loan->subject
+                'materia' => $loan->subject
                     ? "{$loan->subject->nombre_materia} ({$loan->subject->sigla})"
                     : 'Sin materia',
                 // ── CORRECCIÓN AUDITORÍA: Asignamos ambos encargados ──
                 'encargado_entrega' => $loan->user?->name ?? 'Sistema',
-                'encargado_recibe'  => $return?->user?->name ?? 'Pendiente',
-                'salida'      => \Carbon\Carbon::parse($loan->fecha_salida)->format('d/m/Y'),
-                'retorno'     => ($return && $return->fecha_retorno)
+                'encargado_recibe' => $return?->user?->name ?? 'Pendiente',
+                'salida' => \Carbon\Carbon::parse($loan->fecha_salida)->format('d/m/Y'),
+                'retorno' => ($return && $return->fecha_retorno)
                                 ? \Carbon\Carbon::parse($return->fecha_retorno)->format('d/m/Y')
                                 : 'PENDIENTE',
                 'observacion' => $return
                     ? $return->observacion
                     : ($loan->estado_prestamo === 'Activo' ? 'Préstamo en curso' : 'Sin registro'),
-                'items'       => $this->mapItemsForHistory($loan, $return),
+                'items' => $this->mapItemsForHistory($loan, $return),
             ];
         });
 
         $pdf = Pdf::loadView('pdf.loan-history', [
             'history' => $history,
-            'date'    => now()->format('d/m/Y H:i')
+            'date' => now()->format('d/m/Y H:i'),
         ]);
 
         return $pdf->setPaper('letter', 'landscape')->stream('Historial_Prestamos_Filtrado.pdf');
@@ -310,9 +313,9 @@ class ReportController extends Controller
                 }
 
                 return [
-                    'nombre'     => $nombre,
-                    'tipo'       => str_contains($detail->returnable_type, 'Equipment') ? 'EQ' : 'HER',
-                    'estado_dev' => $detail->estado_devolucion ?? 'N/A'
+                    'nombre' => $nombre,
+                    'tipo' => str_contains($detail->returnable_type, 'Equipment') ? 'EQ' : 'HER',
+                    'estado_dev' => $detail->estado_devolucion ?? 'N/A',
                 ];
             });
         }
@@ -321,9 +324,9 @@ class ReportController extends Controller
         // collect() asegura que podamos usar .map() sin que falle si all_items es nulo
         return collect($loan->all_items ?? [])->map(function ($item) {
             return [
-                'nombre'     => $item['nombre_mostrar'] ?? 'Sin nombre',
-                'tipo'       => (isset($item['es_equipo']) && $item['es_equipo']) ? 'EQ' : 'HER',
-                'estado_dev' => 'En tránsito'
+                'nombre' => $item['nombre_mostrar'] ?? 'Sin nombre',
+                'tipo' => (isset($item['es_equipo']) && $item['es_equipo']) ? 'EQ' : 'HER',
+                'estado_dev' => 'En tránsito',
             ];
         });
     }
@@ -335,13 +338,13 @@ class ReportController extends Controller
         // 1. Equipos con problemas
         $equipos = \App\Models\Equipment::whereIn('estado_equipo', ['Dañado', 'Extraviado', 'Incompleto'])
             ->get()
-            ->map(function($e) {
+            ->map(function ($e) {
                 return [
                     'nombre' => $e->nombre_equipo,
                     'codigo' => $e->codigo_qr,
                     'estado' => $e->estado_equipo,
                     'observacion' => $e->observacion_equipo ?? 'Sin detalles registrados.',
-                    'tipo' => 'EQUIPO'
+                    'tipo' => 'EQUIPO',
                 ];
             });
         $issues = $issues->concat($equipos);
@@ -349,20 +352,20 @@ class ReportController extends Controller
         // 2. Herramientas con problemas
         $herramientas = \App\Models\Tool::whereIn('estado_herramienta', ['Dañado', 'Extraviado', 'Baja'])
             ->get()
-            ->map(function($t) {
+            ->map(function ($t) {
                 return [
                     'nombre' => $t->nombre_herramienta,
                     'codigo' => $t->codigo_qr,
                     'estado' => $t->estado_herramienta,
                     'observacion' => $t->descripcion_herramienta ?? 'Sin detalles registrados.',
-                    'tipo' => 'HERRAMIENTA'
+                    'tipo' => 'HERRAMIENTA',
                 ];
             });
         $issues = $issues->concat($herramientas);
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.inventory-issues', [
             'issues' => $issues,
-            'date' => now()->format('d/m/Y H:i')
+            'date' => now()->format('d/m/Y H:i'),
         ]);
 
         return $pdf->stream('Reporte_Incidencias_Criticas.pdf');

@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Loan;
 use App\Models\Borrower;
-use App\Models\Subject;
-use App\Models\Item;
 use App\Models\Equipment;
-use App\Models\Tool;
+use App\Models\Loan;
 use App\Models\Reposition;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; // <--- MUY IMPORTANTE PARA EL EDIT Y UPDATE
-use Illuminate\Support\Facades\Redirect;
-use Inertia\Inertia;                     // Para renderizar las vistas
+use App\Models\Subject;
+use App\Models\Tool;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request; // <--- MUY IMPORTANTE PARA EL EDIT Y UPDATE
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;                     // Para renderizar las vistas
+use Inertia\Inertia;
 
 class LoanController extends Controller
 {
@@ -31,8 +30,8 @@ class LoanController extends Controller
             'tools',
             'equipments.accessories',     // Lista de equipos prestados
         ])->orderBy('id', 'desc')
-          ->get()
-          ->append(['all_items']);
+            ->get()
+            ->append(['all_items']);
 
         return Inertia::render('loan/Index', [
             'loans' => $loans,
@@ -54,7 +53,7 @@ class LoanController extends Controller
             'subject',
             'loanReturns.user', // Encargado que recepcionó el retorno
             'loanReturns.returnDetails.returnable',
-            'loanReturns.returnDetails.returnDetailAccessories.accessory'
+            'loanReturns.returnDetails.returnDetailAccessories.accessory',
         ])->findOrFail($id);
 
         // 2. Generar el PDF usando la vista Blade
@@ -73,49 +72,49 @@ class LoanController extends Controller
         $equipment = Equipment::whereNotIn('estado_equipo', ['Dañado', 'Baja', 'Incompleto', 'Extraviado'])
             ->get()
             ->map(function ($e) {
-            $e->tipo = 'equipo';
-            $e->nombre_mostrar = $e->nombre_equipo;
-            $e->estado_mostrar = $e->estado_equipo;
-            $e->foto = $e->foto_equipo;
-            $e->fecha_disponible = null;
-            $e->hora_fin_prevista = null;
-            $e->fecha_retorno_estimado = null;
-            $e->hora_fin_estimado = null;
+                $e->tipo = 'equipo';
+                $e->nombre_mostrar = $e->nombre_equipo;
+                $e->estado_mostrar = $e->estado_equipo;
+                $e->foto = $e->foto_equipo;
+                $e->fecha_disponible = null;
+                $e->hora_fin_prevista = null;
+                $e->fecha_retorno_estimado = null;
+                $e->hora_fin_estimado = null;
 
-            if ($e->estado_equipo === 'Mantenimiento') {
-                $maintData = DB::table('maintenances')
-                    ->where('equipment_id', $e->id)
-                    ->where('estado_mantenimiento', 'En Proceso') // Asegúrate de que este sea el estado en tu DB[cite: 6]
-                    ->orderBy('id', 'desc')
-                    ->select('fecha_retorno_estimado', 'hora_fin_estimado')
-                    ->first();
+                if ($e->estado_equipo === 'Mantenimiento') {
+                    $maintData = DB::table('maintenances')
+                        ->where('equipment_id', $e->id)
+                        ->where('estado_mantenimiento', 'En Proceso') // Asegúrate de que este sea el estado en tu DB[cite: 6]
+                        ->orderBy('id', 'desc')
+                        ->select('fecha_retorno_estimado', 'hora_fin_estimado')
+                        ->first();
 
-                if ($maintData) {
-                    $e->fecha_retorno_estimado = $maintData->fecha_retorno_estimado;
-                    $e->hora_fin_estimado = $maintData->hora_fin_estimado;
+                    if ($maintData) {
+                        $e->fecha_retorno_estimado = $maintData->fecha_retorno_estimado;
+                        $e->hora_fin_estimado = $maintData->hora_fin_estimado;
+                    }
                 }
-            }
 
-            // FECHA PRÉSTAMO: (Esto ya te funcionaba)[cite: 2, 3]
-            $e->fecha_disponible = null;
-            $e->hora_fin_prevista = null;
-            if ($e->estado_equipo === 'Prestado') {
-                $loanData = DB::table('item_loan')
-                    ->join('loans', 'item_loan.loan_id', '=', 'loans.id')
-                    ->where('item_loan.loanable_id', $e->id)
-                    ->where('item_loan.loanable_type', Equipment::class)
-                    ->where('loans.estado_prestamo', 'Activo')
-                    ->select('loans.fecha_retorno_prevista', 'loans.hora_fin_prevista')
-                    ->first();
+                // FECHA PRÉSTAMO: (Esto ya te funcionaba)[cite: 2, 3]
+                $e->fecha_disponible = null;
+                $e->hora_fin_prevista = null;
+                if ($e->estado_equipo === 'Prestado') {
+                    $loanData = DB::table('item_loan')
+                        ->join('loans', 'item_loan.loan_id', '=', 'loans.id')
+                        ->where('item_loan.loanable_id', $e->id)
+                        ->where('item_loan.loanable_type', Equipment::class)
+                        ->where('loans.estado_prestamo', 'Activo')
+                        ->select('loans.fecha_retorno_prevista', 'loans.hora_fin_prevista')
+                        ->first();
 
-                if ($loanData) {
-                    $e->fecha_disponible = $loanData->fecha_retorno_prevista;
-                    $e->hora_fin_prevista = $loanData->hora_fin_prevista; // <--- Asignación explícita
+                    if ($loanData) {
+                        $e->fecha_disponible = $loanData->fecha_retorno_prevista;
+                        $e->hora_fin_prevista = $loanData->hora_fin_prevista; // <--- Asignación explícita
+                    }
                 }
-            }
 
-            return $e;
-        });
+                return $e;
+            });
 
         // 2. Herramientas con Préstamos
         $tools = Tool::whereNotIn('estado_herramienta', ['Dañado', 'Baja', 'Extraviado'])
@@ -179,18 +178,18 @@ class LoanController extends Controller
         // 1. Validaciones dinámicas
         $rules = [
             'cedula_identidad' => 'required|string',
-            'nombres'          => 'required|string',
-            'subject_id'       => 'required|exists:subjects,id',
-            'subject_id'       => [
+            'nombres' => 'required|string',
+            'subject_id' => 'required|exists:subjects,id',
+            'subject_id' => [
                 'required',
                 \Illuminate\Validation\Rule::exists('subjects', 'id')->where(function ($query) {
                     $query->where('activo', true);
                 }),
             ],
-            'items'            => 'required|array|min:1',
+            'items' => 'required|array|min:1',
             'fecha_retorno_prevista' => 'required|date|after_or_equal:today',
-            'hora_fin_prevista'      => 'required',
-            'tipo_prestatario'       => 'required|in:docente,auxiliar,estudiante',
+            'hora_fin_prevista' => 'required',
+            'tipo_prestatario' => 'required|in:docente,auxiliar,estudiante',
         ];
 
         // Reglas extra si es estudiante
@@ -208,9 +207,9 @@ class LoanController extends Controller
         // Buscamos si el prestatario (por CI) ya existe y si está inactivo
         $existingBorrower = Borrower::where('cedula_identidad', $request->cedula_identidad)->first();
 
-        if ($existingBorrower && !$existingBorrower->activo) {
+        if ($existingBorrower && ! $existingBorrower->activo) {
             return back()->withErrors([
-                'cedula_identidad' => 'Este responsable (Docente/Auxiliar/Estudiante) se encuentra INACTIVO en el sistema y no puede realizar préstamos.'
+                'cedula_identidad' => 'Este responsable (Docente/Auxiliar/Estudiante) se encuentra INACTIVO en el sistema y no puede realizar préstamos.',
             ])->withInput();
         }
 
@@ -218,7 +217,7 @@ class LoanController extends Controller
         // Si viene por CI (estudiante/nuevo), buscamos si ya tiene borrower_id
         // Si viene por borrower_id (docente/auxiliar), lo usamos directo.
         $borrowerIdParaCheck = $request->borrower_id ?? null;
-        if (!$borrowerIdParaCheck && $request->cedula_identidad) {
+        if (! $borrowerIdParaCheck && $request->cedula_identidad) {
             $existingBorrower = Borrower::where('cedula_identidad', $request->cedula_identidad)->first();
             $borrowerIdParaCheck = $existingBorrower?->id;
         }
@@ -246,7 +245,7 @@ class LoanController extends Controller
                     'nombres' => $request->nombres,
                     'apellidoPaterno' => $request->apellidoPaterno,
                     'apellidoMaterno' => $request->apellidoMaterno,
-                    'celular'         => $request->celular ?? null,
+                    'celular' => $request->celular ?? null,
                 ]
             );
 
@@ -262,14 +261,14 @@ class LoanController extends Controller
 
             // 4. Crear el registro del Préstamo
             $loan = Loan::create([
-                'user_id'     => auth()->id(),
+                'user_id' => auth()->id(),
                 'borrower_id' => $borrower->id,
-                'subject_id'  => $request->subject_id,
+                'subject_id' => $request->subject_id,
                 'fecha_salida' => now()->format('Y-m-d'),
-                'hora_inicio'  => now()->format('H:i'),
+                'hora_inicio' => now()->format('H:i'),
                 'fecha_retorno_prevista' => $request->fecha_retorno_prevista,
-                'hora_fin_prevista'      => $request->hora_fin_prevista,
-                'estado_prestamo'        => 'Activo',
+                'hora_fin_prevista' => $request->hora_fin_prevista,
+                'estado_prestamo' => 'Activo',
             ]);
 
             // 5. Si es estudiante, guardar la Autorización y el PDF
@@ -278,7 +277,7 @@ class LoanController extends Controller
 
                 \App\Models\Authorization::create([
                     'loan_id' => $loan->id,
-                    'motivo'  => $request->motivo,
+                    'motivo' => $request->motivo,
                     'archivo_nota' => $path,
                 ]);
             }
@@ -297,11 +296,13 @@ class LoanController extends Controller
             }
 
             DB::commit();
+
             return Redirect::route('loans.index')->with('success', 'Préstamo registrado correctamente.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Error al procesar el préstamo: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Error al procesar el préstamo: '.$e->getMessage()]);
         }
     }
 
@@ -350,7 +351,7 @@ class LoanController extends Controller
                     ->update(['estado_devolucion' => $itemData['estado_devolucion']]);
 
                 // 4. Accesorios (Equipos)
-                if (!empty($itemData['accessories'])) {
+                if (! empty($itemData['accessories'])) {
                     foreach ($itemData['accessories'] as $accData) {
                         DB::table('accessories')
                             ->where('id', $accData['id'])
@@ -360,11 +361,13 @@ class LoanController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('loans.index')->with('success', 'Devolución registrada correctamente.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Error: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Error: '.$e->getMessage()]);
         }
     }
 
@@ -379,7 +382,6 @@ class LoanController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-
     public function edit(Loan $loan)
     {
         $loan->load(['equipments', 'tools', 'subject', 'borrower', 'borrower.teacher'])->append(['all_items']);
@@ -404,8 +406,8 @@ class LoanController extends Controller
                         DB::table('maintenances')->where('equipment_id', $e->id)->where('estado_mantenimiento', 'En Proceso')->value('fecha_retorno_estimado') : null,
                     'fecha_disponible' => ($e->estado_equipo === 'Prestado') ?
                         DB::table('item_loan')->join('loans', 'item_loan.loan_id', '=', 'loans.id')
-                        ->where('item_loan.loanable_id', $e->id)->where('item_loan.loanable_type', Equipment::class)
-                        ->where('loans.estado_prestamo', 'Activo')->value('loans.fecha_retorno_prevista') : null,
+                            ->where('item_loan.loanable_id', $e->id)->where('item_loan.loanable_type', Equipment::class)
+                            ->where('loans.estado_prestamo', 'Activo')->value('loans.fecha_retorno_prevista') : null,
                 ];
             });
 
@@ -427,8 +429,8 @@ class LoanController extends Controller
                     'estado_mostrar' => $t->estado_herramienta,
                     'fecha_disponible' => ($t->estado_herramienta === 'Prestado') ?
                         DB::table('item_loan')->join('loans', 'item_loan.loan_id', '=', 'loans.id')
-                        ->where('item_loan.loanable_id', $t->id)->where('item_loan.loanable_type', Tool::class)
-                        ->where('loans.estado_prestamo', 'Activo')->value('loans.fecha_retorno_prevista') : null,
+                            ->where('item_loan.loanable_id', $t->id)->where('item_loan.loanable_type', Tool::class)
+                            ->where('loans.estado_prestamo', 'Activo')->value('loans.fecha_retorno_prevista') : null,
                     'fecha_retorno_estimado' => null,
                 ];
             });
@@ -437,14 +439,13 @@ class LoanController extends Controller
             'loan' => $loan,
             'borrowers' => Borrower::all(),
             'subjects' => Subject::all(),
-            'items' => $equipments->concat($tools), //[cite: 7]
+            'items' => $equipments->concat($tools), // [cite: 7]
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-
     public function update(Request $request, Loan $loan)
     {
         $request->validate([
@@ -492,11 +493,13 @@ class LoanController extends Controller
             $loan->tools()->sync($newToolIds);
 
             DB::commit();
+
             return Redirect::route('loans.index')->with('success', 'Préstamo actualizado correctamente.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Error al actualizar: ' . $e->getMessage()]);
+
+            return back()->withErrors(['error' => 'Error al actualizar: '.$e->getMessage()]);
         }
     }
 

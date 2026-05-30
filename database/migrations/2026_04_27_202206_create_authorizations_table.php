@@ -21,9 +21,9 @@ return new class extends Migration
                 ->onDelete('cascade');  // si se borra el préstamo, se borra la nota
 
             // Datos de la nota oficial de dirección
-            //$table->string('numero_nota', 50)->unique();  // Nro. oficial
-            //$table->date('fecha_nota');                   // fecha que firmó dirección
-            //$table->string('emitida_por', 150);           // nombre del director/autoridad
+            // $table->string('numero_nota', 50)->unique();  // Nro. oficial
+            // $table->date('fecha_nota');                   // fecha que firmó dirección
+            // $table->string('emitida_por', 150);           // nombre del director/autoridad
             $table->string('motivo', 200)->nullable();    // para qué proyecto/materia
             $table->string('archivo_nota', 255)->nullable(); // ruta PDF escaneado en storage
 

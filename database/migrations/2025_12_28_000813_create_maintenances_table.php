@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('equipment_id')
                 ->constrained('equipment')
                 ->onDelete('cascade')
-                ->onUpdate('cascade'); 
+                ->onUpdate('cascade');
 
             $table->foreignId('user_id')
                 ->nullable()
@@ -44,7 +44,7 @@ return new class extends Migration
                 'Reparado',
                 'Dañado',
                 'Incompleto',
-                'Baja'
+                'Baja',
             ])->nullable();
             $table->timestamps();
         });

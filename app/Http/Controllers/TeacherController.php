@@ -38,7 +38,7 @@ class TeacherController extends Controller
 
         // Cambiamos el estado al contrario del que tenga
         $borrower->update([
-            'activo' => !$borrower->activo
+            'activo' => ! $borrower->activo,
         ]);
 
         $mensaje = $borrower->activo ? 'activado' : 'desactivado';

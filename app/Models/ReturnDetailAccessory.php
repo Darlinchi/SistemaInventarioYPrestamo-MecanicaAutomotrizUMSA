@@ -13,7 +13,7 @@ class ReturnDetailAccessory extends Model
     protected $fillable = [
         'return_detail_id',
         'accessory_id',
-        'estado_accesorio'
+        'estado_accesorio',
     ];
 
     /**

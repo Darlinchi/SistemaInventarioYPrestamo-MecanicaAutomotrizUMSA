@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -18,16 +18,16 @@ class UserController extends Controller
             ->get()
             ->map(function ($user) {
                 return [
-                    'id'               => $user->id,
+                    'id' => $user->id,
                     'cedula_identidad' => $user->cedula_identidad ?? '—',
-                    'name'             => $user->name ?? '',
-                    'apellidoPaterno'  => $user->apellidoPaterno ?? '',
-                    'apellidoMaterno'  => $user->apellidoMaterno ?? '',
-                    'username'         => $user->username,
-                    'email'            => $user->email ?? '',
-                    'celular'          => $user->celular ?? '',
-                    'activo'           => (bool) ($user->activo ?? true),
-                    'roles'            => $user->getRoleNames(),
+                    'name' => $user->name ?? '',
+                    'apellidoPaterno' => $user->apellidoPaterno ?? '',
+                    'apellidoMaterno' => $user->apellidoMaterno ?? '',
+                    'username' => $user->username,
+                    'email' => $user->email ?? '',
+                    'celular' => $user->celular ?? '',
+                    'activo' => (bool) ($user->activo ?? true),
+                    'roles' => $user->getRoleNames(),
                 ];
             });
 
@@ -52,32 +52,32 @@ class UserController extends Controller
     {
         $request->validate([
             'cedula_identidad' => 'required|string|max:20|unique:users,cedula_identidad',
-            'name'             => 'required|string|max:255',
-            'apellidoPaterno'  => 'nullable|string|max:100',
-            'apellidoMaterno'  => 'nullable|string|max:100',
-            'username'         => 'required|string|max:255|unique:users',
-            'email'            => 'nullable|string|email|max:255|unique:users',
-            'celular'          => 'nullable|string|max:20',
-            'password'         => 'required|string|min:8|confirmed',
-            'role'             => 'required|exists:roles,name',
+            'name' => 'required|string|max:255',
+            'apellidoPaterno' => 'nullable|string|max:100',
+            'apellidoMaterno' => 'nullable|string|max:100',
+            'username' => 'required|string|max:255|unique:users',
+            'email' => 'nullable|string|email|max:255|unique:users',
+            'celular' => 'nullable|string|max:20',
+            'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|exists:roles,name',
         ]);
 
         $user = User::create([
-            'name'     => $request->name,
-            'apellidoPaterno'  => $request->apellidoPaterno,
-            'apellidoMaterno'  => $request->apellidoMaterno,
+            'name' => $request->name,
+            'apellidoPaterno' => $request->apellidoPaterno,
+            'apellidoMaterno' => $request->apellidoMaterno,
             'cedula_identidad' => $request->cedula_identidad,
             'username' => $request->username,
             'celular' => $request->celular,
-            'email'    => $request->email ?? null,
+            'email' => $request->email ?? null,
             'password' => Hash::make($request->password),
-            'activo'   => true,
+            'activo' => true,
         ]);
 
         $user->assignRole($request->role);
 
         return redirect()->route('users.index')
-         ->with('success', 'Usuario creado correctamente.');
+            ->with('success', 'Usuario creado correctamente.');
     }
 
     public function edit(User $user)
@@ -88,17 +88,17 @@ class UserController extends Controller
             : Role::whereNotIn('name', ['super-admin'])->orderBy('name')->pluck('name');
 
         return Inertia::render('users/Edit', [
-            'user'  => [
-                'id'       => $user->id,
-                'name'     => $user->name,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
                 'cedula_identidad' => $user->cedula_identidad,
-                'apellidoPaterno'  => $user->apellidoPaterno,
-                'apellidoMaterno'  => $user->apellidoMaterno,
+                'apellidoPaterno' => $user->apellidoPaterno,
+                'apellidoMaterno' => $user->apellidoMaterno,
                 'username' => $user->username,
-                'email'    => $user->email ?? '',
+                'email' => $user->email ?? '',
                 'celular' => $user->celular,
-                'activo'   => (bool) $user->activo,
-                'roles'    => $user->getRoleNames(),
+                'activo' => (bool) $user->activo,
+                'roles' => $user->getRoleNames(),
             ],
             'roles' => $roles,
         ]);
@@ -107,31 +107,31 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'apellidoPaterno'  => 'nullable|string|max:100',
-            'apellidoMaterno'  => 'nullable|string|max:100',
-            'celular'         => 'nullable|string|max:20',
+            'name' => 'required|string|max:255',
+            'apellidoPaterno' => 'nullable|string|max:100',
+            'apellidoMaterno' => 'nullable|string|max:100',
+            'celular' => 'nullable|string|max:20',
             'cedula_identidad' => ['required', 'string', Rule::unique('users')->ignore($user->id)],
             'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'email'    => ['nullable', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'role'     => 'required|exists:roles,name',
+            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'role' => 'required|exists:roles,name',
         ]);
 
         $user->update([
-            'name'     => $request->name,
-            'apellidoPaterno'  => $request->apellidoPaterno,
-            'apellidoMaterno'  => $request->apellidoMaterno,
+            'name' => $request->name,
+            'apellidoPaterno' => $request->apellidoPaterno,
+            'apellidoMaterno' => $request->apellidoMaterno,
             'cedula_identidad' => $request->cedula_identidad,
             'celular' => $request->celular,
             'username' => $request->username,
-            'email'    => $request->email ?? null,
+            'email' => $request->email ?? null,
         ]);
 
         // Actualizar rol
         $user->syncRoles([$request->role]);
 
         return redirect()->route('users.index')
-             ->with('success', 'Usuario ' . $user->name . ' actualizado con éxito');
+            ->with('success', 'Usuario '.$user->name.' actualizado con éxito');
     }
 
     // ── Cambiar contraseña desde Edit ─────────────────────────────
@@ -165,9 +165,10 @@ class UserController extends Controller
             return back()->with('error', 'No puedes deshabilitar tu propia cuenta.');
         }
 
-        $user->update(['activo' => !$user->activo]);
+        $user->update(['activo' => ! $user->activo]);
 
         $estado = $user->activo ? 'habilitado' : 'deshabilitado';
+
         return back()->with('success', "Usuario {$estado} correctamente.");
     }
 
@@ -179,6 +180,7 @@ class UserController extends Controller
         }
 
         $user->delete();
+
         return back()->with('success', 'Usuario eliminado correctamente.');
     }
 }

@@ -2,11 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Loan;
+use Carbon\Carbon;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use App\Models\Loan;
-use Carbon\Carbon;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -49,33 +49,33 @@ class HandleInertiaRequests extends Middleware
                     $query->where('fecha_retorno_prevista', '<', $now->toDateString())
                         ->orWhere(function ($q) use ($now) {
                             $q->where('fecha_retorno_prevista', '=', $now->toDateString())
-                              ->where('hora_fin_prevista', '<', $now->toTimeString());
+                                ->where('hora_fin_prevista', '<', $now->toTimeString());
                         });
                 })->count();
         }
 
         return [
             ...parent::share($request),
-            'name'  => 'SISTEMA WEB DE GESTIÓN DE INVENTARIOS Y CONTROL DE PRÉSTAMOS DE EQUIPOS',
+            'name' => 'SISTEMA WEB DE GESTIÓN DE INVENTARIOS Y CONTROL DE PRÉSTAMOS DE EQUIPOS',
             'quote' => ['message' => 'Carrera de Mecánica Automotriz - UMSA'],
-            'auth'  => [
+            'auth' => [
                 'user' => $request->user() ? [
-                    'id'       => $request->user()->id,
-                    'name'     => $request->user()->name,
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
                     'username' => $request->user()->username,
-                    'email'    => $request->user()->email,
-                    'activo'   => $request->user()->activo,
+                    'email' => $request->user()->email,
+                    'activo' => $request->user()->activo,
                     // getRoleNames() devuelve una Collection, se convierte a array para Vue
-                    'roles'    => $request->user()->getRoleNames()->toArray(),
+                    'roles' => $request->user()->getRoleNames()->toArray(),
                     // Agrega esta línea:
                     'permissions' => $request->user()->getAllPermissions()->pluck('name')->toArray(),
                 ] : null,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
-                'error'   => fn () => $request->session()->get('error'),
+                'error' => fn () => $request->session()->get('error'),
             ],
-            'sidebarOpen'   => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'notifications' => [
                 'vencidos_count' => $vencidosCount,
             ],

@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Maintenance extends Model
 {
@@ -29,7 +29,6 @@ class Maintenance extends Model
         'estado_mantenimiento',
     ];
 
-
     protected $appends = ['estado_texto'];
 
     public function getEstadoTextoAttribute()
@@ -48,11 +47,19 @@ class Maintenance extends Model
         return $this->belongsTo(Equipment::class);
     }
 
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
     // ─── Helpers ───────────────────────────────────────────────────
-    public function isEnProceso(): bool { return $this->estado_mantenimiento === 'En Proceso'; }
-    public function isCompletado(): bool{ return $this->estado_mantenimiento === 'Completado'; }
+    public function isEnProceso(): bool
+    {
+        return $this->estado_mantenimiento === 'En Proceso';
+    }
+
+    public function isCompletado(): bool
+    {
+        return $this->estado_mantenimiento === 'Completado';
+    }
 }

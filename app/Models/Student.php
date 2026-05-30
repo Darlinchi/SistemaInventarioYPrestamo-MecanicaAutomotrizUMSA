@@ -2,22 +2,24 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Student extends Model
 {
     use HasFactory;
 
-    protected $table      = 'students';
+    protected $table = 'students';
+
     protected $primaryKey = 'id_student'; // Indicamos que la PK no es 'id'
+
     public $incrementing = false;        // No es autoincremental
 
     protected $fillable = [
         'id_student',
         'registro_universitario',
-        'semestre'
+        'semestre',
     ];
 
     // Relación inversa: Un estudiante pertenece a un prestatario

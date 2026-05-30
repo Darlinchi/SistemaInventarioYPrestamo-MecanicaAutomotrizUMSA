@@ -9,13 +9,14 @@ class AssignmentSeeder extends Seeder
 {
     public function run(): void
     {
-        $subjectIds   = DB::table('subjects')->pluck('id')->toArray();
-        $teacherIds   = DB::table('teachers')->pluck('id_teacher')->toArray();
+        $subjectIds = DB::table('subjects')->pluck('id')->toArray();
+        $teacherIds = DB::table('teachers')->pluck('id_teacher')->toArray();
         $assistantIds = DB::table('assistants')->pluck('id_assistant')->toArray();
 
         // Verificamos que existan datos antes de continuar
         if (empty($subjectIds) || empty($teacherIds)) {
             $this->command->warn('No hay materias o docentes. Ejecuta SubjectSeeder y BorrowerSeeder primero.');
+
             return;
         }
 
@@ -28,7 +29,7 @@ class AssignmentSeeder extends Seeder
             $shuffled = $subjectIds;
             shuffle($shuffled);
             // Tomamos máximo 2, pero sin pasarnos si hay menos materias
-            $cantidad       = min(2, count($shuffled));
+            $cantidad = min(2, count($shuffled));
             $randomSubjects = array_slice($shuffled, 0, $cantidad);
 
             foreach ($randomSubjects as $subjectId) {
@@ -53,14 +54,16 @@ class AssignmentSeeder extends Seeder
                 ->inRandomOrder()
                 ->first();
 
-            if (!$assignment) continue;
+            if (! $assignment) {
+                continue;
+            }
 
             DB::table('assistant_subject')->insertOrIgnore([
                 'assistant_id' => $assistantId,
-                'teacher_id'   => $assignment->teacher_id,
-                'subject_id'   => $assignment->subject_id,
-                'created_at'   => now(),
-                'updated_at'   => now(),
+                'teacher_id' => $assignment->teacher_id,
+                'subject_id' => $assignment->subject_id,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
     }

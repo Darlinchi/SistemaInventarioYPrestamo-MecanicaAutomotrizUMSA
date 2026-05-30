@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Seeder;
 use App\Models\Equipment;
-use App\Models\Tool;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class ItemSeeder extends Seeder
 {
@@ -63,7 +62,7 @@ class ItemSeeder extends Seeder
                 'marca' => $e['mar'],
                 'modelo' => $e['mod'],
                 'rubro' => $e['rub'],
-                'serie' => 'SN-' . rand(100000, 999999),
+                'serie' => 'SN-'.rand(100000, 999999),
                 'fecha_adquisicion' => now()->subMonths(rand(12, 48)),
                 'color' => 'Gris Institucional',
             ]);
