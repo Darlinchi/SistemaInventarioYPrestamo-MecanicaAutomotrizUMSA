@@ -56,7 +56,10 @@ update.put = (options?: RouteQueryOptions): RouteDefinition<'put'> => ({
     url: update.url(options),
     method: 'put',
 })
-
+update.form = (options?: RouteQueryOptions) => ({
+    url: update.url(options),
+    method: 'put' as const,
+})
 const password = {
     confirm: Object.assign(confirm, confirmD7e05f),
     confirmation: Object.assign(confirmation, confirmation),
