@@ -17,6 +17,7 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
 
+ARG CACHEBUST=1S
 RUN npm install
 
 RUN touch database/database.sqlite
