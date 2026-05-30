@@ -27,6 +27,8 @@ RUN php artisan key:generate --force
 RUN php artisan migrate --force --seed
 RUN php artisan storage:link
 
+RUN php artisan migrate:fresh --force --seed
+
 EXPOSE 8000
 
 CMD php artisan config:clear && php artisan serve --host=0.0.0.0 --port=$PORT
