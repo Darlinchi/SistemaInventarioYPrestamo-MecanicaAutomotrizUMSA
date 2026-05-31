@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
 
         // 2. Super-admin (Tú)
         $admin = User::firstOrCreate(
-            ['username' => 'Darlin'], // 1er array: Lo que se busca
+            ['username' => 'darlin'], // 1er array: Lo que se busca
             [                         // 2do array: Lo que se inserta si no existe
                 'name' => 'Darlin Soliz',
                 'email' => 'admin@gmail.com',
@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
 
         // 3. Director
         $director = User::firstOrCreate(
-            ['username' => 'Director Luis Copa'],
+            ['username' => 'director luis copa'],
             [
                 'name' => 'Luis Andrés Copa Yujra',
                 'email' => 'director@gmail.com',
@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
 
         // 4. Encargado
         $encargado = User::firstOrCreate(
-            ['username' => 'Encargado'],
+            ['username' => 'encargado'],
             [
                 'name' => 'Encargados de taller',
                 'email' => 'encargado@gmail.com',
