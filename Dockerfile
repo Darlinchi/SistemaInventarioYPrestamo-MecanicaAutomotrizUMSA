@@ -23,4 +23,4 @@ RUN php artisan storage:link
 
 EXPOSE 8000
 
-CMD touch database/database.sqlite && php artisan config:clear && php artisan migrate:fresh --force --seed && php artisan serve --host=0.0.0.0 --port=$PORT
+CMD touch database/database.sqlite && php artisan config:clear && php artisan migrate:fresh --force --seed && php artisan tinker --execute="echo App\Models\User::count().' usuarios';" && php artisan serve --host=0.0.0.0 --port=$PORT
