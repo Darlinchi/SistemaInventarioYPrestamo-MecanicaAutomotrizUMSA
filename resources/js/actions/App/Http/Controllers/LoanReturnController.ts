@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\LoanReturnController::store
  * @see app/Http/Controllers/LoanReturnController.php:130
@@ -33,6 +33,27 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
+    /**
+* @see \App\Http\Controllers\LoanReturnController::store
+ * @see app/Http/Controllers/LoanReturnController.php:130
+ * @route '/dashboard/loan-returns'
+ */
+    const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: store.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\LoanReturnController::store
+ * @see app/Http/Controllers/LoanReturnController.php:130
+ * @route '/dashboard/loan-returns'
+ */
+        storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: store.url(options),
+            method: 'post',
+        })
+    
+    store.form = storeForm
 /**
 * @see \App\Http\Controllers\LoanReturnController::index
  * @see app/Http/Controllers/LoanReturnController.php:20
@@ -75,6 +96,42 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: index.url(options),
     method: 'head',
 })
+
+    /**
+* @see \App\Http\Controllers\LoanReturnController::index
+ * @see app/Http/Controllers/LoanReturnController.php:20
+ * @route '/dashboard/loan-returns'
+ */
+    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: index.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\LoanReturnController::index
+ * @see app/Http/Controllers/LoanReturnController.php:20
+ * @route '/dashboard/loan-returns'
+ */
+        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\LoanReturnController::index
+ * @see app/Http/Controllers/LoanReturnController.php:20
+ * @route '/dashboard/loan-returns'
+ */
+        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    index.form = indexForm
 const LoanReturnController = { store, index }
 
 export default LoanReturnController

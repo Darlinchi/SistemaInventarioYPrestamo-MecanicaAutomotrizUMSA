@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\RoleController::index
  * @see app/Http/Controllers/Rolecontroller.php:12
@@ -42,6 +42,41 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\RoleController::index
+ * @see app/Http/Controllers/Rolecontroller.php:12
+ * @route '/dashboard/roles'
+ */
+    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: index.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\RoleController::index
+ * @see app/Http/Controllers/Rolecontroller.php:12
+ * @route '/dashboard/roles'
+ */
+        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\RoleController::index
+ * @see app/Http/Controllers/Rolecontroller.php:12
+ * @route '/dashboard/roles'
+ */
+        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    index.form = indexForm
 /**
 * @see \App\Http\Controllers\RoleController::store
  * @see app/Http/Controllers/Rolecontroller.php:36
@@ -76,6 +111,27 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
+    /**
+* @see \App\Http\Controllers\RoleController::store
+ * @see app/Http/Controllers/Rolecontroller.php:36
+ * @route '/dashboard/roles'
+ */
+    const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: store.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\RoleController::store
+ * @see app/Http/Controllers/Rolecontroller.php:36
+ * @route '/dashboard/roles'
+ */
+        storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: store.url(options),
+            method: 'post',
+        })
+    
+    store.form = storeForm
 /**
 * @see \App\Http\Controllers\RoleController::update
  * @see app/Http/Controllers/Rolecontroller.php:55
@@ -134,6 +190,37 @@ update.put = (args: { role: number | { id: number } } | [role: number | { id: nu
     method: 'put',
 })
 
+    /**
+* @see \App\Http\Controllers\RoleController::update
+ * @see app/Http/Controllers/Rolecontroller.php:55
+ * @route '/dashboard/roles/{role}'
+ */
+    const updateForm = (args: { role: number | { id: number } } | [role: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: update.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PUT',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\RoleController::update
+ * @see app/Http/Controllers/Rolecontroller.php:55
+ * @route '/dashboard/roles/{role}'
+ */
+        updateForm.put = (args: { role: number | { id: number } } | [role: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: update.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PUT',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    update.form = updateForm
 /**
 * @see \App\Http\Controllers\RoleController::destroy
  * @see app/Http/Controllers/Rolecontroller.php:76
@@ -191,6 +278,38 @@ destroy.delete = (args: { role: number | { id: number } } | [role: number | { id
     url: destroy.url(args, options),
     method: 'delete',
 })
+
+    /**
+* @see \App\Http\Controllers\RoleController::destroy
+ * @see app/Http/Controllers/Rolecontroller.php:76
+ * @route '/dashboard/roles/{role}'
+ */
+    const destroyForm = (args: { role: number | { id: number } } | [role: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: destroy.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'DELETE',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\RoleController::destroy
+ * @see app/Http/Controllers/Rolecontroller.php:76
+ * @route '/dashboard/roles/{role}'
+ */
+        destroyForm.delete = (args: { role: number | { id: number } } | [role: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: destroy.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    destroy.form = destroyForm
 const roles = {
     index: Object.assign(index, index),
 store: Object.assign(store, store),

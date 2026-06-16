@@ -11,6 +11,7 @@ import loanRoutes from '@/routes/loans';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import StatCard from '@/components/shared/StatCard.vue';
 import PageHeader from '@/components/PageHeader.vue';
+import MaintenanceAlerts from '@/components/MaintenanceAlerts.vue';
 import CreateActionButton from '@/components/CreateActionButton.vue';
 import RecentEquipmentCard from '@/components/RecentEquipmentCard.vue';
 import ReturnLoanModal from '@/components/ReturnLoanModal.vue';
@@ -31,6 +32,7 @@ const props = defineProps<{
     recentLoans: any[];
     recentEquipments: any[];
     auth_user: { id: number; name: string; username: string };
+    issues: Array<any>;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -149,6 +151,8 @@ const processReturn = () => {
                     description="Dañados, extraviados o en taller"
                 />
             </div>
+
+            <MaintenanceAlerts :issues="issues" />
 
             <Card class="rounded-[2.5rem] border-none shadow-sm overflow-hidden bg-white">
                 <CardHeader class="p-6 border-b border-neutral-100 flex flex-row items-center justify-between space-y-0">

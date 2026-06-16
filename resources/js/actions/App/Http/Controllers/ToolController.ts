@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ToolController::index
  * @see app/Http/Controllers/ToolController.php:17
@@ -42,6 +42,41 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\ToolController::index
+ * @see app/Http/Controllers/ToolController.php:17
+ * @route '/dashboard/tools'
+ */
+    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: index.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\ToolController::index
+ * @see app/Http/Controllers/ToolController.php:17
+ * @route '/dashboard/tools'
+ */
+        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\ToolController::index
+ * @see app/Http/Controllers/ToolController.php:17
+ * @route '/dashboard/tools'
+ */
+        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    index.form = indexForm
 /**
 * @see \App\Http\Controllers\ToolController::create
  * @see app/Http/Controllers/ToolController.php:25
@@ -85,6 +120,41 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\ToolController::create
+ * @see app/Http/Controllers/ToolController.php:25
+ * @route '/dashboard/tools/create'
+ */
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\ToolController::create
+ * @see app/Http/Controllers/ToolController.php:25
+ * @route '/dashboard/tools/create'
+ */
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\ToolController::create
+ * @see app/Http/Controllers/ToolController.php:25
+ * @route '/dashboard/tools/create'
+ */
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    create.form = createForm
 /**
 * @see \App\Http\Controllers\ToolController::store
  * @see app/Http/Controllers/ToolController.php:34
@@ -119,6 +189,27 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
+    /**
+* @see \App\Http\Controllers\ToolController::store
+ * @see app/Http/Controllers/ToolController.php:34
+ * @route '/dashboard/tools'
+ */
+    const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: store.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ToolController::store
+ * @see app/Http/Controllers/ToolController.php:34
+ * @route '/dashboard/tools'
+ */
+        storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: store.url(options),
+            method: 'post',
+        })
+    
+    store.form = storeForm
 /**
 * @see \App\Http\Controllers\ToolController::show
  * @see app/Http/Controllers/ToolController.php:98
@@ -186,6 +277,41 @@ show.head = (args: { tool: number | { id: number } } | [tool: number | { id: num
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\ToolController::show
+ * @see app/Http/Controllers/ToolController.php:98
+ * @route '/dashboard/tools/{tool}'
+ */
+    const showForm = (args: { tool: number | { id: number } } | [tool: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: show.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\ToolController::show
+ * @see app/Http/Controllers/ToolController.php:98
+ * @route '/dashboard/tools/{tool}'
+ */
+        showForm.get = (args: { tool: number | { id: number } } | [tool: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\ToolController::show
+ * @see app/Http/Controllers/ToolController.php:98
+ * @route '/dashboard/tools/{tool}'
+ */
+        showForm.head = (args: { tool: number | { id: number } } | [tool: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    show.form = showForm
 /**
 * @see \App\Http\Controllers\ToolController::edit
  * @see app/Http/Controllers/ToolController.php:106
@@ -253,6 +379,41 @@ edit.head = (args: { tool: number | { id: number } } | [tool: number | { id: num
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\ToolController::edit
+ * @see app/Http/Controllers/ToolController.php:106
+ * @route '/dashboard/tools/{tool}/edit'
+ */
+    const editForm = (args: { tool: number | { id: number } } | [tool: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: edit.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\ToolController::edit
+ * @see app/Http/Controllers/ToolController.php:106
+ * @route '/dashboard/tools/{tool}/edit'
+ */
+        editForm.get = (args: { tool: number | { id: number } } | [tool: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\ToolController::edit
+ * @see app/Http/Controllers/ToolController.php:106
+ * @route '/dashboard/tools/{tool}/edit'
+ */
+        editForm.head = (args: { tool: number | { id: number } } | [tool: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    edit.form = editForm
 /**
 * @see \App\Http\Controllers\ToolController::update
  * @see app/Http/Controllers/ToolController.php:121
@@ -316,6 +477,37 @@ updatec511625d29238eeb2c7d46166f79bf7e.put = (args: { tool: number | { id: numbe
  * @see app/Http/Controllers/ToolController.php:121
  * @route '/dashboard/tools/{tool}'
  */
+    const updatec511625d29238eeb2c7d46166f79bf7eForm = (args: { tool: number | { id: number } } | [tool: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: updatec511625d29238eeb2c7d46166f79bf7e.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PUT',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ToolController::update
+ * @see app/Http/Controllers/ToolController.php:121
+ * @route '/dashboard/tools/{tool}'
+ */
+        updatec511625d29238eeb2c7d46166f79bf7eForm.put = (args: { tool: number | { id: number } } | [tool: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: updatec511625d29238eeb2c7d46166f79bf7e.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PUT',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    updatec511625d29238eeb2c7d46166f79bf7e.form = updatec511625d29238eeb2c7d46166f79bf7eForm
+    /**
+* @see \App\Http\Controllers\ToolController::update
+ * @see app/Http/Controllers/ToolController.php:121
+ * @route '/dashboard/tools/{tool}'
+ */
 const updatec511625d29238eeb2c7d46166f79bf7e = (args: { tool: number | { id: number } } | [tool: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: updatec511625d29238eeb2c7d46166f79bf7e.url(args, options),
     method: 'patch',
@@ -368,6 +560,38 @@ updatec511625d29238eeb2c7d46166f79bf7e.patch = (args: { tool: number | { id: num
     url: updatec511625d29238eeb2c7d46166f79bf7e.url(args, options),
     method: 'patch',
 })
+
+    /**
+* @see \App\Http\Controllers\ToolController::update
+ * @see app/Http/Controllers/ToolController.php:121
+ * @route '/dashboard/tools/{tool}'
+ */
+    const updatec511625d29238eeb2c7d46166f79bf7eForm = (args: { tool: number | { id: number } } | [tool: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: updatec511625d29238eeb2c7d46166f79bf7e.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PATCH',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ToolController::update
+ * @see app/Http/Controllers/ToolController.php:121
+ * @route '/dashboard/tools/{tool}'
+ */
+        updatec511625d29238eeb2c7d46166f79bf7eForm.patch = (args: { tool: number | { id: number } } | [tool: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: updatec511625d29238eeb2c7d46166f79bf7e.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PATCH',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    updatec511625d29238eeb2c7d46166f79bf7e.form = updatec511625d29238eeb2c7d46166f79bf7eForm
 
 export const update = {
     '/dashboard/tools/{tool}': updatec511625d29238eeb2c7d46166f79bf7e,
@@ -431,6 +655,38 @@ destroy.delete = (args: { tool: number | { id: number } } | [tool: number | { id
     url: destroy.url(args, options),
     method: 'delete',
 })
+
+    /**
+* @see \App\Http\Controllers\ToolController::destroy
+ * @see app/Http/Controllers/ToolController.php:182
+ * @route '/dashboard/tools/{tool}'
+ */
+    const destroyForm = (args: { tool: number | { id: number } } | [tool: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: destroy.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'DELETE',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ToolController::destroy
+ * @see app/Http/Controllers/ToolController.php:182
+ * @route '/dashboard/tools/{tool}'
+ */
+        destroyForm.delete = (args: { tool: number | { id: number } } | [tool: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: destroy.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    destroy.form = destroyForm
 const ToolController = { index, create, store, show, edit, update, destroy }
 
 export default ToolController

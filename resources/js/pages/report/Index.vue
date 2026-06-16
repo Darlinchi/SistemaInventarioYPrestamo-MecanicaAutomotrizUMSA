@@ -17,7 +17,7 @@ import {
 
 const props = defineProps<{
     totalPrestamos: number;
-    activos: number;
+    dadosDeBaja: number;
     devueltos: number;
     items: Array<any>;
     history: Array<any>;
@@ -42,8 +42,8 @@ const activeTab = ref('inventario');
 
 const reportTabs = computed(() => [
     { id: 'inventario', label: 'Inventario', icon: Package, count: props.items.length },
-    { id: 'historial', label: 'Historial', icon: History, count: props.history.length },
-    { id: 'problemas', label: 'Requieren mantenimiento', icon: AlertTriangle, count: props.issues.length },
+    { id: 'historial', label: 'Historial ', icon: History, count: props.history.length },
+    //{ id: 'problemas', label: 'Requieren mantenimiento', icon: AlertTriangle, count: props.issues.length },
 ]);
 
 </script>
@@ -65,11 +65,11 @@ const reportTabs = computed(() => [
                     description="Total de préstamos"
                 />
                 <StatCard
-                    title="Préstamos Activos"
-                    :value="activos"
+                    title="Dados de Baja"
+                    :value="dadosDeBaja"
                     :icon="ClipboardCheck"
                     colorClass="text-[#1a3a5a] group-hover:bg-[#1a3a5a] group-hover:text-white"
-                    description="Total de préstamos activos"
+                    description="Equipos y herramientas fuera de servicio"
                 />
                 <StatCard
                     title="Préstamos Devueltos"
@@ -103,7 +103,7 @@ const reportTabs = computed(() => [
                         <div :key="activeTab" class="p-8 flex-1">
                             <InventoryReport v-if="activeTab === 'inventario'" :items="items" />
                             <HistoryReport v-if="activeTab === 'historial'" :history="history" />
-                            <IssuesReport v-if="activeTab === 'problemas'" :issues="issues" />
+                            <!--<IssuesReport v-if="activeTab === 'problemas'" :issues="issues" />-->
                         </div>
                     </transition>
                 </div>

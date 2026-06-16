@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\MaintenanceCompanyController::index
  * @see app/Http/Controllers/MaintenanceCompanyController.php:16
@@ -42,6 +42,41 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::index
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:16
+ * @route '/dashboard/maintenanceCompanies'
+ */
+    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: index.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::index
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:16
+ * @route '/dashboard/maintenanceCompanies'
+ */
+        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::index
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:16
+ * @route '/dashboard/maintenanceCompanies'
+ */
+        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    index.form = indexForm
 /**
 * @see \App\Http\Controllers\MaintenanceCompanyController::create
  * @see app/Http/Controllers/MaintenanceCompanyController.php:39
@@ -85,6 +120,41 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::create
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:39
+ * @route '/dashboard/maintenanceCompanies/create'
+ */
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::create
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:39
+ * @route '/dashboard/maintenanceCompanies/create'
+ */
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::create
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:39
+ * @route '/dashboard/maintenanceCompanies/create'
+ */
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    create.form = createForm
 /**
 * @see \App\Http\Controllers\MaintenanceCompanyController::store
  * @see app/Http/Controllers/MaintenanceCompanyController.php:47
@@ -119,6 +189,27 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
+    /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::store
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:47
+ * @route '/dashboard/maintenanceCompanies'
+ */
+    const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: store.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::store
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:47
+ * @route '/dashboard/maintenanceCompanies'
+ */
+        storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: store.url(options),
+            method: 'post',
+        })
+    
+    store.form = storeForm
 /**
 * @see \App\Http\Controllers\MaintenanceCompanyController::show
  * @see app/Http/Controllers/MaintenanceCompanyController.php:80
@@ -186,6 +277,41 @@ show.head = (args: { maintenanceCompany: number | { id: number } } | [maintenanc
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::show
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:80
+ * @route '/dashboard/maintenanceCompanies/{maintenanceCompany}'
+ */
+    const showForm = (args: { maintenanceCompany: number | { id: number } } | [maintenanceCompany: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: show.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::show
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:80
+ * @route '/dashboard/maintenanceCompanies/{maintenanceCompany}'
+ */
+        showForm.get = (args: { maintenanceCompany: number | { id: number } } | [maintenanceCompany: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::show
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:80
+ * @route '/dashboard/maintenanceCompanies/{maintenanceCompany}'
+ */
+        showForm.head = (args: { maintenanceCompany: number | { id: number } } | [maintenanceCompany: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    show.form = showForm
 /**
 * @see \App\Http\Controllers\MaintenanceCompanyController::edit
  * @see app/Http/Controllers/MaintenanceCompanyController.php:88
@@ -253,6 +379,41 @@ edit.head = (args: { maintenanceCompany: number | { id: number } } | [maintenanc
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::edit
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:88
+ * @route '/dashboard/maintenanceCompanies/{maintenanceCompany}/edit'
+ */
+    const editForm = (args: { maintenanceCompany: number | { id: number } } | [maintenanceCompany: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: edit.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::edit
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:88
+ * @route '/dashboard/maintenanceCompanies/{maintenanceCompany}/edit'
+ */
+        editForm.get = (args: { maintenanceCompany: number | { id: number } } | [maintenanceCompany: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::edit
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:88
+ * @route '/dashboard/maintenanceCompanies/{maintenanceCompany}/edit'
+ */
+        editForm.head = (args: { maintenanceCompany: number | { id: number } } | [maintenanceCompany: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    edit.form = editForm
 /**
 * @see \App\Http\Controllers\MaintenanceCompanyController::update
  * @see app/Http/Controllers/MaintenanceCompanyController.php:99
@@ -316,6 +477,37 @@ updatebcfb6b61ef6e51305465cec2cfd70e4b.put = (args: { maintenanceCompany: number
  * @see app/Http/Controllers/MaintenanceCompanyController.php:99
  * @route '/dashboard/maintenanceCompanies/{maintenanceCompany}'
  */
+    const updatebcfb6b61ef6e51305465cec2cfd70e4bForm = (args: { maintenanceCompany: number | { id: number } } | [maintenanceCompany: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: updatebcfb6b61ef6e51305465cec2cfd70e4b.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PUT',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::update
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:99
+ * @route '/dashboard/maintenanceCompanies/{maintenanceCompany}'
+ */
+        updatebcfb6b61ef6e51305465cec2cfd70e4bForm.put = (args: { maintenanceCompany: number | { id: number } } | [maintenanceCompany: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: updatebcfb6b61ef6e51305465cec2cfd70e4b.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PUT',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    updatebcfb6b61ef6e51305465cec2cfd70e4b.form = updatebcfb6b61ef6e51305465cec2cfd70e4bForm
+    /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::update
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:99
+ * @route '/dashboard/maintenanceCompanies/{maintenanceCompany}'
+ */
 const updatebcfb6b61ef6e51305465cec2cfd70e4b = (args: { maintenanceCompany: number | { id: number } } | [maintenanceCompany: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: updatebcfb6b61ef6e51305465cec2cfd70e4b.url(args, options),
     method: 'patch',
@@ -368,6 +560,38 @@ updatebcfb6b61ef6e51305465cec2cfd70e4b.patch = (args: { maintenanceCompany: numb
     url: updatebcfb6b61ef6e51305465cec2cfd70e4b.url(args, options),
     method: 'patch',
 })
+
+    /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::update
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:99
+ * @route '/dashboard/maintenanceCompanies/{maintenanceCompany}'
+ */
+    const updatebcfb6b61ef6e51305465cec2cfd70e4bForm = (args: { maintenanceCompany: number | { id: number } } | [maintenanceCompany: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: updatebcfb6b61ef6e51305465cec2cfd70e4b.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PATCH',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::update
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:99
+ * @route '/dashboard/maintenanceCompanies/{maintenanceCompany}'
+ */
+        updatebcfb6b61ef6e51305465cec2cfd70e4bForm.patch = (args: { maintenanceCompany: number | { id: number } } | [maintenanceCompany: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: updatebcfb6b61ef6e51305465cec2cfd70e4b.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PATCH',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    updatebcfb6b61ef6e51305465cec2cfd70e4b.form = updatebcfb6b61ef6e51305465cec2cfd70e4bForm
 
 export const update = {
     '/dashboard/maintenanceCompanies/{maintenanceCompany}': updatebcfb6b61ef6e51305465cec2cfd70e4b,
@@ -431,6 +655,38 @@ destroy.delete = (args: { maintenanceCompany: number | { id: number } } | [maint
     url: destroy.url(args, options),
     method: 'delete',
 })
+
+    /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::destroy
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:124
+ * @route '/dashboard/maintenanceCompanies/{maintenanceCompany}'
+ */
+    const destroyForm = (args: { maintenanceCompany: number | { id: number } } | [maintenanceCompany: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: destroy.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'DELETE',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceCompanyController::destroy
+ * @see app/Http/Controllers/MaintenanceCompanyController.php:124
+ * @route '/dashboard/maintenanceCompanies/{maintenanceCompany}'
+ */
+        destroyForm.delete = (args: { maintenanceCompany: number | { id: number } } | [maintenanceCompany: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: destroy.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    destroy.form = destroyForm
 const MaintenanceCompanyController = { index, create, store, show, edit, update, destroy }
 
 export default MaintenanceCompanyController

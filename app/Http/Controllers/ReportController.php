@@ -63,6 +63,9 @@ class ReportController extends Controller
             ];
         });
 
+        $dadosDeBaja = Equipment::where('estado_equipo', 'Baja')->count()
+             + Tool::where('estado_herramienta', 'Baja')->count();
+
         $allItems = $equipos->concat($herramientas);
 
         // ... EL RESTO DE TU CÓDIGO (History, Issues y el return de Inertia) SE QUEDA EXACTAMENTE IGUAL ...
@@ -124,6 +127,7 @@ class ReportController extends Controller
             'totalPrestamos' => $totalPrestamos,
             'activos' => $activos,
             'devueltos' => $devueltos,
+            'dadosDeBaja'    => $dadosDeBaja,
             'items' => $allItems,
             'history' => $history,
             'issues' => $issues,

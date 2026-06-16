@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\EquipmentController::index
  * @see app/Http/Controllers/EquipmentController.php:17
@@ -42,6 +42,41 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\EquipmentController::index
+ * @see app/Http/Controllers/EquipmentController.php:17
+ * @route '/dashboard/equipments'
+ */
+    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: index.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\EquipmentController::index
+ * @see app/Http/Controllers/EquipmentController.php:17
+ * @route '/dashboard/equipments'
+ */
+        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\EquipmentController::index
+ * @see app/Http/Controllers/EquipmentController.php:17
+ * @route '/dashboard/equipments'
+ */
+        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    index.form = indexForm
 /**
 * @see \App\Http\Controllers\EquipmentController::create
  * @see app/Http/Controllers/EquipmentController.php:25
@@ -85,6 +120,41 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\EquipmentController::create
+ * @see app/Http/Controllers/EquipmentController.php:25
+ * @route '/dashboard/equipments/create'
+ */
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\EquipmentController::create
+ * @see app/Http/Controllers/EquipmentController.php:25
+ * @route '/dashboard/equipments/create'
+ */
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\EquipmentController::create
+ * @see app/Http/Controllers/EquipmentController.php:25
+ * @route '/dashboard/equipments/create'
+ */
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    create.form = createForm
 /**
 * @see \App\Http\Controllers\EquipmentController::store
  * @see app/Http/Controllers/EquipmentController.php:34
@@ -119,6 +189,27 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
+    /**
+* @see \App\Http\Controllers\EquipmentController::store
+ * @see app/Http/Controllers/EquipmentController.php:34
+ * @route '/dashboard/equipments'
+ */
+    const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: store.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\EquipmentController::store
+ * @see app/Http/Controllers/EquipmentController.php:34
+ * @route '/dashboard/equipments'
+ */
+        storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: store.url(options),
+            method: 'post',
+        })
+    
+    store.form = storeForm
 /**
 * @see \App\Http\Controllers\EquipmentController::show
  * @see app/Http/Controllers/EquipmentController.php:126
@@ -186,6 +277,41 @@ show.head = (args: { equipment: number | { id: number } } | [equipment: number |
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\EquipmentController::show
+ * @see app/Http/Controllers/EquipmentController.php:126
+ * @route '/dashboard/equipments/{equipment}'
+ */
+    const showForm = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: show.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\EquipmentController::show
+ * @see app/Http/Controllers/EquipmentController.php:126
+ * @route '/dashboard/equipments/{equipment}'
+ */
+        showForm.get = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\EquipmentController::show
+ * @see app/Http/Controllers/EquipmentController.php:126
+ * @route '/dashboard/equipments/{equipment}'
+ */
+        showForm.head = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    show.form = showForm
 /**
 * @see \App\Http\Controllers\EquipmentController::edit
  * @see app/Http/Controllers/EquipmentController.php:163
@@ -253,6 +379,41 @@ edit.head = (args: { equipment: number | { id: number } } | [equipment: number |
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\EquipmentController::edit
+ * @see app/Http/Controllers/EquipmentController.php:163
+ * @route '/dashboard/equipments/{equipment}/edit'
+ */
+    const editForm = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: edit.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\EquipmentController::edit
+ * @see app/Http/Controllers/EquipmentController.php:163
+ * @route '/dashboard/equipments/{equipment}/edit'
+ */
+        editForm.get = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\EquipmentController::edit
+ * @see app/Http/Controllers/EquipmentController.php:163
+ * @route '/dashboard/equipments/{equipment}/edit'
+ */
+        editForm.head = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    edit.form = editForm
 /**
 * @see \App\Http\Controllers\EquipmentController::update
  * @see app/Http/Controllers/EquipmentController.php:182
@@ -311,6 +472,37 @@ update.put = (args: { equipment: number | { id: number } } | [equipment: number 
     method: 'put',
 })
 
+    /**
+* @see \App\Http\Controllers\EquipmentController::update
+ * @see app/Http/Controllers/EquipmentController.php:182
+ * @route '/dashboard/equipments/{equipment}'
+ */
+    const updateForm = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: update.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PUT',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\EquipmentController::update
+ * @see app/Http/Controllers/EquipmentController.php:182
+ * @route '/dashboard/equipments/{equipment}'
+ */
+        updateForm.put = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: update.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PUT',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    update.form = updateForm
 /**
 * @see \App\Http\Controllers\EquipmentController::destroy
  * @see app/Http/Controllers/EquipmentController.php:313
@@ -368,6 +560,38 @@ destroy.delete = (args: { equipment: number | { id: number } } | [equipment: num
     url: destroy.url(args, options),
     method: 'delete',
 })
+
+    /**
+* @see \App\Http\Controllers\EquipmentController::destroy
+ * @see app/Http/Controllers/EquipmentController.php:313
+ * @route '/dashboard/equipments/{equipment}'
+ */
+    const destroyForm = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: destroy.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'DELETE',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\EquipmentController::destroy
+ * @see app/Http/Controllers/EquipmentController.php:313
+ * @route '/dashboard/equipments/{equipment}'
+ */
+        destroyForm.delete = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: destroy.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    destroy.form = destroyForm
 const equipments = {
     index: Object.assign(index, index),
 create: Object.assign(create, create),

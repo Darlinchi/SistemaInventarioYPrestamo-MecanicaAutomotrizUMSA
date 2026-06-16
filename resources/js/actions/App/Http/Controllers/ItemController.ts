@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\ItemController::generateFicha
  * @see app/Http/Controllers/ItemController.php:60
@@ -61,6 +61,41 @@ generateFicha.head = (args: { id: string | number } | [id: string | number ] | s
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\ItemController::generateFicha
+ * @see app/Http/Controllers/ItemController.php:60
+ * @route '/dashboard/items/{id}/pdf'
+ */
+    const generateFichaForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: generateFicha.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\ItemController::generateFicha
+ * @see app/Http/Controllers/ItemController.php:60
+ * @route '/dashboard/items/{id}/pdf'
+ */
+        generateFichaForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: generateFicha.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\ItemController::generateFicha
+ * @see app/Http/Controllers/ItemController.php:60
+ * @route '/dashboard/items/{id}/pdf'
+ */
+        generateFichaForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: generateFicha.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    generateFicha.form = generateFichaForm
 /**
 * @see \App\Http\Controllers\ItemController::index
  * @see app/Http/Controllers/ItemController.php:20
@@ -104,6 +139,41 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\ItemController::index
+ * @see app/Http/Controllers/ItemController.php:20
+ * @route '/dashboard/items'
+ */
+    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: index.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\ItemController::index
+ * @see app/Http/Controllers/ItemController.php:20
+ * @route '/dashboard/items'
+ */
+        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\ItemController::index
+ * @see app/Http/Controllers/ItemController.php:20
+ * @route '/dashboard/items'
+ */
+        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    index.form = indexForm
 /**
 * @see \App\Http\Controllers\ItemController::create
  * @see app/Http/Controllers/ItemController.php:103
@@ -147,6 +217,41 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\ItemController::create
+ * @see app/Http/Controllers/ItemController.php:103
+ * @route '/dashboard/items/create'
+ */
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\ItemController::create
+ * @see app/Http/Controllers/ItemController.php:103
+ * @route '/dashboard/items/create'
+ */
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\ItemController::create
+ * @see app/Http/Controllers/ItemController.php:103
+ * @route '/dashboard/items/create'
+ */
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    create.form = createForm
 /**
 * @see \App\Http\Controllers\ItemController::store
  * @see app/Http/Controllers/ItemController.php:112
@@ -181,6 +286,27 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
+    /**
+* @see \App\Http\Controllers\ItemController::store
+ * @see app/Http/Controllers/ItemController.php:112
+ * @route '/dashboard/items'
+ */
+    const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: store.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ItemController::store
+ * @see app/Http/Controllers/ItemController.php:112
+ * @route '/dashboard/items'
+ */
+        storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: store.url(options),
+            method: 'post',
+        })
+    
+    store.form = storeForm
 /**
 * @see \App\Http\Controllers\ItemController::show
  * @see app/Http/Controllers/ItemController.php:280
@@ -248,6 +374,41 @@ show.head = (args: { item: string | number | { id: string | number } } | [item: 
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\ItemController::show
+ * @see app/Http/Controllers/ItemController.php:280
+ * @route '/dashboard/items/{item}'
+ */
+    const showForm = (args: { item: string | number | { id: string | number } } | [item: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: show.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\ItemController::show
+ * @see app/Http/Controllers/ItemController.php:280
+ * @route '/dashboard/items/{item}'
+ */
+        showForm.get = (args: { item: string | number | { id: string | number } } | [item: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\ItemController::show
+ * @see app/Http/Controllers/ItemController.php:280
+ * @route '/dashboard/items/{item}'
+ */
+        showForm.head = (args: { item: string | number | { id: string | number } } | [item: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    show.form = showForm
 /**
 * @see \App\Http\Controllers\ItemController::edit
  * @see app/Http/Controllers/ItemController.php:305
@@ -310,6 +471,41 @@ edit.head = (args: { item: string | number } | [item: string | number ] | string
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\ItemController::edit
+ * @see app/Http/Controllers/ItemController.php:305
+ * @route '/dashboard/items/{item}/edit'
+ */
+    const editForm = (args: { item: string | number } | [item: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: edit.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\ItemController::edit
+ * @see app/Http/Controllers/ItemController.php:305
+ * @route '/dashboard/items/{item}/edit'
+ */
+        editForm.get = (args: { item: string | number } | [item: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\ItemController::edit
+ * @see app/Http/Controllers/ItemController.php:305
+ * @route '/dashboard/items/{item}/edit'
+ */
+        editForm.head = (args: { item: string | number } | [item: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    edit.form = editForm
 /**
 * @see \App\Http\Controllers\ItemController::update
  * @see app/Http/Controllers/ItemController.php:439
@@ -368,6 +564,37 @@ updatefe5c4d7f133a15bc33cc6f8bbb23fe07.put = (args: { item: string | number } | 
  * @see app/Http/Controllers/ItemController.php:439
  * @route '/dashboard/items/{item}'
  */
+    const updatefe5c4d7f133a15bc33cc6f8bbb23fe07Form = (args: { item: string | number } | [item: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: updatefe5c4d7f133a15bc33cc6f8bbb23fe07.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PUT',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ItemController::update
+ * @see app/Http/Controllers/ItemController.php:439
+ * @route '/dashboard/items/{item}'
+ */
+        updatefe5c4d7f133a15bc33cc6f8bbb23fe07Form.put = (args: { item: string | number } | [item: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: updatefe5c4d7f133a15bc33cc6f8bbb23fe07.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PUT',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    updatefe5c4d7f133a15bc33cc6f8bbb23fe07.form = updatefe5c4d7f133a15bc33cc6f8bbb23fe07Form
+    /**
+* @see \App\Http\Controllers\ItemController::update
+ * @see app/Http/Controllers/ItemController.php:439
+ * @route '/dashboard/items/{item}'
+ */
 const updatefe5c4d7f133a15bc33cc6f8bbb23fe07 = (args: { item: string | number } | [item: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: updatefe5c4d7f133a15bc33cc6f8bbb23fe07.url(args, options),
     method: 'patch',
@@ -415,6 +642,38 @@ updatefe5c4d7f133a15bc33cc6f8bbb23fe07.patch = (args: { item: string | number } 
     url: updatefe5c4d7f133a15bc33cc6f8bbb23fe07.url(args, options),
     method: 'patch',
 })
+
+    /**
+* @see \App\Http\Controllers\ItemController::update
+ * @see app/Http/Controllers/ItemController.php:439
+ * @route '/dashboard/items/{item}'
+ */
+    const updatefe5c4d7f133a15bc33cc6f8bbb23fe07Form = (args: { item: string | number } | [item: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: updatefe5c4d7f133a15bc33cc6f8bbb23fe07.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PATCH',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ItemController::update
+ * @see app/Http/Controllers/ItemController.php:439
+ * @route '/dashboard/items/{item}'
+ */
+        updatefe5c4d7f133a15bc33cc6f8bbb23fe07Form.patch = (args: { item: string | number } | [item: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: updatefe5c4d7f133a15bc33cc6f8bbb23fe07.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PATCH',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    updatefe5c4d7f133a15bc33cc6f8bbb23fe07.form = updatefe5c4d7f133a15bc33cc6f8bbb23fe07Form
 
 export const update = {
     '/dashboard/items/{item}': updatefe5c4d7f133a15bc33cc6f8bbb23fe07,
@@ -478,6 +737,38 @@ destroy.delete = (args: { item: string | number | { id: string | number } } | [i
     url: destroy.url(args, options),
     method: 'delete',
 })
+
+    /**
+* @see \App\Http\Controllers\ItemController::destroy
+ * @see app/Http/Controllers/ItemController.php:541
+ * @route '/dashboard/items/{item}'
+ */
+    const destroyForm = (args: { item: string | number | { id: string | number } } | [item: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: destroy.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'DELETE',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\ItemController::destroy
+ * @see app/Http/Controllers/ItemController.php:541
+ * @route '/dashboard/items/{item}'
+ */
+        destroyForm.delete = (args: { item: string | number | { id: string | number } } | [item: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: destroy.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    destroy.form = destroyForm
 const ItemController = { generateFicha, index, create, store, show, edit, update, destroy }
 
 export default ItemController

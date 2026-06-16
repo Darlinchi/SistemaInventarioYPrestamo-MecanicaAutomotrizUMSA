@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RepositionController::index
  * @see app/Http/Controllers/RepositionController.php:18
@@ -42,6 +42,41 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\RepositionController::index
+ * @see app/Http/Controllers/RepositionController.php:18
+ * @route '/dashboard/repositions'
+ */
+    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: index.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\RepositionController::index
+ * @see app/Http/Controllers/RepositionController.php:18
+ * @route '/dashboard/repositions'
+ */
+        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\RepositionController::index
+ * @see app/Http/Controllers/RepositionController.php:18
+ * @route '/dashboard/repositions'
+ */
+        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    index.form = indexForm
 /**
 * @see \App\Http\Controllers\RepositionController::create
  * @see app/Http/Controllers/RepositionController.php:28
@@ -85,6 +120,41 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\RepositionController::create
+ * @see app/Http/Controllers/RepositionController.php:28
+ * @route '/dashboard/repositions/create'
+ */
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\RepositionController::create
+ * @see app/Http/Controllers/RepositionController.php:28
+ * @route '/dashboard/repositions/create'
+ */
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\RepositionController::create
+ * @see app/Http/Controllers/RepositionController.php:28
+ * @route '/dashboard/repositions/create'
+ */
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    create.form = createForm
 /**
 * @see \App\Http\Controllers\RepositionController::store
  * @see app/Http/Controllers/RepositionController.php:120
@@ -119,6 +189,27 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
+    /**
+* @see \App\Http\Controllers\RepositionController::store
+ * @see app/Http/Controllers/RepositionController.php:120
+ * @route '/dashboard/repositions'
+ */
+    const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: store.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\RepositionController::store
+ * @see app/Http/Controllers/RepositionController.php:120
+ * @route '/dashboard/repositions'
+ */
+        storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: store.url(options),
+            method: 'post',
+        })
+    
+    store.form = storeForm
 /**
 * @see \App\Http\Controllers\RepositionController::show
  * @see app/Http/Controllers/RepositionController.php:154
@@ -186,6 +277,41 @@ show.head = (args: { reposition: number | { id: number } } | [reposition: number
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\RepositionController::show
+ * @see app/Http/Controllers/RepositionController.php:154
+ * @route '/dashboard/repositions/{reposition}'
+ */
+    const showForm = (args: { reposition: number | { id: number } } | [reposition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: show.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\RepositionController::show
+ * @see app/Http/Controllers/RepositionController.php:154
+ * @route '/dashboard/repositions/{reposition}'
+ */
+        showForm.get = (args: { reposition: number | { id: number } } | [reposition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\RepositionController::show
+ * @see app/Http/Controllers/RepositionController.php:154
+ * @route '/dashboard/repositions/{reposition}'
+ */
+        showForm.head = (args: { reposition: number | { id: number } } | [reposition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    show.form = showForm
 /**
 * @see \App\Http\Controllers\RepositionController::edit
  * @see app/Http/Controllers/RepositionController.php:162
@@ -253,6 +379,41 @@ edit.head = (args: { reposition: number | { id: number } } | [reposition: number
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\RepositionController::edit
+ * @see app/Http/Controllers/RepositionController.php:162
+ * @route '/dashboard/repositions/{reposition}/edit'
+ */
+    const editForm = (args: { reposition: number | { id: number } } | [reposition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: edit.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\RepositionController::edit
+ * @see app/Http/Controllers/RepositionController.php:162
+ * @route '/dashboard/repositions/{reposition}/edit'
+ */
+        editForm.get = (args: { reposition: number | { id: number } } | [reposition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\RepositionController::edit
+ * @see app/Http/Controllers/RepositionController.php:162
+ * @route '/dashboard/repositions/{reposition}/edit'
+ */
+        editForm.head = (args: { reposition: number | { id: number } } | [reposition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    edit.form = editForm
 /**
 * @see \App\Http\Controllers\RepositionController::update
  * @see app/Http/Controllers/RepositionController.php:180
@@ -320,6 +481,51 @@ update.patch = (args: { reposition: number | { id: number } } | [reposition: num
     method: 'patch',
 })
 
+    /**
+* @see \App\Http\Controllers\RepositionController::update
+ * @see app/Http/Controllers/RepositionController.php:180
+ * @route '/dashboard/repositions/{reposition}'
+ */
+    const updateForm = (args: { reposition: number | { id: number } } | [reposition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: update.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PUT',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\RepositionController::update
+ * @see app/Http/Controllers/RepositionController.php:180
+ * @route '/dashboard/repositions/{reposition}'
+ */
+        updateForm.put = (args: { reposition: number | { id: number } } | [reposition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: update.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PUT',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+            /**
+* @see \App\Http\Controllers\RepositionController::update
+ * @see app/Http/Controllers/RepositionController.php:180
+ * @route '/dashboard/repositions/{reposition}'
+ */
+        updateForm.patch = (args: { reposition: number | { id: number } } | [reposition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: update.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PATCH',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    update.form = updateForm
 /**
 * @see \App\Http\Controllers\RepositionController::destroy
  * @see app/Http/Controllers/RepositionController.php:321
@@ -377,6 +583,38 @@ destroy.delete = (args: { reposition: number | { id: number } } | [reposition: n
     url: destroy.url(args, options),
     method: 'delete',
 })
+
+    /**
+* @see \App\Http\Controllers\RepositionController::destroy
+ * @see app/Http/Controllers/RepositionController.php:321
+ * @route '/dashboard/repositions/{reposition}'
+ */
+    const destroyForm = (args: { reposition: number | { id: number } } | [reposition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: destroy.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'DELETE',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\RepositionController::destroy
+ * @see app/Http/Controllers/RepositionController.php:321
+ * @route '/dashboard/repositions/{reposition}'
+ */
+        destroyForm.delete = (args: { reposition: number | { id: number } } | [reposition: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: destroy.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    destroy.form = destroyForm
 const RepositionController = { index, create, store, show, edit, update, destroy }
 
 export default RepositionController

@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\BorrowerController::remove
  * @see app/Http/Controllers/BorrowerController.php:238
@@ -56,6 +56,38 @@ remove.delete = (args: { borrower: number | { id: number } } | [borrower: number
     url: remove.url(args, options),
     method: 'delete',
 })
+
+    /**
+* @see \App\Http\Controllers\BorrowerController::remove
+ * @see app/Http/Controllers/BorrowerController.php:238
+ * @route '/dashboard/borrowers/{borrower}/subject-assistant'
+ */
+    const removeForm = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: remove.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'DELETE',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\BorrowerController::remove
+ * @see app/Http/Controllers/BorrowerController.php:238
+ * @route '/dashboard/borrowers/{borrower}/subject-assistant'
+ */
+        removeForm.delete = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: remove.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    remove.form = removeForm
 const subjectAssistant = {
     remove: Object.assign(remove, remove),
 }

@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\BorrowerController::index
  * @see app/Http/Controllers/BorrowerController.php:19
@@ -42,6 +42,41 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\BorrowerController::index
+ * @see app/Http/Controllers/BorrowerController.php:19
+ * @route '/dashboard/borrowers'
+ */
+    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: index.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\BorrowerController::index
+ * @see app/Http/Controllers/BorrowerController.php:19
+ * @route '/dashboard/borrowers'
+ */
+        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\BorrowerController::index
+ * @see app/Http/Controllers/BorrowerController.php:19
+ * @route '/dashboard/borrowers'
+ */
+        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    index.form = indexForm
 /**
 * @see \App\Http\Controllers\BorrowerController::importMethod
  * @see app/Http/Controllers/BorrowerController.php:248
@@ -76,6 +111,27 @@ importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
+    /**
+* @see \App\Http\Controllers\BorrowerController::importMethod
+ * @see app/Http/Controllers/BorrowerController.php:248
+ * @route '/dashboard/borrowers/import'
+ */
+    const importMethodForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: importMethod.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\BorrowerController::importMethod
+ * @see app/Http/Controllers/BorrowerController.php:248
+ * @route '/dashboard/borrowers/import'
+ */
+        importMethodForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: importMethod.url(options),
+            method: 'post',
+        })
+    
+    importMethod.form = importMethodForm
 /**
 * @see \App\Http\Controllers\BorrowerController::create
  * @see app/Http/Controllers/BorrowerController.php:36
@@ -119,6 +175,41 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\BorrowerController::create
+ * @see app/Http/Controllers/BorrowerController.php:36
+ * @route '/dashboard/borrowers/create'
+ */
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\BorrowerController::create
+ * @see app/Http/Controllers/BorrowerController.php:36
+ * @route '/dashboard/borrowers/create'
+ */
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\BorrowerController::create
+ * @see app/Http/Controllers/BorrowerController.php:36
+ * @route '/dashboard/borrowers/create'
+ */
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    create.form = createForm
 /**
 * @see \App\Http\Controllers\BorrowerController::store
  * @see app/Http/Controllers/BorrowerController.php:44
@@ -153,6 +244,27 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
+    /**
+* @see \App\Http\Controllers\BorrowerController::store
+ * @see app/Http/Controllers/BorrowerController.php:44
+ * @route '/dashboard/borrowers'
+ */
+    const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: store.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\BorrowerController::store
+ * @see app/Http/Controllers/BorrowerController.php:44
+ * @route '/dashboard/borrowers'
+ */
+        storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: store.url(options),
+            method: 'post',
+        })
+    
+    store.form = storeForm
 /**
 * @see \App\Http\Controllers\BorrowerController::toggleStatus
  * @see app/Http/Controllers/BorrowerController.php:129
@@ -211,6 +323,27 @@ toggleStatus.post = (args: { borrower: number | { id: number } } | [borrower: nu
     method: 'post',
 })
 
+    /**
+* @see \App\Http\Controllers\BorrowerController::toggleStatus
+ * @see app/Http/Controllers/BorrowerController.php:129
+ * @route '/dashboard/borrowers/{borrower}/toggle'
+ */
+    const toggleStatusForm = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: toggleStatus.url(args, options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\BorrowerController::toggleStatus
+ * @see app/Http/Controllers/BorrowerController.php:129
+ * @route '/dashboard/borrowers/{borrower}/toggle'
+ */
+        toggleStatusForm.post = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: toggleStatus.url(args, options),
+            method: 'post',
+        })
+    
+    toggleStatus.form = toggleStatusForm
 /**
 * @see \App\Http\Controllers\BorrowerController::removeSubjectTeacher
  * @see app/Http/Controllers/BorrowerController.php:228
@@ -269,6 +402,37 @@ removeSubjectTeacher.delete = (args: { borrower: number | { id: number } } | [bo
     method: 'delete',
 })
 
+    /**
+* @see \App\Http\Controllers\BorrowerController::removeSubjectTeacher
+ * @see app/Http/Controllers/BorrowerController.php:228
+ * @route '/dashboard/borrowers/{borrower}/subject-teacher'
+ */
+    const removeSubjectTeacherForm = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: removeSubjectTeacher.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'DELETE',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\BorrowerController::removeSubjectTeacher
+ * @see app/Http/Controllers/BorrowerController.php:228
+ * @route '/dashboard/borrowers/{borrower}/subject-teacher'
+ */
+        removeSubjectTeacherForm.delete = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: removeSubjectTeacher.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    removeSubjectTeacher.form = removeSubjectTeacherForm
 /**
 * @see \App\Http\Controllers\BorrowerController::removeSubjectAssistant
  * @see app/Http/Controllers/BorrowerController.php:238
@@ -327,6 +491,37 @@ removeSubjectAssistant.delete = (args: { borrower: number | { id: number } } | [
     method: 'delete',
 })
 
+    /**
+* @see \App\Http\Controllers\BorrowerController::removeSubjectAssistant
+ * @see app/Http/Controllers/BorrowerController.php:238
+ * @route '/dashboard/borrowers/{borrower}/subject-assistant'
+ */
+    const removeSubjectAssistantForm = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: removeSubjectAssistant.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'DELETE',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\BorrowerController::removeSubjectAssistant
+ * @see app/Http/Controllers/BorrowerController.php:238
+ * @route '/dashboard/borrowers/{borrower}/subject-assistant'
+ */
+        removeSubjectAssistantForm.delete = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: removeSubjectAssistant.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    removeSubjectAssistant.form = removeSubjectAssistantForm
 /**
 * @see \App\Http\Controllers\BorrowerController::show
  * @see app/Http/Controllers/BorrowerController.php:0
@@ -389,6 +584,41 @@ show.head = (args: { borrower: string | number } | [borrower: string | number ] 
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\BorrowerController::show
+ * @see app/Http/Controllers/BorrowerController.php:0
+ * @route '/dashboard/borrowers/{borrower}'
+ */
+    const showForm = (args: { borrower: string | number } | [borrower: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: show.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\BorrowerController::show
+ * @see app/Http/Controllers/BorrowerController.php:0
+ * @route '/dashboard/borrowers/{borrower}'
+ */
+        showForm.get = (args: { borrower: string | number } | [borrower: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\BorrowerController::show
+ * @see app/Http/Controllers/BorrowerController.php:0
+ * @route '/dashboard/borrowers/{borrower}'
+ */
+        showForm.head = (args: { borrower: string | number } | [borrower: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    show.form = showForm
 /**
 * @see \App\Http\Controllers\BorrowerController::edit
  * @see app/Http/Controllers/BorrowerController.php:140
@@ -456,6 +686,41 @@ edit.head = (args: { borrower: number | { id: number } } | [borrower: number | {
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\BorrowerController::edit
+ * @see app/Http/Controllers/BorrowerController.php:140
+ * @route '/dashboard/borrowers/{borrower}/edit'
+ */
+    const editForm = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: edit.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\BorrowerController::edit
+ * @see app/Http/Controllers/BorrowerController.php:140
+ * @route '/dashboard/borrowers/{borrower}/edit'
+ */
+        editForm.get = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\BorrowerController::edit
+ * @see app/Http/Controllers/BorrowerController.php:140
+ * @route '/dashboard/borrowers/{borrower}/edit'
+ */
+        editForm.head = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    edit.form = editForm
 /**
 * @see \App\Http\Controllers\BorrowerController::update
  * @see app/Http/Controllers/BorrowerController.php:156
@@ -519,6 +784,37 @@ update5fb12b7744939f8a0a4af669491de45d.put = (args: { borrower: number | { id: n
  * @see app/Http/Controllers/BorrowerController.php:156
  * @route '/dashboard/borrowers/{borrower}'
  */
+    const update5fb12b7744939f8a0a4af669491de45dForm = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: update5fb12b7744939f8a0a4af669491de45d.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PUT',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\BorrowerController::update
+ * @see app/Http/Controllers/BorrowerController.php:156
+ * @route '/dashboard/borrowers/{borrower}'
+ */
+        update5fb12b7744939f8a0a4af669491de45dForm.put = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: update5fb12b7744939f8a0a4af669491de45d.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PUT',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    update5fb12b7744939f8a0a4af669491de45d.form = update5fb12b7744939f8a0a4af669491de45dForm
+    /**
+* @see \App\Http\Controllers\BorrowerController::update
+ * @see app/Http/Controllers/BorrowerController.php:156
+ * @route '/dashboard/borrowers/{borrower}'
+ */
 const update5fb12b7744939f8a0a4af669491de45d = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update5fb12b7744939f8a0a4af669491de45d.url(args, options),
     method: 'patch',
@@ -571,6 +867,38 @@ update5fb12b7744939f8a0a4af669491de45d.patch = (args: { borrower: number | { id:
     url: update5fb12b7744939f8a0a4af669491de45d.url(args, options),
     method: 'patch',
 })
+
+    /**
+* @see \App\Http\Controllers\BorrowerController::update
+ * @see app/Http/Controllers/BorrowerController.php:156
+ * @route '/dashboard/borrowers/{borrower}'
+ */
+    const update5fb12b7744939f8a0a4af669491de45dForm = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: update5fb12b7744939f8a0a4af669491de45d.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PATCH',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\BorrowerController::update
+ * @see app/Http/Controllers/BorrowerController.php:156
+ * @route '/dashboard/borrowers/{borrower}'
+ */
+        update5fb12b7744939f8a0a4af669491de45dForm.patch = (args: { borrower: number | { id: number } } | [borrower: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: update5fb12b7744939f8a0a4af669491de45d.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PATCH',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    update5fb12b7744939f8a0a4af669491de45d.form = update5fb12b7744939f8a0a4af669491de45dForm
 
 export const update = {
     '/dashboard/borrowers/{borrower}': update5fb12b7744939f8a0a4af669491de45d,
@@ -629,6 +957,38 @@ destroy.delete = (args: { borrower: string | number } | [borrower: string | numb
     url: destroy.url(args, options),
     method: 'delete',
 })
+
+    /**
+* @see \App\Http\Controllers\BorrowerController::destroy
+ * @see app/Http/Controllers/BorrowerController.php:0
+ * @route '/dashboard/borrowers/{borrower}'
+ */
+    const destroyForm = (args: { borrower: string | number } | [borrower: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: destroy.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'DELETE',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\BorrowerController::destroy
+ * @see app/Http/Controllers/BorrowerController.php:0
+ * @route '/dashboard/borrowers/{borrower}'
+ */
+        destroyForm.delete = (args: { borrower: string | number } | [borrower: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: destroy.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    destroy.form = destroyForm
 const BorrowerController = { index, importMethod, create, store, toggleStatus, removeSubjectTeacher, removeSubjectAssistant, show, edit, update, destroy, import: importMethod }
 
 export default BorrowerController

@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\LoanController::report
  * @see app/Http/Controllers/LoanController.php:45
@@ -61,6 +61,41 @@ report.head = (args: { id: string | number } | [id: string | number ] | string |
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\LoanController::report
+ * @see app/Http/Controllers/LoanController.php:45
+ * @route '/dashboard/loans/{id}/report'
+ */
+    const reportForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: report.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\LoanController::report
+ * @see app/Http/Controllers/LoanController.php:45
+ * @route '/dashboard/loans/{id}/report'
+ */
+        reportForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: report.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\LoanController::report
+ * @see app/Http/Controllers/LoanController.php:45
+ * @route '/dashboard/loans/{id}/report'
+ */
+        reportForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: report.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    report.form = reportForm
 /**
 * @see \App\Http\Controllers\LoanController::index
  * @see app/Http/Controllers/LoanController.php:22
@@ -104,6 +139,41 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\LoanController::index
+ * @see app/Http/Controllers/LoanController.php:22
+ * @route '/dashboard/loans'
+ */
+    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: index.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\LoanController::index
+ * @see app/Http/Controllers/LoanController.php:22
+ * @route '/dashboard/loans'
+ */
+        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\LoanController::index
+ * @see app/Http/Controllers/LoanController.php:22
+ * @route '/dashboard/loans'
+ */
+        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    index.form = indexForm
 /**
 * @see \App\Http\Controllers\LoanController::create
  * @see app/Http/Controllers/LoanController.php:69
@@ -147,6 +217,41 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\LoanController::create
+ * @see app/Http/Controllers/LoanController.php:69
+ * @route '/dashboard/loans/create'
+ */
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\LoanController::create
+ * @see app/Http/Controllers/LoanController.php:69
+ * @route '/dashboard/loans/create'
+ */
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\LoanController::create
+ * @see app/Http/Controllers/LoanController.php:69
+ * @route '/dashboard/loans/create'
+ */
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    create.form = createForm
 /**
 * @see \App\Http\Controllers\LoanController::store
  * @see app/Http/Controllers/LoanController.php:176
@@ -181,6 +286,27 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
+    /**
+* @see \App\Http\Controllers\LoanController::store
+ * @see app/Http/Controllers/LoanController.php:176
+ * @route '/dashboard/loans'
+ */
+    const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: store.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\LoanController::store
+ * @see app/Http/Controllers/LoanController.php:176
+ * @route '/dashboard/loans'
+ */
+        storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: store.url(options),
+            method: 'post',
+        })
+    
+    store.form = storeForm
 /**
 * @see \App\Http\Controllers\LoanController::show
  * @see app/Http/Controllers/LoanController.php:377
@@ -248,6 +374,41 @@ show.head = (args: { loan: number | { id: number } } | [loan: number | { id: num
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\LoanController::show
+ * @see app/Http/Controllers/LoanController.php:377
+ * @route '/dashboard/loans/{loan}'
+ */
+    const showForm = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: show.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\LoanController::show
+ * @see app/Http/Controllers/LoanController.php:377
+ * @route '/dashboard/loans/{loan}'
+ */
+        showForm.get = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\LoanController::show
+ * @see app/Http/Controllers/LoanController.php:377
+ * @route '/dashboard/loans/{loan}'
+ */
+        showForm.head = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    show.form = showForm
 /**
 * @see \App\Http\Controllers\LoanController::edit
  * @see app/Http/Controllers/LoanController.php:385
@@ -315,6 +476,41 @@ edit.head = (args: { loan: number | { id: number } } | [loan: number | { id: num
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\LoanController::edit
+ * @see app/Http/Controllers/LoanController.php:385
+ * @route '/dashboard/loans/{loan}/edit'
+ */
+    const editForm = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: edit.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\LoanController::edit
+ * @see app/Http/Controllers/LoanController.php:385
+ * @route '/dashboard/loans/{loan}/edit'
+ */
+        editForm.get = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\LoanController::edit
+ * @see app/Http/Controllers/LoanController.php:385
+ * @route '/dashboard/loans/{loan}/edit'
+ */
+        editForm.head = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    edit.form = editForm
 /**
 * @see \App\Http\Controllers\LoanController::update
  * @see app/Http/Controllers/LoanController.php:449
@@ -373,6 +569,37 @@ update.put = (args: { loan: number | { id: number } } | [loan: number | { id: nu
     method: 'put',
 })
 
+    /**
+* @see \App\Http\Controllers\LoanController::update
+ * @see app/Http/Controllers/LoanController.php:449
+ * @route '/dashboard/loans/{loan}'
+ */
+    const updateForm = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: update.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PUT',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\LoanController::update
+ * @see app/Http/Controllers/LoanController.php:449
+ * @route '/dashboard/loans/{loan}'
+ */
+        updateForm.put = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: update.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PUT',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    update.form = updateForm
 /**
 * @see \App\Http\Controllers\LoanController::destroy
  * @see app/Http/Controllers/LoanController.php:509
@@ -431,6 +658,37 @@ destroy.delete = (args: { loan: number | { id: number } } | [loan: number | { id
     method: 'delete',
 })
 
+    /**
+* @see \App\Http\Controllers\LoanController::destroy
+ * @see app/Http/Controllers/LoanController.php:509
+ * @route '/dashboard/loans/{loan}'
+ */
+    const destroyForm = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: destroy.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'DELETE',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\LoanController::destroy
+ * @see app/Http/Controllers/LoanController.php:509
+ * @route '/dashboard/loans/{loan}'
+ */
+        destroyForm.delete = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: destroy.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    destroy.form = destroyForm
 /**
 * @see \App\Http\Controllers\LoanController::returnMethod
  * @see app/Http/Controllers/LoanController.php:309
@@ -488,6 +746,28 @@ returnMethod.post = (args: { loan: number | { id: number } } | [loan: number | {
     url: returnMethod.url(args, options),
     method: 'post',
 })
+
+    /**
+* @see \App\Http\Controllers\LoanController::returnMethod
+ * @see app/Http/Controllers/LoanController.php:309
+ * @route '/dashboard/loans/{loan}/return'
+ */
+    const returnMethodForm = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: returnMethod.url(args, options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\LoanController::returnMethod
+ * @see app/Http/Controllers/LoanController.php:309
+ * @route '/dashboard/loans/{loan}/return'
+ */
+        returnMethodForm.post = (args: { loan: number | { id: number } } | [loan: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: returnMethod.url(args, options),
+            method: 'post',
+        })
+    
+    returnMethod.form = returnMethodForm
 const loans = {
     report: Object.assign(report, report),
 index: Object.assign(index, index),

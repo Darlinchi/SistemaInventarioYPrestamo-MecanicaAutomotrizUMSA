@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\MaintenanceController::generateReport
  * @see app/Http/Controllers/MaintenanceController.php:36
@@ -61,6 +61,41 @@ generateReport.head = (args: { id: string | number } | [id: string | number ] | 
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\MaintenanceController::generateReport
+ * @see app/Http/Controllers/MaintenanceController.php:36
+ * @route '/dashboard/maintenances/{id}/report'
+ */
+    const generateReportForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: generateReport.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceController::generateReport
+ * @see app/Http/Controllers/MaintenanceController.php:36
+ * @route '/dashboard/maintenances/{id}/report'
+ */
+        generateReportForm.get = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: generateReport.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\MaintenanceController::generateReport
+ * @see app/Http/Controllers/MaintenanceController.php:36
+ * @route '/dashboard/maintenances/{id}/report'
+ */
+        generateReportForm.head = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: generateReport.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    generateReport.form = generateReportForm
 /**
 * @see \App\Http\Controllers\MaintenanceController::index
  * @see app/Http/Controllers/MaintenanceController.php:19
@@ -104,6 +139,41 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\MaintenanceController::index
+ * @see app/Http/Controllers/MaintenanceController.php:19
+ * @route '/dashboard/maintenances'
+ */
+    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: index.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceController::index
+ * @see app/Http/Controllers/MaintenanceController.php:19
+ * @route '/dashboard/maintenances'
+ */
+        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\MaintenanceController::index
+ * @see app/Http/Controllers/MaintenanceController.php:19
+ * @route '/dashboard/maintenances'
+ */
+        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    index.form = indexForm
 /**
 * @see \App\Http\Controllers\MaintenanceController::create
  * @see app/Http/Controllers/MaintenanceController.php:70
@@ -147,6 +217,41 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\MaintenanceController::create
+ * @see app/Http/Controllers/MaintenanceController.php:70
+ * @route '/dashboard/maintenances/create'
+ */
+    const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: create.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceController::create
+ * @see app/Http/Controllers/MaintenanceController.php:70
+ * @route '/dashboard/maintenances/create'
+ */
+        createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\MaintenanceController::create
+ * @see app/Http/Controllers/MaintenanceController.php:70
+ * @route '/dashboard/maintenances/create'
+ */
+        createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: create.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    create.form = createForm
 /**
 * @see \App\Http\Controllers\MaintenanceController::store
  * @see app/Http/Controllers/MaintenanceController.php:81
@@ -181,6 +286,27 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
+    /**
+* @see \App\Http\Controllers\MaintenanceController::store
+ * @see app/Http/Controllers/MaintenanceController.php:81
+ * @route '/dashboard/maintenances'
+ */
+    const storeForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: store.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceController::store
+ * @see app/Http/Controllers/MaintenanceController.php:81
+ * @route '/dashboard/maintenances'
+ */
+        storeForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: store.url(options),
+            method: 'post',
+        })
+    
+    store.form = storeForm
 /**
 * @see \App\Http\Controllers\MaintenanceController::show
  * @see app/Http/Controllers/MaintenanceController.php:134
@@ -248,6 +374,41 @@ show.head = (args: { maintenance: number | { id: number } } | [maintenance: numb
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\MaintenanceController::show
+ * @see app/Http/Controllers/MaintenanceController.php:134
+ * @route '/dashboard/maintenances/{maintenance}'
+ */
+    const showForm = (args: { maintenance: number | { id: number } } | [maintenance: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: show.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceController::show
+ * @see app/Http/Controllers/MaintenanceController.php:134
+ * @route '/dashboard/maintenances/{maintenance}'
+ */
+        showForm.get = (args: { maintenance: number | { id: number } } | [maintenance: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\MaintenanceController::show
+ * @see app/Http/Controllers/MaintenanceController.php:134
+ * @route '/dashboard/maintenances/{maintenance}'
+ */
+        showForm.head = (args: { maintenance: number | { id: number } } | [maintenance: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: show.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    show.form = showForm
 /**
 * @see \App\Http\Controllers\MaintenanceController::edit
  * @see app/Http/Controllers/MaintenanceController.php:142
@@ -315,6 +476,41 @@ edit.head = (args: { maintenance: number | { id: number } } | [maintenance: numb
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\MaintenanceController::edit
+ * @see app/Http/Controllers/MaintenanceController.php:142
+ * @route '/dashboard/maintenances/{maintenance}/edit'
+ */
+    const editForm = (args: { maintenance: number | { id: number } } | [maintenance: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: edit.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceController::edit
+ * @see app/Http/Controllers/MaintenanceController.php:142
+ * @route '/dashboard/maintenances/{maintenance}/edit'
+ */
+        editForm.get = (args: { maintenance: number | { id: number } } | [maintenance: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\MaintenanceController::edit
+ * @see app/Http/Controllers/MaintenanceController.php:142
+ * @route '/dashboard/maintenances/{maintenance}/edit'
+ */
+        editForm.head = (args: { maintenance: number | { id: number } } | [maintenance: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: edit.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    edit.form = editForm
 /**
 * @see \App\Http\Controllers\MaintenanceController::update
  * @see app/Http/Controllers/MaintenanceController.php:150
@@ -378,6 +574,37 @@ update0dd669d0d1cdec70f3820a151c1df5f5.put = (args: { maintenance: number | { id
  * @see app/Http/Controllers/MaintenanceController.php:150
  * @route '/dashboard/maintenances/{maintenance}'
  */
+    const update0dd669d0d1cdec70f3820a151c1df5f5Form = (args: { maintenance: number | { id: number } } | [maintenance: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: update0dd669d0d1cdec70f3820a151c1df5f5.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PUT',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceController::update
+ * @see app/Http/Controllers/MaintenanceController.php:150
+ * @route '/dashboard/maintenances/{maintenance}'
+ */
+        update0dd669d0d1cdec70f3820a151c1df5f5Form.put = (args: { maintenance: number | { id: number } } | [maintenance: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: update0dd669d0d1cdec70f3820a151c1df5f5.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PUT',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    update0dd669d0d1cdec70f3820a151c1df5f5.form = update0dd669d0d1cdec70f3820a151c1df5f5Form
+    /**
+* @see \App\Http\Controllers\MaintenanceController::update
+ * @see app/Http/Controllers/MaintenanceController.php:150
+ * @route '/dashboard/maintenances/{maintenance}'
+ */
 const update0dd669d0d1cdec70f3820a151c1df5f5 = (args: { maintenance: number | { id: number } } | [maintenance: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
     url: update0dd669d0d1cdec70f3820a151c1df5f5.url(args, options),
     method: 'patch',
@@ -430,6 +657,38 @@ update0dd669d0d1cdec70f3820a151c1df5f5.patch = (args: { maintenance: number | { 
     url: update0dd669d0d1cdec70f3820a151c1df5f5.url(args, options),
     method: 'patch',
 })
+
+    /**
+* @see \App\Http\Controllers\MaintenanceController::update
+ * @see app/Http/Controllers/MaintenanceController.php:150
+ * @route '/dashboard/maintenances/{maintenance}'
+ */
+    const update0dd669d0d1cdec70f3820a151c1df5f5Form = (args: { maintenance: number | { id: number } } | [maintenance: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: update0dd669d0d1cdec70f3820a151c1df5f5.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'PATCH',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceController::update
+ * @see app/Http/Controllers/MaintenanceController.php:150
+ * @route '/dashboard/maintenances/{maintenance}'
+ */
+        update0dd669d0d1cdec70f3820a151c1df5f5Form.patch = (args: { maintenance: number | { id: number } } | [maintenance: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: update0dd669d0d1cdec70f3820a151c1df5f5.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'PATCH',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    update0dd669d0d1cdec70f3820a151c1df5f5.form = update0dd669d0d1cdec70f3820a151c1df5f5Form
 
 export const update = {
     '/dashboard/maintenances/{maintenance}': update0dd669d0d1cdec70f3820a151c1df5f5,
@@ -494,6 +753,37 @@ destroy.delete = (args: { maintenance: number | { id: number } } | [maintenance:
     method: 'delete',
 })
 
+    /**
+* @see \App\Http\Controllers\MaintenanceController::destroy
+ * @see app/Http/Controllers/MaintenanceController.php:194
+ * @route '/dashboard/maintenances/{maintenance}'
+ */
+    const destroyForm = (args: { maintenance: number | { id: number } } | [maintenance: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: destroy.url(args, {
+                    [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                        _method: 'DELETE',
+                        ...(options?.query ?? options?.mergeQuery ?? {}),
+                    }
+                }),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceController::destroy
+ * @see app/Http/Controllers/MaintenanceController.php:194
+ * @route '/dashboard/maintenances/{maintenance}'
+ */
+        destroyForm.delete = (args: { maintenance: number | { id: number } } | [maintenance: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: destroy.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'DELETE',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'post',
+        })
+    
+    destroy.form = destroyForm
 /**
 * @see \App\Http\Controllers\MaintenanceController::equipmentHistoryPdf
  * @see app/Http/Controllers/MaintenanceController.php:51
@@ -560,6 +850,42 @@ equipmentHistoryPdf.head = (args: { equipment: number | { id: number } } | [equi
     url: equipmentHistoryPdf.url(args, options),
     method: 'head',
 })
+
+    /**
+* @see \App\Http\Controllers\MaintenanceController::equipmentHistoryPdf
+ * @see app/Http/Controllers/MaintenanceController.php:51
+ * @route '/dashboard/maintenances/equipment/{equipment}/history-pdf'
+ */
+    const equipmentHistoryPdfForm = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: equipmentHistoryPdf.url(args, options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\MaintenanceController::equipmentHistoryPdf
+ * @see app/Http/Controllers/MaintenanceController.php:51
+ * @route '/dashboard/maintenances/equipment/{equipment}/history-pdf'
+ */
+        equipmentHistoryPdfForm.get = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: equipmentHistoryPdf.url(args, options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\MaintenanceController::equipmentHistoryPdf
+ * @see app/Http/Controllers/MaintenanceController.php:51
+ * @route '/dashboard/maintenances/equipment/{equipment}/history-pdf'
+ */
+        equipmentHistoryPdfForm.head = (args: { equipment: number | { id: number } } | [equipment: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: equipmentHistoryPdf.url(args, {
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    equipmentHistoryPdf.form = equipmentHistoryPdfForm
 const MaintenanceController = { generateReport, index, create, store, show, edit, update, destroy, equipmentHistoryPdf }
 
 export default MaintenanceController

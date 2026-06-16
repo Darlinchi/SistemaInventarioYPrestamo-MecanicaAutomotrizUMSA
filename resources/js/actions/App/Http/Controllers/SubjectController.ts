@@ -1,4 +1,4 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SubjectController::index
  * @see app/Http/Controllers/SubjectController.php:16
@@ -42,6 +42,41 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
+    /**
+* @see \App\Http\Controllers\SubjectController::index
+ * @see app/Http/Controllers/SubjectController.php:16
+ * @route '/dashboard/subjects'
+ */
+    const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: index.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\SubjectController::index
+ * @see app/Http/Controllers/SubjectController.php:16
+ * @route '/dashboard/subjects'
+ */
+        indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\SubjectController::index
+ * @see app/Http/Controllers/SubjectController.php:16
+ * @route '/dashboard/subjects'
+ */
+        indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: index.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    index.form = indexForm
 /**
 * @see \App\Http\Controllers\SubjectController::importMethod
  * @see app/Http/Controllers/SubjectController.php:23
@@ -76,6 +111,27 @@ importMethod.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     method: 'post',
 })
 
+    /**
+* @see \App\Http\Controllers\SubjectController::importMethod
+ * @see app/Http/Controllers/SubjectController.php:23
+ * @route '/dashboard/subjects/import'
+ */
+    const importMethodForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: importMethod.url(options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\SubjectController::importMethod
+ * @see app/Http/Controllers/SubjectController.php:23
+ * @route '/dashboard/subjects/import'
+ */
+        importMethodForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: importMethod.url(options),
+            method: 'post',
+        })
+    
+    importMethod.form = importMethodForm
 /**
 * @see \App\Http\Controllers\SubjectController::toggleStatus
  * @see app/Http/Controllers/SubjectController.php:38
@@ -133,6 +189,28 @@ toggleStatus.post = (args: { subject: number | { id: number } } | [subject: numb
     url: toggleStatus.url(args, options),
     method: 'post',
 })
+
+    /**
+* @see \App\Http\Controllers\SubjectController::toggleStatus
+ * @see app/Http/Controllers/SubjectController.php:38
+ * @route '/dashboard/subjects/{subject}/toggle'
+ */
+    const toggleStatusForm = (args: { subject: number | { id: number } } | [subject: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+        action: toggleStatus.url(args, options),
+        method: 'post',
+    })
+
+            /**
+* @see \App\Http\Controllers\SubjectController::toggleStatus
+ * @see app/Http/Controllers/SubjectController.php:38
+ * @route '/dashboard/subjects/{subject}/toggle'
+ */
+        toggleStatusForm.post = (args: { subject: number | { id: number } } | [subject: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+            action: toggleStatus.url(args, options),
+            method: 'post',
+        })
+    
+    toggleStatus.form = toggleStatusForm
 const SubjectController = { index, importMethod, toggleStatus, import: importMethod }
 
 export default SubjectController
