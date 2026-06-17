@@ -26,8 +26,10 @@ const props = defineProps<{
     }>;
 }>();
 
-const resetPassword = (id: number) => {
-    if (confirm('¿Resetear la contraseña a "12345678"?')) {
+// 👇 Muestra en el confirm exactamente cuál será la nueva contraseña
+const resetPassword = (id: number, ci: string, apellido: string) => {
+    const passwordMostrar = `${ci}${apellido}`;
+    if (confirm(`¿Resetear la contraseña a "${passwordMostrar}"?`)) {
         router.post(`/dashboard/usuarios/${id}/reset-password`, {}, {
             preserveScroll: true,
         });
@@ -43,7 +45,6 @@ const toggleStatus = (id: number) => {
 
 <template>
     <Head title="Gestión de Personal" />
-
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
             <PageHeader
@@ -58,7 +59,6 @@ const toggleStatus = (id: number) => {
                 </template>
             </PageHeader>
 
-            <!-- Tabla -->
             <div class="relative bg-white border border-neutral-200 rounded-2xl shadow-sm overflow-hidden">
                 <table class="w-full text-left border-separate border-spacing-0">
                     <thead class="bg-neutral-50 border-b border-neutral-200 text-[11px] font-black uppercase tracking-widest text-neutral-500">
@@ -74,9 +74,8 @@ const toggleStatus = (id: number) => {
                     </thead>
                     <tbody class="divide-y divide-neutral-100 text-sm font-medium">
 
-                        <!-- Sin usuarios -->
                         <tr v-if="!users.length">
-                            <td colspan="5" class="p-8 text-center text-neutral-400 italic">
+                            <td colspan="7" class="p-8 text-center text-neutral-400 italic">
                                 No hay usuarios registrados.
                             </td>
                         </tr>
@@ -90,29 +89,27 @@ const toggleStatus = (id: number) => {
                                 <div class="font-bold text-neutral-900">{{ user.cedula_identidad }}</div>
                             </td>
 
-                            <!-- Nombre -->
                             <td class="p-4 pl-8">
-                                <div class="font-bold text-neutral-900">{{ user.apellidoPaterno }} {{ user.apellidoMaterno }} {{ user.name }} </div>
+                                <div class="font-bold text-neutral-900">
+                                    {{ user.apellidoPaterno }} {{ user.apellidoMaterno }} {{ user.name }}
+                                </div>
                             </td>
 
-                            <!-- Username / Email -->
                             <td class="p-4">
                                 <div class="text-neutral-700 font-medium">{{ user.username }}</div>
                                 <div class="text-[11px] text-neutral-400">{{ user.email || '—' }}</div>
                             </td>
 
                             <td class="p-4 pl-8">
-                                <div class="font-bold text-neutral-900">{{ user.celular }}</div>
+                                <div class="font-bold text-neutral-900">{{ user.celular || '—' }}</div>
                             </td>
 
-                            <!-- Rol -->
                             <td class="p-4">
                                 <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black uppercase border border-blue-100">
                                     {{ user.roles[0] || 'Sin Rol' }}
                                 </span>
                             </td>
 
-                            <!-- Estado -->
                             <td class="p-4">
                                 <span
                                     :class="user.activo
@@ -124,22 +121,20 @@ const toggleStatus = (id: number) => {
                                 </span>
                             </td>
 
-                            <!-- Acciones -->
                             <td class="p-4 text-right pr-8">
                                 <div class="flex items-center justify-end gap-1">
 
-                                    <!-- Resetear contraseña -->
+                                    <!-- 👇 Pasa CI y apellido para mostrar la contraseña en el confirm -->
                                     <Button
-                                        @click="resetPassword(user.id)"
+                                        @click="resetPassword(user.id, user.cedula_identidad, user.apellidoPaterno)"
                                         variant="ghost"
                                         size="sm"
-                                        title="Resetear contraseña a 12345678"
+                                        :title="`Resetear contraseña a ${user.cedula_identidad}${user.apellidoPaterno}`"
                                         class="hover:bg-amber-50 text-amber-500 border border-transparent hover:border-amber-200"
                                     >
                                         <KeyRound class="w-4 h-4"/>
                                     </Button>
 
-                                    <!-- Editar -->
                                     <Link :href="`/dashboard/usuarios/${user.id}/edit`">
                                         <Button
                                             variant="ghost"
@@ -151,7 +146,6 @@ const toggleStatus = (id: number) => {
                                         </Button>
                                     </Link>
 
-                                    <!-- Toggle habilitar / deshabilitar -->
                                     <Button
                                         @click="toggleStatus(user.id)"
                                         variant="ghost"

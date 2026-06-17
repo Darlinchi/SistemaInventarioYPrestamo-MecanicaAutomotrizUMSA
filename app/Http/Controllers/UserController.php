@@ -58,9 +58,10 @@ class UserController extends Controller
             'username' => 'required|string|max:255|unique:users',
             'email' => 'nullable|string|email|max:255|unique:users',
             'celular' => 'nullable|string|max:20',
-            'password' => 'required|string|min:8|confirmed',
             'role' => 'required|exists:roles,name',
         ]);
+
+        $passwordMostrar = $request->cedula_identidad . ucfirst(strtolower($request->apellidoPaterno ?? ''));
 
         $user = User::create([
             'name' => $request->name,
@@ -70,14 +71,14 @@ class UserController extends Controller
             'username' => $request->username,
             'celular' => $request->celular,
             'email' => $request->email ?? null,
-            'password' => Hash::make($request->password),
+            'password'         => Hash::make($passwordMostrar),
             'activo' => true,
         ]);
 
         $user->assignRole($request->role);
 
         return redirect()->route('users.index')
-            ->with('success', 'Usuario creado correctamente.');
+            ->with('success', "Usuario creado. Contraseña inicial: {$passwordMostrar}");
     }
 
     public function edit(User $user)
@@ -148,14 +149,16 @@ class UserController extends Controller
         return back()->with('success', 'Contraseña actualizada correctamente.');
     }
 
-    // ── Resetear contraseña a "12345678" ──────────────────────────
+    // ── Resetear contraseña ──────────────────────────
     public function resetPassword(User $user)
     {
+        $nuevaPassword = $this->buildDefaultPassword($user);
+
         $user->update([
-            'password' => Hash::make('12345678'),
+            'password' => Hash::make($nuevaPassword),
         ]);
 
-        return back()->with('success', 'Contraseña reseteada a: 12345678');
+        return back()->with('success', "Contraseña reseteada a: {$nuevaPassword}");
     }
 
     // ── Toggle habilitar / deshabilitar ───────────────────────────
@@ -170,6 +173,14 @@ class UserController extends Controller
         $estado = $user->activo ? 'habilitado' : 'deshabilitado';
 
         return back()->with('success', "Usuario {$estado} correctamente.");
+    }
+
+    private function buildDefaultPassword(User|array $data): string
+    {
+        $ci       = is_array($data) ? $data['cedula_identidad'] : $data->cedula_identidad;
+        $apellido = is_array($data) ? $data['apellidoPaterno']  : $data->apellidoPaterno;
+
+        return $ci . ucfirst(strtolower($apellido ?? ''));
     }
 
     // ── Eliminar usuario ──────────────────────────────────────────

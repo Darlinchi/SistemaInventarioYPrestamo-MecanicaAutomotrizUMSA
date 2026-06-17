@@ -1,6 +1,7 @@
 import DashboardController from './DashboardController'
 import UserController from './UserController'
 import RoleController from './RoleController'
+import ForcePasswordChangeController from './ForcePasswordChangeController'
 import ItemController from './ItemController'
 import EquipmentController from './EquipmentController'
 import ToolController from './ToolController'
@@ -17,6 +18,7 @@ const Controllers = {
     DashboardController: Object.assign(DashboardController, DashboardController),
 UserController: Object.assign(UserController, UserController),
 RoleController: Object.assign(RoleController, RoleController),
+ForcePasswordChangeController: Object.assign(ForcePasswordChangeController, ForcePasswordChangeController),
 ItemController: Object.assign(ItemController, ItemController),
 EquipmentController: Object.assign(EquipmentController, EquipmentController),
 ToolController: Object.assign(ToolController, ToolController),

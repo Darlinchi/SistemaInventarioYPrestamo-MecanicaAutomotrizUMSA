@@ -29,9 +29,8 @@ const form = useForm({
     username:         '',
     celular:          '',
     email:            '',
-    password:         '',
-    password_confirmation: '',
     role:             '',
+    // 👇 ya no hay password ni password_confirmation
 });
 
 function submit() {
@@ -47,7 +46,6 @@ function submit() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-3xl mx-auto p-4 w-full">
 
-            <!-- Volver -->
             <div class="mb-6">
                 <Link
                     href="/dashboard/usuarios"
@@ -58,7 +56,6 @@ function submit() {
                 </Link>
             </div>
 
-            <!-- Header -->
             <div class="flex items-center gap-4 mb-8">
                 <div class="p-4 rounded-2xl shadow-lg bg-[#1a3a5a]">
                     <UserPlus class="w-8 h-8 text-white" />
@@ -75,14 +72,11 @@ function submit() {
 
             <form @submit.prevent="submit" class="space-y-6">
 
-                <!-- Datos personales -->
                 <div class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-4">
                     <CardTitle class="text-lg font-semibold text-[#1a3a5a] flex items-center gap-2">
                         <PencilLine class="w-5 h-5 text-[#1a3a5a]"/> Datos del Usuario
                     </CardTitle>
 
-
-                    <!-- Cédula + Username -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid gap-2">
                             <Label for="cedula_identidad">
@@ -100,16 +94,11 @@ function submit() {
                             <Label for="name">
                                 <User class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Nombre(s)
                             </Label>
-                            <Input
-                                id="name"
-                                v-model="form.name"
-                                placeholder="Ej. Juan Carlos"
-                            />
+                            <Input id="name" v-model="form.name" placeholder="Ej. Juan Carlos" />
                             <InputError :message="form.errors.name" />
                         </div>
                     </div>
 
-                    <!-- Apellidos -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid gap-2">
                             <Label for="apellidoPaterno">
@@ -127,7 +116,6 @@ function submit() {
                         </div>
                     </div>
 
-                    <!-- Username + Email -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid gap-2">
                             <Label for="celular" class="flex items-center gap-2">
@@ -137,23 +125,16 @@ function submit() {
                             <Input id="celular" v-model="form.celular" placeholder="Ej. 78945612" />
                             <InputError :message="form.errors.celular" />
                         </div>
-                        <!-- Email -->
                         <div class="grid gap-2">
                             <Label for="email">
                                 <Mail class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Correo Electrónico
                                 <span class="text-neutral-400 font-normal ml-1 text-xs">(opcional)</span>
                             </Label>
-                            <Input
-                                id="email"
-                                v-model="form.email"
-                                type="email"
-                                placeholder="Ej: user@umsa.bo"
-                            />
+                            <Input id="email" v-model="form.email" type="email" placeholder="Ej: user@umsa.bo" />
                             <InputError :message="form.errors.email" />
                         </div>
                     </div>
 
-                    <!-- Rol -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid gap-2">
                             <Label for="username">
@@ -162,7 +143,6 @@ function submit() {
                             <Input id="username" v-model="form.username" placeholder="Nombre corto de acceso"/>
                             <InputError :message="form.errors.username" />
                         </div>
-
                         <div class="grid gap-2">
                             <Label for="role">
                                 <ShieldCheck class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Rol
@@ -172,50 +152,29 @@ function submit() {
                                 v-model="form.role"
                                 class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-[#1a3a5a] outline-none"
                             >
-                                <option value="">Seleccionar rol </option>
-                                <option v-for="r in roles" :key="r" :value="r">
-                                    {{ r }}
-                                </option>
+                                <option value="">Seleccionar rol</option>
+                                <option v-for="r in roles" :key="r" :value="r">{{ r }}</option>
                             </select>
                             <InputError :message="form.errors.role" />
                         </div>
                     </div>
                 </div>
 
-                <!-- Contraseña -->
-                <div class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-4">
-                    <CardTitle class="text-lg font-semibold text-[#1a3a5a] flex items-center gap-2">
-                        <KeyRound class="w-5 h-5 text-[#1a3a5a]"/> Contraseña
-                    </CardTitle>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="grid gap-2">
-                            <Label for="password">Contraseña</Label>
-                            <Input
-                                id="password"
-                                v-model="form.password"
-                                type="password"
-                                placeholder="Mínimo 8 caracteres"
-                            />
-                            <InputError :message="form.errors.password" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="password_confirmation">Confirmar Contraseña</Label>
-                            <Input
-                                id="password_confirmation"
-                                v-model="form.password_confirmation"
-                                type="password"
-                                placeholder="Repetir contraseña"
-                            />
-                        </div>
+                <!-- Aviso contraseña automática -->
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+                    <KeyRound class="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                    <div>
+                        <p class="text-sm font-bold text-amber-800">Contraseña inicial automática</p>
+                        <p class="text-xs text-amber-700 mt-0.5">
+                            La contraseña se generará automáticamente combinando la
+                            <span class="font-mono font-black">CI + Apellido Paterno</span>.
+                            Por ejemplo: si la CI es <span class="font-mono font-black">123456</span> y el apellido es
+                            <span class="font-mono font-black">Lopez</span>, la contraseña será
+                            <span class="font-mono font-black">123456Lopez</span>.
+                        </p>
                     </div>
-
-                    <p class="text-xs text-neutral-400 italic">
-                        Si olvidaron la contraseña, el administrador puede resetearla desde la lista de usuarios.
-                    </p>
                 </div>
 
-                <!-- Botones -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                     <Link
                         href="/dashboard/usuarios"
@@ -223,19 +182,16 @@ function submit() {
                     >
                         Cancelar
                     </Link>
-
                     <Button
                         type="submit"
                         :disabled="form.processing"
                         class="h-14 bg-[#1a3a5a] text-white rounded-xl font-semibold text-[18px] shadow-lg shadow-blue-900/20 active:scale-95 transition-all w-full flex items-center justify-center gap-3"
                     >
                         <template v-if="form.processing">
-                            <Loader2 class="w-5 h-5 animate-spin"/>
-                            Guardando...
+                            <Loader2 class="w-5 h-5 animate-spin"/> Guardando...
                         </template>
                         <template v-else>
-                            <Save class="w-5 h-5"/>
-                            Registrar Usuario
+                            <Save class="w-5 h-5"/> Registrar Usuario
                         </template>
                     </Button>
                 </div>

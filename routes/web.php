@@ -14,6 +14,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ToolController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ForcePasswordChangeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -53,6 +54,11 @@ Route::middleware(['auth', 'verified'])
             Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
             Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
             Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
+
+            Route::get('/cambiar-contrasena',  [ForcePasswordChangeController::class, 'show'])
+                ->name('password.change');
+            Route::post('/cambiar-contrasena', [ForcePasswordChangeController::class, 'update'])
+                ->name('password.change.update');
 
             // Route::middleware(['role:super-admin|director'])->group(function () {
 

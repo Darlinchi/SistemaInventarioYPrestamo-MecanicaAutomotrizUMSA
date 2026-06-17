@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 import confirmD7e05f from './confirm'
+import change8775ba from './change'
 /**
 * @see \Laravel\Fortify\Http\Controllers\ConfirmablePasswordController::confirm
  * @see vendor/laravel/fortify/src/Http/Controllers/ConfirmablePasswordController.php:40
@@ -156,9 +157,88 @@ confirmation.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
     
     confirmation.form = confirmationForm
+/**
+* @see \App\Http\Controllers\ForcePasswordChangeController::change
+ * @see app/Http/Controllers/ForcePasswordChangeController.php:12
+ * @route '/dashboard/cambiar-contrasena'
+ */
+export const change = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: change.url(options),
+    method: 'get',
+})
+
+change.definition = {
+    methods: ["get","head"],
+    url: '/dashboard/cambiar-contrasena',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\ForcePasswordChangeController::change
+ * @see app/Http/Controllers/ForcePasswordChangeController.php:12
+ * @route '/dashboard/cambiar-contrasena'
+ */
+change.url = (options?: RouteQueryOptions) => {
+    return change.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ForcePasswordChangeController::change
+ * @see app/Http/Controllers/ForcePasswordChangeController.php:12
+ * @route '/dashboard/cambiar-contrasena'
+ */
+change.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: change.url(options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\ForcePasswordChangeController::change
+ * @see app/Http/Controllers/ForcePasswordChangeController.php:12
+ * @route '/dashboard/cambiar-contrasena'
+ */
+change.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: change.url(options),
+    method: 'head',
+})
+
+    /**
+* @see \App\Http\Controllers\ForcePasswordChangeController::change
+ * @see app/Http/Controllers/ForcePasswordChangeController.php:12
+ * @route '/dashboard/cambiar-contrasena'
+ */
+    const changeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: change.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\ForcePasswordChangeController::change
+ * @see app/Http/Controllers/ForcePasswordChangeController.php:12
+ * @route '/dashboard/cambiar-contrasena'
+ */
+        changeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: change.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\ForcePasswordChangeController::change
+ * @see app/Http/Controllers/ForcePasswordChangeController.php:12
+ * @route '/dashboard/cambiar-contrasena'
+ */
+        changeForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: change.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    change.form = changeForm
 const password = {
     confirm: Object.assign(confirm, confirmD7e05f),
 confirmation: Object.assign(confirmation, confirmation),
+change: Object.assign(change, change8775ba),
 }
 
 export default password

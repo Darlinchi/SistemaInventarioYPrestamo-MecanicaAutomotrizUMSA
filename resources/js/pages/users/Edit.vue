@@ -36,14 +36,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: `Editar — ${props.user.name}`, href: '#' },
 ];
 
-// ── Formulario datos personales ───────────────────────────────────
 const form = useForm({
     cedula_identidad: props.user.cedula_identidad ?? '',
-    name:          props.user.name,
+    name:             props.user.name,
     apellidoPaterno:  props.user.apellidoPaterno ?? '',
     apellidoMaterno:  props.user.apellidoMaterno ?? '',
     username:         props.user.username,
-    celular:          props.user.celular          ?? '',
+    celular:          props.user.celular ?? '',
     email:            props.user.email ?? '',
     role:             props.user.roles[0] ?? '',
 });
@@ -54,29 +53,16 @@ function submitPersonal() {
     });
 }
 
-// ── Formulario cambiar contraseña ─────────────────────────────────
-const passwordForm = useForm({
-    password:              '',
-    password_confirmation: '',
-});
-
-function submitPassword() {
-    passwordForm.patch(`/dashboard/usuarios/${props.user.id}/password`, {
-        preserveScroll: true,
-        onSuccess: () => passwordForm.reset(),
-    });
-}
-
-// ── Reset contraseña a default ────────────────────────────────────
+// 👇 Usa CI + apellido en el confirm para que el admin sepa exactamente cuál será
 function resetPassword() {
-    if (confirm('¿Resetear la contraseña a "12345678"?')) {
+    const passwordMostrar = `${props.user.cedula_identidad}${props.user.apellidoPaterno}`;
+    if (confirm(`¿Resetear la contraseña de ${props.user.name} a "${passwordMostrar}"?`)) {
         router.post(`/dashboard/usuarios/${props.user.id}/reset-password`, {}, {
             preserveScroll: true,
         });
     }
 }
 
-// ── Toggle activo ─────────────────────────────────────────────────
 function toggleActivo() {
     router.post(`/dashboard/usuarios/${props.user.id}/toggle-status`, {}, {
         preserveScroll: true,
@@ -89,7 +75,6 @@ function toggleActivo() {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="max-w-3xl mx-auto p-4 w-full">
 
-            <!-- Volver -->
             <div class="mb-6">
                 <Link
                     href="/dashboard/usuarios"
@@ -100,7 +85,6 @@ function toggleActivo() {
                 </Link>
             </div>
 
-            <!-- Header -->
             <div class="flex items-center justify-between gap-4 mb-8">
                 <div class="flex items-center gap-4">
                     <div class="p-4 rounded-2xl shadow-lg bg-[#1a3a5a]">
@@ -114,15 +98,13 @@ function toggleActivo() {
                             <span class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-black uppercase border border-blue-100">
                                 {{ user.roles[0] || 'Sin Rol' }}
                             </span>
-                            <span :class="user.activo ? 'text-green-600' : 'text-red-500'"
-                                class="text-xs font-semibold">
+                            <span :class="user.activo ? 'text-green-600' : 'text-red-500'" class="text-xs font-semibold">
                                 {{ user.activo ? '● Activo' : '● Inactivo' }}
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Toggle activo -->
                 <button
                     type="button"
                     @click="toggleActivo"
@@ -138,7 +120,6 @@ function toggleActivo() {
 
             <div class="space-y-6 pb-10">
 
-                <!-- ── Datos personales ── -->
                 <div class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-4">
                     <CardTitle class="text-lg font-semibold text-[#1a3a5a] flex items-center gap-2">
                         <User class="w-5 h-5 text-[#1a3a5a]"/> Datos del Usuario
@@ -152,7 +133,6 @@ function toggleActivo() {
                             <Input id="cedula_identidad" v-model="form.cedula_identidad" placeholder="Ej. 12345678" />
                             <InputError :message="form.errors.cedula_identidad" />
                         </div>
-
                         <div class="grid gap-2">
                             <Label for="name">
                                 <User class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Nombre(s)
@@ -170,7 +150,6 @@ function toggleActivo() {
                             <Input id="apellidoPaterno" v-model="form.apellidoPaterno" />
                             <InputError :message="form.errors.apellidoPaterno" />
                         </div>
-
                         <div class="grid gap-2">
                             <Label for="apellidoMaterno">
                                 <User class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Apellido Materno
@@ -185,11 +164,9 @@ function toggleActivo() {
                             <Label class="text-sm font-medium flex items-center gap-2 text-neutral-700">
                                 <Phone class="w-4 h-4 text-[#1a3a5a]"/> Celular
                             </Label>
-                            <Input v-model="form.celular" type="text"
-                                class="flex h-10 w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1a3a5a]" />
+                            <Input v-model="form.celular" type="text" />
                             <InputError :message="form.errors.celular" />
                         </div>
-
                         <div class="grid gap-2">
                             <Label for="email">
                                 <Mail class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Correo Electrónico
@@ -208,7 +185,6 @@ function toggleActivo() {
                             <Input id="username" v-model="form.username" />
                             <InputError :message="form.errors.username" />
                         </div>
-                        <!-- Rol -->
                         <div class="grid gap-2">
                             <Label for="role">
                                 <ShieldCheck class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Rol
@@ -218,7 +194,7 @@ function toggleActivo() {
                                 v-model="form.role"
                                 class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-[#1a3a5a] outline-none"
                             >
-                                <option value="">Seleccionar rol </option>
+                                <option value="">Seleccionar rol</option>
                                 <option v-for="r in roles" :key="r" :value="r">{{ r }}</option>
                             </select>
                             <InputError :message="form.errors.role" />
@@ -239,65 +215,33 @@ function toggleActivo() {
                     </div>
                 </div>
 
-                <!-- ── Cambiar contraseña ── -->
+                <!-- Resetear contraseña -->
                 <div class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm space-y-4">
                     <CardTitle class="text-lg font-semibold text-[#1a3a5a] flex items-center gap-2">
-                        <KeyRound class="w-5 h-5 text-[#1a3a5a]"/> Cambiar Contraseña
+                        <KeyRound class="w-5 h-5 text-[#1a3a5a]"/> Contraseña
                     </CardTitle>
-                    <!--
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="grid gap-2">
-                            <Label for="password">Nueva Contraseña</Label>
-                            <Input
-                                id="password"
-                                v-model="passwordForm.password"
-                                type="password"
-                                placeholder="Mínimo 8 caracteres"
-                            />
-                            <InputError :message="passwordForm.errors.password" />
-                        </div>
-                        <div class="grid gap-2">
-                            <Label for="password_confirmation">Confirmar Contraseña</Label>
-                            <Input
-                                id="password_confirmation"
-                                v-model="passwordForm.password_confirmation"
-                                type="password"
-                                placeholder="Repetir contraseña"
-                            />
-                        </div>
-                    </div>-->
 
                     <div class="flex items-center justify-between pt-2 border-t border-neutral-100">
-                        <!-- Reset a default -->
                         <button
                             type="button"
                             @click="resetPassword"
                             class="flex items-center gap-2 px-4 py-2 rounded-xl border border-amber-200 text-amber-600 bg-amber-50 hover:bg-amber-100 text-sm font-bold transition-all"
                         >
                             <RefreshCw class="w-4 h-4"/>
-                            Resetear a "12345678"
+                            Resetear contraseña
                         </button>
-
-                        <!--
-                        <Button
-                            type="button"
-                            @click="submitPassword"
-                            :disabled="!passwordForm.password || passwordForm.processing"
-                            class="bg-[#1a3a5a] text-white rounded-xl px-6 h-11 font-semibold flex items-center gap-2 shadow-md disabled:opacity-50"
-                        >
-                            <Loader2 v-if="passwordForm.processing" class="w-4 h-4 animate-spin"/>
-                            <KeyRound v-else class="w-4 h-4"/>
-                            {{ passwordForm.processing ? 'Guardando...' : 'Cambiar Contraseña' }}
-                        </Button>-->
                     </div>
 
                     <p class="text-xs text-neutral-400 italic">
-                        El botón "Resetear" establece la contraseña a <span class="font-mono font-bold">12345678</span> de emergencia.
-                        El usuario deberá cambiarla al ingresar.
+                        Restablece la contraseña a
+                        <span class="font-mono font-bold">CI + Apellido Paterno</span>
+                        — por ejemplo:
+                        <span class="font-mono font-bold">
+                            {{ user.cedula_identidad }}{{ user.apellidoPaterno }}
+                        </span>.
                     </p>
                 </div>
 
-                <!-- Volver -->
                 <div class="flex justify-start">
                     <Link
                         href="/dashboard/usuarios"
