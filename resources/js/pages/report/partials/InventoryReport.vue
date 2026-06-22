@@ -13,39 +13,35 @@ const props = defineProps<{
     items: any[]
 }>();
 
-// ── Variables de Control de Filtros ──────────────────────────────────
-const filterCategory = ref('Todas');
-const filterStatus   = ref('Todos');
-const filterRubro    = ref('Todos');
+// ── 1. Inicializa las variables con el valor EXACTO que usará el select ──
+const filterCategory = ref('');
+const filterStatus   = ref('');
+const filterRubro    = ref('');
 
-// Extraer dinámicamente las opciones de la lista de ítems para poblar los selects
+const categoryOptions = ['Equipo', 'Herramienta'];
+
 const statusOptions = computed(() => {
-    return ['Todos', ...new Set(props.items.map(i => i.estado).filter(Boolean))].sort();
+    return [...new Set(props.items.map(i => i.estado).filter(Boolean))].sort();
 });
 
 const rubroOptions = computed(() => {
-    // Filtramos para obtener SOLO los rubros que pertenecen a equipos y que no sean nulos
     const rubros = props.items
         .filter(i => i.tipo === 'equipo' && i.rubro && i.rubro !== 'General')
         .map(i => i.rubro);
 
-    // Retornamos la lista sin duplicados
-    return ['Todos', ...new Set(rubros)].sort();
+    return [...new Set(rubros)].sort();
 });
 
-// ── Filtrado Reactivo en Pantalla ────────────────────────────────────
+// ── 3. Sincroniza la lógica del filtrado en pantalla con los nuevos nombres ──
 const filtered = computed(() => {
     return props.items.filter(item => {
-        // 1. Filtro por Tipo (Categoría)
-        const matchCategory = filterCategory.value === 'Todas' ||
+        const matchCategory = filterCategory.value === '' ||
             item.tipo.toLowerCase() === filterCategory.value.toLowerCase();
 
-        // 2. Filtro por Estado
-        const matchStatus = filterStatus.value === 'Todos' ||
+        const matchStatus = filterStatus.value === '' ||
             item.estado === filterStatus.value;
 
-        // 3. Filtro por Rubro (Solo aplica si el ítem posee el atributo)
-        const matchRubro = filterRubro.value === 'Todos' ||
+        const matchRubro = filterRubro.value === '' ||
             (item.rubro && item.rubro === filterRubro.value);
 
         return matchCategory && matchStatus && matchRubro;
@@ -90,22 +86,19 @@ const exportInventoryPdf = () => {
                 <!-- Contenedor de Filtros Reutilizando tus Componentes de UI -->
                 <div class="flex flex-col md:flex-row items-center gap-3 mb-4 w-full">
 
-                    <!-- 1. Filtro por Tipo (Categorías) -->
                     <SelectFilter
                         v-model="filterCategory"
                         label="Tipos"
-                        :options="['Todas', 'Equipo', 'Herramienta']"
+                        :options="categoryOptions"
                         icon="Layers"
                     />
 
-                    <!-- 2. Filtro por Estado (Sincronizado dinámicamente) -->
                     <SelectFilter
                         v-model="filterStatus"
                         label="Estados"
                         :options="statusOptions"
                     />
 
-                    <!-- 3. Filtro por Rubro (Solo visible si no se seleccionó 'Herramienta') -->
                     <SelectFilter
                         v-show="filterCategory !== 'Herramienta'"
                         v-model="filterRubro"
@@ -114,9 +107,8 @@ const exportInventoryPdf = () => {
                         icon="Tag"
                     />
 
-                    <!-- 4. Botón Reutilizable para Limpiar Todos los Filtros -->
                     <ClearFiltersButton
-                        @clear="() => { filterCategory = 'Todas'; filterStatus = 'Todos'; filterRubro = 'Todos'; }"
+                        @clear="() => { filterCategory = ''; filterStatus = ''; filterRubro = ''; }"
                     />
 
                 </div>

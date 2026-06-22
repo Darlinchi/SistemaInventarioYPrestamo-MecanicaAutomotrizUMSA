@@ -248,38 +248,6 @@ Route::middleware(['auth', 'verified'])
             Route::get('reports/issues/pdf', [ReportController::class, 'exportIssues'])->name('reports.issues.pdf');
         });
 
-        // //////////////////////////////////////////////////
-
-        // ADMIN y ENCARGADO
-        // Route::middleware(['role:admin|encargado'])->group(function () {
-        // Esta línea genera automáticamente: index, create, store, show, edit, update, destroy
-        // Rutas del Inventario
-        // Route::get('items/{id}/pdf', [ItemController::class, 'generateFicha'])->name('items.pdf');
-
-        // Route::resource('items', ItemController::class);
-        // Route::resource('tools', ToolController::class);
-        // Route::resource('equipments', EquipmentController::class);
-
-        // Rutas de prestamos
-        // Route::get('loans/{id}/report', [LoanController::class, 'generateReport'])->name('loans.report');
-
-        // Route::resource('loans', LoanController::class);
-        // Route::post('loans/{loan}/return', [LoanController::class, 'returnLoan'])->name('loans.return');
-
-        // Rutas de mantenimientos
-        // Route::get('maintenances/{id}/report', [MaintenanceController::class, 'generateReport'])->name('maintenances.report');
-
-        // Route::resource('maintenances', MaintenanceController::class);
-
-        // Rutas de empresas de mantenimiento
-        // Route::resource('maintenanceCompanies', MaintenanceCompanyController::class);
-
-        // Rutas de prestamistas
-        // Route::resource('borrowers', BorrowerController::class);
-
-        // Rutas de reportes
-        // Route::resource('reports', ReportController::class);
-        // });
     });
 
 // ARCHIVOS DE CONFIGURACIÓN ADICIONALES

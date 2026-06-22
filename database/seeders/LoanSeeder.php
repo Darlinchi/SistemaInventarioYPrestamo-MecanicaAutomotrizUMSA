@@ -9,6 +9,7 @@ class LoanSeeder extends Seeder
 {
     public function run(): void
     {
+        // Limpieza de tablas controlando restricciones
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('item_loan')->truncate();
         DB::table('loan_returns')->truncate();
@@ -17,20 +18,20 @@ class LoanSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | PRÉSTAMOS DEVUELTOS (8) — con devolución registrada
+        | 1. PRÉSTAMOS HISTÓRICOS DEVUELTOS
         |--------------------------------------------------------------------------
         */
         $devueltos = [
             [
                 'loan' => [
-                    'user_id'               => 3,       // Encargado Mollo
-                    'borrower_id'           => 1,       // Carlos Andrade
-                    'subject_id'            => 3,       // METROLOGIA, AJUSTE Y TALLER
-                    'fecha_salida'          => '2026-03-10',
+                    'user_id'                => 3, // Encargado Mollo
+                    'borrower_id'            => 1, // Carlos Andrade
+                    'subject_id'             => 3, // METROLOGIA, AJUSTE Y TALLER
+                    'fecha_salida'           => '2026-03-10',
                     'fecha_retorno_prevista'=> '2026-03-10',
-                    'hora_inicio'           => '08:00:00',
-                    'hora_fin_prevista'     => '10:00:00', // 2 horas
-                    'estado_prestamo'       => 'Devuelto',
+                    'hora_inicio'            => '08:00:00',
+                    'hora_fin_prevista'      => '10:00:00',
+                    'estado_prestamo'        => 'Devuelto',
                 ],
                 'items' => [
                     ['type' => 'App\\Models\\Tool',      'id' => 1], // Juego llaves combinadas
@@ -45,14 +46,14 @@ class LoanSeeder extends Seeder
             ],
             [
                 'loan' => [
-                    'user_id'               => 3,
-                    'borrower_id'           => 5,       // Jaime Condori
-                    'subject_id'            => 6,       // TECNOLOGIA MECANISMOS AUTOMOTOR
-                    'fecha_salida'          => '2026-03-12',
+                    'user_id'                => 3,
+                    'borrower_id'            => 5, // Jaime Condori
+                    'subject_id'             => 6, // TECNOLOGIA MECANISMOS AUTOMOTOR
+                    'fecha_salida'           => '2026-03-12',
                     'fecha_retorno_prevista'=> '2026-03-12',
-                    'hora_inicio'           => '14:00:00',
-                    'hora_fin_prevista'     => '18:00:00', // 4 horas
-                    'estado_prestamo'       => 'Devuelto',
+                    'hora_inicio'            => '14:00:00',
+                    'hora_fin_prevista'      => '18:00:00',
+                    'estado_prestamo'        => 'Devuelto',
                 ],
                 'items' => [
                     ['type' => 'App\\Models\\Equipment', 'id' => 3], // Elevador 2 columnas
@@ -68,37 +69,14 @@ class LoanSeeder extends Seeder
             ],
             [
                 'loan' => [
-                    'user_id'               => 3,
-                    'borrower_id'           => 8,       // Jorge Escobar
-                    'subject_id'            => 7,       // ELECTRICIDAD DEL AUTOMOTOR
-                    'fecha_salida'          => '2026-03-17',
-                    'fecha_retorno_prevista'=> '2026-03-17',
-                    'hora_inicio'           => '08:00:00',
-                    'hora_fin_prevista'     => '12:00:00', // 4 horas
-                    'estado_prestamo'       => 'Devuelto',
-                ],
-                'items' => [
-                    ['type' => 'App\\Models\\Equipment', 'id' => 1], // Escáner Launch X431
-                    ['type' => 'App\\Models\\Equipment', 'id' => 4], // Osciloscopio Automotriz
-                    ['type' => 'App\\Models\\Tool',      'id' => 5], // Multímetro
-                ],
-                'return' => [
-                    'user_id'      => 3,
-                    'fecha_retorno'=> '2026-03-17',
-                    'hora_fin'     => '12:00:00',
-                    'observacion'  => 'Devuelto puntual. Cables del osciloscopio en buen estado.',
-                ],
-            ],
-            [
-                'loan' => [
-                    'user_id'               => 3,
-                    'borrower_id'           => 11,      // Mario Mamani
-                    'subject_id'            => 10,      // ELECTRONICA DEL AUTOMOTOR
-                    'fecha_salida'          => '2026-03-24',
+                    'user_id'                => 3,
+                    'borrower_id'            => 11, // Mario Mamani
+                    'subject_id'             => 10, // ELECTRONICA DEL AUTOMOTOR
+                    'fecha_salida'           => '2026-03-24',
                     'fecha_retorno_prevista'=> '2026-03-24',
-                    'hora_inicio'           => '14:00:00',
-                    'hora_fin_prevista'     => '16:00:00', // 2 horas
-                    'estado_prestamo'       => 'Devuelto',
+                    'hora_inicio'            => '14:00:00',
+                    'hora_fin_prevista'      => '16:00:00',
+                    'estado_prestamo'        => 'Devuelto',
                 ],
                 'items' => [
                     ['type' => 'App\\Models\\Equipment', 'id' => 2], // Analizador de gases
@@ -113,14 +91,14 @@ class LoanSeeder extends Seeder
             ],
             [
                 'loan' => [
-                    'user_id'               => 3,
-                    'borrower_id'           => 14,      // Victor Paz
-                    'subject_id'            => 20,      // TECNOLOGIA MOTORES A EXPLOSION
-                    'fecha_salida'          => '2026-04-02',
+                    'user_id'                => 3,
+                    'borrower_id'            => 14, // Victor Paz
+                    'subject_id'             => 20, // TECNOLOGIA MOTORES A EXPLOSION
+                    'fecha_salida'           => '2026-04-02',
                     'fecha_retorno_prevista'=> '2026-04-02',
-                    'hora_inicio'           => '08:00:00',
-                    'hora_fin_prevista'     => '12:00:00', // 4 horas
-                    'estado_prestamo'       => 'Devuelto',
+                    'hora_inicio'            => '08:00:00',
+                    'hora_fin_prevista'      => '12:00:00',
+                    'estado_prestamo'        => 'Devuelto',
                 ],
                 'items' => [
                     ['type' => 'App\\Models\\Equipment', 'id' => 10], // Motor Toyota 2JZ
@@ -134,117 +112,50 @@ class LoanSeeder extends Seeder
                     'observacion'  => 'Motor inspeccionado al retorno. Sin daños.',
                 ],
             ],
-            [
-                'loan' => [
-                    'user_id'               => 3,
-                    'borrower_id'           => 19,      // Juan Quispe
-                    'subject_id'            => 24,      // TECNOLOGIA MOTORES DIESEL
-                    'fecha_salida'          => '2026-04-07',
-                    'fecha_retorno_prevista'=> '2026-04-07',
-                    'hora_inicio'           => '14:00:00',
-                    'hora_fin_prevista'     => '18:00:00', // 4 horas
-                    'estado_prestamo'       => 'Devuelto',
-                ],
-                'items' => [
-                    ['type' => 'App\\Models\\Equipment', 'id' => 7], // Banco de inyectores
-                    ['type' => 'App\\Models\\Tool',      'id' => 6], // Extractor de poleas
-                ],
-                'return' => [
-                    'user_id'      => 3,
-                    'fecha_retorno'=> '2026-04-07',
-                    'hora_fin'     => '18:00:00',
-                    'observacion'  => 'Banco de inyectores limpio y completo.',
-                ],
-            ],
-            [
-                'loan' => [
-                    'user_id'               => 3,
-                    'borrower_id'           => 22,      // Oscar Trino
-                    'subject_id'            => 32,      // DIAGNOSTICO AUTOMOTRIZ
-                    'fecha_salida'          => '2026-04-14',
-                    'fecha_retorno_prevista'=> '2026-04-14',
-                    'hora_inicio'           => '08:00:00',
-                    'hora_fin_prevista'     => '10:00:00', // 2 horas
-                    'estado_prestamo'       => 'Devuelto',
-                ],
-                'items' => [
-                    ['type' => 'App\\Models\\Equipment', 'id' => 1], // Escáner Launch X431
-                    ['type' => 'App\\Models\\Equipment', 'id' => 6], // Compresor de aire
-                ],
-                'return' => [
-                    'user_id'      => 3,
-                    'fecha_retorno'=> '2026-04-14',
-                    'hora_fin'     => '10:05:00',
-                    'observacion'  => null,
-                ],
-            ],
-            [
-                'loan' => [
-                    'user_id'               => 3,
-                    'borrower_id'           => 25,      // Hugo Santos
-                    'subject_id'            => 11,      // HIDRONEUMATICA
-                    'fecha_salida'          => '2026-04-28',
-                    'fecha_retorno_prevista'=> '2026-04-28',
-                    'hora_inicio'           => '14:00:00',
-                    'hora_fin_prevista'     => '18:00:00', // 4 horas
-                    'estado_prestamo'       => 'Devuelto',
-                ],
-                'items' => [
-                    ['type' => 'App\\Models\\Equipment', 'id' => 6], // Compresor de aire
-                    ['type' => 'App\\Models\\Tool',      'id' => 3], // Alicate de presión
-                    ['type' => 'App\\Models\\Tool',      'id' => 4], // Destornillador impacto
-                ],
-                'return' => [
-                    'user_id'      => 3,
-                    'fecha_retorno'=> '2026-04-28',
-                    'hora_fin'     => '18:00:00',
-                    'observacion'  => 'Compresor apagado correctamente. Sin observaciones.',
-                ],
-            ],
         ];
 
         /*
         |--------------------------------------------------------------------------
-        | PRÉSTAMOS ACTIVOS (2)
+        | 2. PRÉSTAMOS REALMENTE ACTIVOS EN ESTE MOMENTO (Basado en tu SQL)
         |--------------------------------------------------------------------------
         */
         $activos = [
             [
                 'loan' => [
-                    'user_id'               => 3,
-                    'borrower_id'           => 3,       // Vladimir Calsina
-                    'subject_id'            => 17,      // AUTOTRONICA
-                    'fecha_salida'          => '2026-06-17',
-                    'fecha_retorno_prevista'=> '2026-06-17',
-                    'hora_inicio'           => '08:00:00',
-                    'hora_fin_prevista'     => '12:00:00', // 4 horas
-                    'estado_prestamo'       => 'Activo',
+                    'user_id'                => 3,
+                    'borrower_id'            => 11, // Mario Mamani
+                    'subject_id'             => 20, // TECNOLOGIA DE LOS MOTORES A EXPLOSION
+                    'fecha_salida'           => '2026-06-18',
+                    'fecha_retorno_prevista'=> '2026-06-18',
+                    'hora_inicio'            => '19:39:00',
+                    'hora_fin_prevista'      => '21:39:00',
+                    'estado_prestamo'        => 'Activo',
                 ],
                 'items' => [
-                    ['type' => 'App\\Models\\Equipment', 'id' => 4], // Osciloscopio automotriz
-                    ['type' => 'App\\Models\\Equipment', 'id' => 9], // Cargador de baterías
-                    ['type' => 'App\\Models\\Tool',      'id' => 5], // Multímetro
+                    ['type' => 'App\\Models\\Equipment', 'id' => 2],  // Analizador de Gases
+                    ['type' => 'App\\Models\\Equipment', 'id' => 17], // Osciloscopio Digital 1102A
+                    ['type' => 'App\\Models\\Tool',      'id' => 6],  // Extractor de poleas
                 ],
             ],
             [
                 'loan' => [
-                    'user_id'               => 3,
-                    'borrower_id'           => 16,      // Edgar Quintanilla
-                    'subject_id'            => 23,      // INGENIERIA MECANISMOS AUTOMOTOR
-                    'fecha_salida'          => '2026-06-17',
-                    'fecha_retorno_prevista'=> '2026-06-17',
-                    'hora_inicio'           => '14:00:00',
-                    'hora_fin_prevista'     => '16:00:00', // 2 horas
-                    'estado_prestamo'       => 'Activo',
+                    'user_id'                => 3,
+                    'borrower_id'            => 66, // Liam Peredo (Estudiante)
+                    'subject_id'             => 42, // TALLER DE GRADO
+                    'fecha_salida'           => '2026-06-18',
+                    'fecha_retorno_prevista'=> '2026-06-19',
+                    'hora_inicio'            => '19:50:00',
+                    'hora_fin_prevista'      => '21:50:00',
+                    'estado_prestamo'        => 'Activo',
                 ],
                 'items' => [
-                    ['type' => 'App\\Models\\Equipment', 'id' => 5], // Alineadora 3D
-                    ['type' => 'App\\Models\\Equipment', 'id' => 8], // Rectificadora de discos
+                    ['type' => 'App\\Models\\Equipment', 'id' => 1], // Escáner Launch X431
+                    ['type' => 'App\\Models\\Equipment', 'id' => 5], // Alineadora de Dirección 3D
                 ],
             ],
         ];
 
-        // --- Insertar devueltos ---
+        // --- Inserción de Préstamos Devueltos ---
         foreach ($devueltos as $data) {
             $loanId = DB::table('loans')->insertGetId(array_merge(
                 $data['loan'],
@@ -267,7 +178,7 @@ class LoanSeeder extends Seeder
             ));
         }
 
-        // --- Insertar activos ---
+        // --- Inserción de Préstamos Activos ---
         foreach ($activos as $data) {
             $loanId = DB::table('loans')->insertGetId(array_merge(
                 $data['loan'],
