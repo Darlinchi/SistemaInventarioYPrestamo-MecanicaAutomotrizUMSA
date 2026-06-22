@@ -60,12 +60,16 @@ const mainNavItems = computed((): NavItem[] => {
     ];
 
     // ── Usuarios — solo super-admin ve y gestiona usuarios ──────
-    if (hasRole('super-admin')) {
+    if (can('usuarios.ver')) {
         items.push({
             title: 'Gestión de Usuarios',
             href:  userRoutes.index.url(),
             icon:  Users,
         });
+    }
+
+    // Roles — solo super-admin
+    if (hasRole('super-admin')) {
         items.push({
             title: 'Gestión de Roles',
             href:  rolRoutes.index.url(),

@@ -91,7 +91,7 @@ const formatFecha = (fecha: string | null | undefined): string => {
                                 <span>Registrado por:</span>
                             </p>
                             <p class="flex items-center gap-2 text-[14px] font-bold text-neutral-800 leading-tight">
-                                {{ maint.user.name }}
+                                {{ maint.user.name }} {{ maint.user.apellidoPaterno }} {{ maint.user.apellidoMaterno }}
                             </p>
                         </div>
                     </div>

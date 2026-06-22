@@ -41,7 +41,7 @@ const tieneProblemas = (loan: any): boolean => {
 
                 <td class="p-4">
                     <div class="text-sm font-semibold text-neutral-700">
-                        {{ loan.user?.name }}
+                        {{ loan.user?.name }} {{ loan.user?.apellidoPaterno }} {{ loan.user?.apellidoMaterno }}
                     </div>
                     <div class="text-xs text-neutral-600 mt-0.5">CI: {{ loan.borrower?.cedula_identidad }}</div>
                 </td>

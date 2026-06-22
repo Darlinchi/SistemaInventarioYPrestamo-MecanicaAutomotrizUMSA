@@ -122,7 +122,7 @@ class LoanReturnController extends Controller
         return Inertia::render('loanReturn/Index', [
             'loans' => $result,
             'repositions' => app(RepositionController::class)->getRepositions(),
-            'auth_user' => auth()->user()->only('id', 'name', 'username'),
+            'auth_user' => auth()->user()->only('id', 'name', 'username', 'apellidoPaterno'),
         ]);
     }
 

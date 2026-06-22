@@ -168,7 +168,7 @@ const toggleBorrowerStatus = (id: number) => {
                 <template #action>
                     <div class="flex items-center gap-3">
                         <button
-                            v-if="activeTab === 'docentes'"
+                            v-if="activeTab === 'docentes' && can('prestatarios.importar')"
                             @click="abrirImport('docente')"
                             class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-neutral-200 text-[#1a3a5a] rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-neutral-50 transition-all shadow-sm active:scale-95"
                         >
@@ -177,7 +177,7 @@ const toggleBorrowerStatus = (id: number) => {
                         </button>
 
                         <button
-                            v-if="activeTab === 'auxiliares'"
+                            v-if="activeTab === 'auxiliares' && can('prestatarios.importar')"
                             @click="abrirImport('auxiliar')"
                             class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-emerald-200 text-emerald-700 rounded-xl text-sm font-bold uppercase tracking-wider hover:bg-emerald-50 transition-all shadow-sm active:scale-95"
                         >
@@ -186,7 +186,7 @@ const toggleBorrowerStatus = (id: number) => {
                         </button>
 
                         <CreateActionButton
-                            v-if="activeTab !== 'estudiantes' && can('usuarios.crear')"
+                            v-if="activeTab !== 'estudiantes' && can('prestatarios.crear')"
                             :href="borrowerRoutes.create.url()"
                             label="Registrar Responsable"
                         />

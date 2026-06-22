@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
+import { usePage } from '@inertiajs/vue3';
 import { UserPen, KeyRound, UserCheck, UserX } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import PageHeader from '@/components/PageHeader.vue';
@@ -10,6 +11,10 @@ import { Head, Link, router } from '@inertiajs/vue3';
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Gestión de Personal', href: '/dashboard/usuarios' },
 ];
+
+const page = usePage();
+const can = (permission: string) =>
+    (page.props.auth.user?.permissions ?? []).includes(permission);
 
 const props = defineProps<{
     users: Array<{
@@ -52,7 +57,7 @@ const toggleStatus = (id: number) => {
             >
                 <template #action>
                     <CreateActionButton
-                        type="button"
+                        v-if="can('usuarios.crear')"
                         href="/dashboard/usuarios/create"
                         label="Registrar Usuario"
                     />
@@ -124,8 +129,9 @@ const toggleStatus = (id: number) => {
                             <td class="p-4 text-right pr-8">
                                 <div class="flex items-center justify-end gap-1">
 
-                                    <!-- 👇 Pasa CI y apellido para mostrar la contraseña en el confirm -->
+                                    <!-- Resetear contraseña — solo usuarios.editar -->
                                     <Button
+                                        v-if="can('usuarios.editar')"
                                         @click="resetPassword(user.id, user.cedula_identidad, user.apellidoPaterno)"
                                         variant="ghost"
                                         size="sm"
@@ -135,7 +141,8 @@ const toggleStatus = (id: number) => {
                                         <KeyRound class="w-4 h-4"/>
                                     </Button>
 
-                                    <Link :href="`/dashboard/usuarios/${user.id}/edit`">
+                                    <!-- Editar — solo usuarios.editar -->
+                                    <Link v-if="can('usuarios.editar')" :href="`/dashboard/usuarios/${user.id}/edit`">
                                         <Button
                                             variant="ghost"
                                             size="sm"
@@ -146,7 +153,9 @@ const toggleStatus = (id: number) => {
                                         </Button>
                                     </Link>
 
+                                    <!-- Toggle habilitar/deshabilitar — solo usuarios.eliminar -->
                                     <Button
+                                        v-if="can('usuarios.eliminar')"
                                         @click="toggleStatus(user.id)"
                                         variant="ghost"
                                         size="sm"
@@ -158,6 +167,14 @@ const toggleStatus = (id: number) => {
                                         <UserX v-if="user.activo" class="w-4 h-4"/>
                                         <UserCheck v-else class="w-4 h-4"/>
                                     </Button>
+
+                                    <!-- Si no tiene ningún permiso de acción, mostrar guión -->
+                                    <span
+                                        v-if="!can('usuarios.editar') && !can('usuarios.eliminar')"
+                                        class="text-neutral-300 text-xs italic px-2"
+                                    >
+                                        Solo lectura
+                                    </span>
 
                                 </div>
                             </td>

@@ -26,6 +26,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 // ── Flash messages ────────────────────────────────────────────────
 const page = usePage();
 const flashSuccess = computed(() => (page.props.flash as any)?.success);
+const can = (permission: string) =>
+    (page.props.auth.user?.permissions ?? []).includes(permission);
+
 
 // ── Modal de importación Excel ────────────────────────────────────
 const modalImport = ref(false);
@@ -83,6 +86,7 @@ const columnasEjemplo = ['sigla', 'nombre_materia', 'semestre*', 'estado', 'pens
             >
                 <template #action>
                     <button
+                        v-if="can('materias.importar')"
                         @click="abrirImport"
                         class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-neutral-200 text-[#1a3a5a] rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-neutral-50 transition-all shadow-sm active:scale-95"
                     >

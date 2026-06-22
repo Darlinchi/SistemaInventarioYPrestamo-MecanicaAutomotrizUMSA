@@ -130,7 +130,7 @@ const estaVencido = (loan: any): boolean => {
                         <UserCog class="w-4 h-4" /> Encargado
                     </p>
                     <p class="text-[13px] font-bold text-neutral-800 leading-tight">
-                        {{ loan.user.name }}
+                        {{ loan.user.name }} {{ loan.user.apellidoPaterno }} {{ loan.user.apellidoMaterno }}
                     </p>
                     <p class="text-[11px] text-neutral-400 font-medium">
                         {{ loan.user.cedula_identidad }}

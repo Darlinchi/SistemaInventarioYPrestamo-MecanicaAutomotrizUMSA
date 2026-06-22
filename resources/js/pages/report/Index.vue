@@ -17,6 +17,7 @@ import {
 
 const props = defineProps<{
     totalPrestamos: number;
+    activos: number;
     dadosDeBaja: number;
     devueltos: number;
     items: Array<any>;
@@ -65,12 +66,20 @@ const reportTabs = computed(() => [
                     description="Total de préstamos"
                 />
                 <StatCard
+                    title="Préstamos Activos"
+                    :value="activos"
+                    :icon="ClipboardCheck"
+                    colorClass="text-[#1a3a5a] group-hover:bg-[#1a3a5a] group-hover:text-white"
+                    description="Total de préstamos activos"
+                />
+                <!--
+                <StatCard
                     title="Dados de Baja"
                     :value="dadosDeBaja"
                     :icon="ClipboardCheck"
                     colorClass="text-[#1a3a5a] group-hover:bg-[#1a3a5a] group-hover:text-white"
                     description="Equipos y herramientas fuera de servicio"
-                />
+                />-->
                 <StatCard
                     title="Préstamos Devueltos"
                     :value="devueltos"

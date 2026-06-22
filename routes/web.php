@@ -38,44 +38,51 @@ Route::middleware(['auth', 'verified'])
         // Route::get('/', fn() => Inertia::render('Dashboard'))->name('dashboard');
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-        // SOLO super-admin: gestión de usuarios del sistema
-        Route::middleware(['role:super-admin'])->group(function () {
-            Route::get('/usuarios', fn () => Inertia::render('users/Index'))->name('users.index');
-
-            // Gestión de roles y permisos — solo super-admin
-
-        });
-
         // Todos los roles autenticados acceden al grupo
         // Route::middleware(['role:super-admin|director|encargado'])->group(function () {
         Route::middleware(['auth', 'verified'])->group(function () {
 
-            Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
-            Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
-            Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
-            Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
+            Route::get('/roles', [RoleController::class, 'index'])
+                ->middleware('permission:roles.ver')->name('roles.index');
+            Route::post('/roles', [RoleController::class, 'store'])
+                ->middleware('permission:roles.crear')->name('roles.store');
+            Route::put('/roles/{role}', [RoleController::class, 'update'])
+                ->middleware('permission:roles.editar')->name('roles.update');
+            Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
+                ->middleware('permission:roles.eliminar')->name('roles.destroy');
 
             Route::get('/cambiar-contrasena',  [ForcePasswordChangeController::class, 'show'])
                 ->name('password.change');
             Route::post('/cambiar-contrasena', [ForcePasswordChangeController::class, 'update'])
                 ->name('password.change.update');
 
-            // Route::middleware(['role:super-admin|director'])->group(function () {
+            // Usuarios — protegidas por permiso
+            Route::get('/usuarios', [UserController::class, 'index'])
+                ->middleware('permission:usuarios.ver')->name('users.index');
 
-            Route::get('/usuarios', [UserController::class, 'index'])->name('users.index');
-            Route::get('/usuarios/create', [UserController::class, 'create'])->name('users.create');
-            Route::post('/usuarios', [UserController::class, 'store'])->name('users.store');
-            Route::get('/usuarios/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
-            Route::put('/usuarios/{user}', [UserController::class, 'update'])->name('users.update');
-            Route::delete('/usuarios/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+            Route::get('/usuarios/create', [UserController::class, 'create'])
+                ->middleware('permission:usuarios.crear')->name('users.create');
 
-            // Acciones especiales — accesibles por super-admin Y director
-            Route::post('/usuarios/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle');
-            Route::post('/usuarios/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset');
+            Route::post('/usuarios', [UserController::class, 'store'])
+                ->middleware('permission:usuarios.crear')->name('users.store');
 
-            // Cambiar contraseña desde Edit (nueva ruta)
-            Route::patch('/usuarios/{user}/password', [UserController::class, 'changePassword'])->name('users.password');
-            // });
+            Route::get('/usuarios/{user}/edit', [UserController::class, 'edit'])
+                ->middleware('permission:usuarios.editar')->name('users.edit');
+
+            Route::put('/usuarios/{user}', [UserController::class, 'update'])
+                ->middleware('permission:usuarios.editar')->name('users.update');
+
+            Route::delete('/usuarios/{user}', [UserController::class, 'destroy'])
+                ->middleware('permission:usuarios.eliminar')->name('users.destroy');
+
+            Route::post('/usuarios/{user}/toggle-status', [UserController::class, 'toggleStatus'])
+                ->middleware('permission:usuarios.editar')->name('users.toggle');
+
+            Route::post('/usuarios/{user}/reset-password', [UserController::class, 'resetPassword'])
+                ->middleware('permission:usuarios.editar')->name('users.reset');
+
+            Route::patch('/usuarios/{user}/password', [UserController::class, 'changePassword'])
+                ->middleware('permission:usuarios.editar')->name('users.password');
 
             // Items
             Route::get('items/{id}/pdf', [ItemController::class, 'generateFicha'])->name('items.pdf');

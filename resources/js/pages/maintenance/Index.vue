@@ -2,12 +2,9 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import maintenancesRoutes from '@/routes/maintenances';
 import { type BreadcrumbItem } from '@/types';
+import { usePage } from '@inertiajs/vue3';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import PageHeader from '@/components/PageHeader.vue';
 import CreateActionButton from '@/components/CreateActionButton.vue';
 import SearchInput from '@/components/shared/SearchInput.vue';
@@ -43,6 +40,10 @@ const props = defineProps<{
     maintenances: Array<any>; // Recibidos del controlador
     auth_user: { id: number; name: string; username: string };
 }>();
+
+const page = usePage();
+const can = (permission: string) =>
+    (page.props.auth.user?.permissions ?? []).includes(permission);
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -268,7 +269,8 @@ const handleGenerateReport = (id: number) => {
             >
                 <template #action>
                     <CreateActionButton
-                        type="button" :href="maintenancesRoutes.create.url()"
+                        v-if="can('mantenimientos.crear')"
+                        :href="maintenancesRoutes.create.url()"
                         :label="`Registrar Actividad de Mantenimiento`"
                     />
                 </template>

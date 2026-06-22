@@ -46,6 +46,7 @@ class RoleSeeder extends Seeder
             'prestatarios.crear',
             'prestatarios.editar',
             'prestatarios.eliminar',
+            'prestatarios.importar',
             'prestatarios.toggle',
 
             // Materias
@@ -53,6 +54,7 @@ class RoleSeeder extends Seeder
             'materias.crear',
             'materias.editar',
             'materias.eliminar',
+            'materias.importar',
             'materias.toggle',
 
             // Herramientas
@@ -111,42 +113,55 @@ class RoleSeeder extends Seeder
         }
 
         // ----------------------------------------------------------------
-        // ROL: super-admin — acceso total (el bypass del Gate lo cubre todo)
+        // ROL: super-admin — acceso total
         // ----------------------------------------------------------------
         $superAdmin = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
-        $superAdmin->syncPermissions(Permission::all());
-
-        // ----------------------------------------------------------------
-        // ROL: director — solo lectura + gestión de usuarios
-        // Puede ver todo pero NO modificar inventario, préstamos ni mantenimientos.
-        // ----------------------------------------------------------------
-        $director = Role::firstOrCreate(['name' => 'director', 'guard_name' => 'web']);
-        $director->syncPermissions([
-            // Usuarios: puede gestionar (crear encargados si el dev no está)
+        $superAdmin->syncPermissions([
+            // Usuarios: acceso total
             'usuarios.ver',
             'usuarios.crear',
             'usuarios.editar',
             'usuarios.eliminar',
+
+            // Roles: acceso total
+            'roles.ver',
+            'roles.crear',
+            'roles.editar',
+            'roles.eliminar',
             'roles.gestionar',
 
+            // Configuración
+            'configuracion.gestionar',
+
+            // Solo lectura del resto — para supervisar sin operar
+            'herramientas.ver',
+            'equipos.ver',
+            'prestatarios.ver',
+            'materias.ver',
+            'prestamos.ver',
+            'mantenimientos.ver',
+            'empresas_mant.ver',
             'reposiciones.ver',
-            'roles.ver',
+            'reportes.ver',
+            'reportes.exportar',
+        ]);
+        // ----------------------------------------------------------------
+        // ROL: director — solo lectura total, SIN gestión de usuarios ni roles
+        // ----------------------------------------------------------------
+        $director = Role::firstOrCreate(['name' => 'director', 'guard_name' => 'web']);
+        $director->syncPermissions([
+            // Usuarios: SOLO VER (no crear, no editar, no eliminar)
+            'usuarios.ver',
 
             // Inventario: solo lectura
             'herramientas.ver',
             'equipos.ver',
 
-            // Prestatarios (Docentes/Auxiliares/Estudiantes) - PERMISO TOTAL
+            // Prestatarios: solo lectura
             'prestatarios.ver',
-            'prestatarios.crear',
-            'prestatarios.editar',
-            'prestatarios.eliminar',
 
-            // Materias - PERMISO TOTAL
+            // Materias: solo lectura
             'materias.ver',
-            'materias.crear',
-            'materias.editar',
-            'materias.eliminar',
 
             // Préstamos: solo lectura
             'prestamos.ver',
@@ -155,30 +170,37 @@ class RoleSeeder extends Seeder
             'mantenimientos.ver',
             'empresas_mant.ver',
 
-            // Reportes: acceso completo
+            // Reposiciones: solo lectura
+            'reposiciones.ver',
+
+            // Roles: solo ver
+            'roles.ver',
+
+            // Reportes: acceso completo (su función principal)
             'reportes.ver',
             'reportes.exportar',
         ]);
 
         // ----------------------------------------------------------------
-        // ROL: encargado — operación completa del taller
+        // ROL: encargado — operación completa del taller, SIN gestión de usuarios
         // ----------------------------------------------------------------
         $encargado = Role::firstOrCreate(['name' => 'encargado', 'guard_name' => 'web']);
         $encargado->syncPermissions([
-            // Usuarios: solo ver
-            'usuarios.ver',
-
             // Prestatarios
             'prestatarios.ver',
             'prestatarios.crear',
             'prestatarios.editar',
             'prestatarios.eliminar',
+            'prestatarios.importar',
+            'prestatarios.toggle',
 
             // Materias
             'materias.ver',
             'materias.crear',
             'materias.editar',
             'materias.eliminar',
+            'materias.importar',
+            'materias.toggle',
 
             // Herramientas
             'herramientas.ver',
@@ -211,7 +233,7 @@ class RoleSeeder extends Seeder
             'empresas_mant.editar',
             'empresas_mant.eliminar',
 
-            // encargado — agrega:
+            // Reposiciones
             'reposiciones.ver',
             'reposiciones.crear',
             'reposiciones.editar',

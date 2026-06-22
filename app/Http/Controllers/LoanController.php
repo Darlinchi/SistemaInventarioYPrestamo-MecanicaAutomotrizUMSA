@@ -35,7 +35,7 @@ class LoanController extends Controller
 
         return Inertia::render('loan/Index', [
             'loans' => $loans,
-            'auth_user' => auth()->user()->only('id', 'name', 'username'),
+            'auth_user' => auth()->user()->only('id', 'name', 'username', 'apellidoPaterno'),
         ]);
     }
 

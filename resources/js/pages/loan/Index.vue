@@ -32,7 +32,7 @@ interface Loan {
 
 const props = defineProps<{
     loans: Loan[];
-    auth_user: { id: number; name: string; username: string };
+    auth_user: { id: number; name: string; username: string, apellidoPaterno: string };
 }>();
 
 const page = usePage();

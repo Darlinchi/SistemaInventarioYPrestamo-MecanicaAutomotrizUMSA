@@ -83,6 +83,7 @@ class DashboardController extends Controller
                 'id'       => auth()->id(),
                 'name'     => auth()->user()->name,
                 'username' => auth()->user()->username,
+                'apellidoPaterno' => auth()->user()->apellidoPaterno,
             ],
             'issues'           => $issues,
         ]);

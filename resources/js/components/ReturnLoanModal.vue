@@ -13,8 +13,8 @@ import InputError from '@/components/InputError.vue';
 const props = defineProps<{
     show: boolean;
     loan: any;
-    form: any; // useForm de Inertia pasado desde el padre
-    authUser: { id: number; name: string; username: string };
+    form: any;
+    authUser: { id: number; name: string; username: string, apellidoPaterno: string };
 }>();
 
 const emit = defineEmits<{ close: []; confirm: [acuerdos: any[]] }>();
@@ -295,7 +295,7 @@ const formatFecha = (fecha: string | null | undefined): string => {
                         <p class="flex items-center gap-2 text-[12px] font-black text-[#1a3a5a] uppercase tracking-widest">
                             <UserCheck class="w-3.5 h-3.5" /> Entregado por
                         </p>
-                        <p class="text-sm font-bold text-neutral-900">{{ loan?.user?.name ?? '—' }}</p>
+                        <p class="text-sm font-bold text-neutral-900">{{ loan?.user?.name }} {{ loan?.user?.apellidoPaterno }}</p>
                         <span class="px-2 py-0.5 rounded-lg bg-blue-50 text-[11px] font-black text-[#1a3a5a] border border-blue-100">
                             {{ loan?.user?.username ?? '' }}
                         </span>
@@ -306,7 +306,7 @@ const formatFecha = (fecha: string | null | undefined): string => {
                         <p class="flex items-center gap-2 text-[12px] font-black text-[#1a3a5a] uppercase tracking-widest">
                             <UserCheck class="w-3.5 h-3.5" /> Recibiendo ahora
                         </p>
-                        <p class="text-sm font-bold text-neutral-900">{{ authUser?.name ?? '—' }}</p>
+                        <p class="text-sm font-bold text-neutral-900">{{ authUser?.name ?? '—' }} {{ authUser?.apellidoPaterno ?? '—' }}</p>
                         <span class="px-2 py-0.5 rounded-lg bg-emerald-50 text-[11px] font-black text-[#1a3a5a] border border-emerald-100">
                             {{ authUser?.username ?? '' }}
                         </span>

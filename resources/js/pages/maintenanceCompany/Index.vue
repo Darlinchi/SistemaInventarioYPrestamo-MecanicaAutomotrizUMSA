@@ -2,6 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import maintenanceCompanyRoutes from '@/routes/maintenanceCompanies';
 import { type BreadcrumbItem } from '@/types';
+import { usePage } from '@inertiajs/vue3';
 import { Plus, SquarePen, Trash } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import PageHeader from '@/components/PageHeader.vue';
@@ -15,6 +16,10 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: maintenanceCompanyRoutes.index.url()
     },
 ];
+
+const page = usePage();
+const can = (permission: string) =>
+    (page.props.auth.user?.permissions ?? []).includes(permission);
 
 // TABLA DE EMPRESAS
 const props = defineProps<{
@@ -55,7 +60,8 @@ const deleteCompany = (id: number) => {
             >
                 <template #action>
                     <CreateActionButton
-                        type="button" :href="maintenanceCompanyRoutes.create.url()"
+                        v-if="can('empresas_mant.crear')"
+                        :href="maintenanceCompanyRoutes.create.url()"
                         :label="`Registrar Empresa`"
                     />
                 </template>

@@ -31,7 +31,7 @@ const props = defineProps<{
     };
     recentLoans: any[];
     recentEquipments: any[];
-    auth_user: { id: number; name: string; username: string };
+    auth_user: { id: number; name: string; username: string, apellidoPaterno: string; };
     issues: Array<any>;
 }>();
 
