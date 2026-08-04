@@ -476,7 +476,11 @@ const canSubmit = computed(() => {
                                         <ClockAlert class="w-4 h-4" />
                                         <span>Hora Retorno</span>
                                     </Label>
-                                    <Input v-model="form.hora_fin_prevista" type="time":min="form.hora_inicio"/>
+                                    <Input
+                                        v-model="form.hora_fin_prevista"
+                                        type="time"
+                                        :min="form.fecha_retorno_prevista === form.fecha_salida ? form.hora_inicio : undefined"
+                                    />
                                     <InputError :message="form.errors.hora_fin_prevista" />
                                 </div>
                             </div>

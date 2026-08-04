@@ -130,7 +130,7 @@ function submit() {
                                 <Mail class="w-4 h-4 text-[#1a3a5a] inline mr-1"/> Correo Electrónico
                                 <span class="text-neutral-400 font-normal ml-1 text-xs">(opcional)</span>
                             </Label>
-                            <Input id="email" v-model="form.email" type="email" placeholder="Ej: user@umsa.bo" />
+                            <Input id="email" v-model="form.email" type="email" placeholder="Ej: user@gmail.com" />
                             <InputError :message="form.errors.email" />
                         </div>
                     </div>
