@@ -1,0 +1,35 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: inventario_app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persistir la base de datos SQLite entre reinicios
+      - sqlite_data:/var/www/database
+      # Persistir archivos subidos
+      - storage_data:/var/www/storage/app
+    environment:
+      APP_NAME: "SistemaInventarioPrestamo"
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: "http://localhost:8000"
+      DB_CONNECTION: sqlite
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+      LOG_CHANNEL: stderr
+      LOG_LEVEL: debug
+    healthcheck:
+      test: ["CMD", "php", "artisan", "about", "--only=environment"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  sqlite_data:
+  storage_data:

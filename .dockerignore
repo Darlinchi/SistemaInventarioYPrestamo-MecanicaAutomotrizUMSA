@@ -1,0 +1,41 @@
+# Git
+.git
+.gitignore
+.gitattributes
+.github
+
+# Node
+node_modules
+
+# Laravel temporales y locales
+.env
+.env.backup
+.env.production
+# .env.example es necesario para el entrypoint, NO lo ignoramos
+/vendor
+/bootstrap/ssr
+/public/hot
+/storage/*.key
+/storage/pail
+.phpunit.cache
+.phpunit.result.cache
+
+# Herramientas de desarrollo
+.vscode
+.idea
+.fleet
+.nova
+.zed
+.DS_Store
+
+# Docs y tests locales
+README.md
+CHANGELOG.md
+phpunit.xml
+tests/
+
+# Assets de build — se generan dentro de Docker, no copiar del host
+
+# Docker (no necesarios dentro del contenedor)
+docker-compose*.yml
+Dockerfile

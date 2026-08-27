@@ -17,9 +17,9 @@ class DatabaseSeeder extends Seeder
 
         // 2. Super-admin (Tú)
         $admin = User::firstOrCreate(
-            ['username' => 'darlin'], // 1er array: Lo que se busca
+            ['username' => 'admin'], // 1er array: Lo que se busca
             [                         // 2do array: Lo que se inserta si no existe
-                'name' => 'Darlin Soliz',
+                'name' => 'Administrador',
                 'email' => 'admin@gmail.com',
                 'password' => bcrypt('12345678'),
             ]
@@ -28,9 +28,9 @@ class DatabaseSeeder extends Seeder
 
         // 3. Director
         $director = User::firstOrCreate(
-            ['username' => 'director luis copa'],
+            ['username' => 'director'],
             [
-                'name' => 'Luis Andrés Copa Yujra',
+                'name' => 'Director de carrera',
                 'email' => 'director@gmail.com',
                 'password' => bcrypt('12345678'),
             ]
@@ -61,9 +61,9 @@ class DatabaseSeeder extends Seeder
         $this->command->table(
             ['Username', 'name', 'Rol'],
             [
-                ['Darlin', 'Darlin Soliz', 'super-admin'],
-                ['Director Luis Copa', 'Luis Andrés Copa Yujra', 'director'],
-                ['Encargado', 'Encargados de taller', 'encargado'],
+                ['admin', 'Administrador', 'super-admin'],
+                ['director', 'Director de carrera', 'director'],
+                ['encargado', 'Encargados de taller', 'encargado'],
             ]
         );
     }
