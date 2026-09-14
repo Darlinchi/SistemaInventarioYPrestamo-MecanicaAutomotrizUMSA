@@ -190,12 +190,6 @@ function submit() {
                         </div>
                     </div>
 
-                    <div class="grid gap-2">
-                        <Label for="ubicacion"><Rows3 class="w-5 h-5 text-[#1a3a5a]"/> Ubicación en Taller</Label>
-                        <Input id="ubicacion" v-model="form.ubicacion" />
-                        <InputError :message="form.errors.ubicacion" />
-                    </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid gap-2">
                             <Label for="descripcion"><AlignLeft class="w-5 h-5 text-[#1a3a5a]"/> Descripción de la Herramienta</Label>

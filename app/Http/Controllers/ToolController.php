@@ -145,7 +145,7 @@ class ToolController extends Controller
 
         try {
             return DB::transaction(function () use ($request, $tool, $validated) {
-                $fotoPath = $tool->foto;
+                $fotoPath = $tool->foto_herramienta;
 
                 // Si el usuario sube una nueva foto
                 if ($request->hasFile('foto')) {

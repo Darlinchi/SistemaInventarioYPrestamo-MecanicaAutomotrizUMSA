@@ -111,7 +111,7 @@ watch(() => form.borrower_id, (newId) => {
 });
 
 const getItemStatus = (item: any) => item.estado_mostrar || 'Desconocido';
-const isAvailable = (item: any) => ['Disponible', 'Nuevo'].includes(getItemStatus(item));
+const isAvailable = (item: any) => ['Disponible', 'Nuevo', 'Reparado', 'Bueno'].includes(getItemStatus(item));
 
 // Sincroniza el tipo de prestatario con la pestaña activa
 watch(activeBorrowerTab, (newTab) => {

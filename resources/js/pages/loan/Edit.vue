@@ -65,8 +65,7 @@ const getItemStatus = (item: any) => item.estado_mostrar || 'Desconocido';
 
 const isAvailable = (item: any) => {
     const status = getItemStatus(item);
-    // En edición, un item es "disponible" si está disponible/nuevo O si ya pertenece a este préstamo
-    return status === 'Disponible' || status === 'Nuevo' || isSelected(item.id, item.es_equipo);
+    return ['Disponible', 'Nuevo', 'Reparado', 'Bueno'].includes(status) || isSelected(item.id, item.es_equipo);
 };
 
 // Actualiza el toggle para que no permita seleccionar items bloqueados
