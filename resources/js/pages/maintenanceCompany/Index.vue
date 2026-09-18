@@ -2,52 +2,51 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import maintenanceCompanyRoutes from '@/routes/maintenanceCompanies';
 import { type BreadcrumbItem } from '@/types';
-import { usePage } from '@inertiajs/vue3';
-import { Plus, SquarePen, Trash } from 'lucide-vue-next';
-import { Button } from '@/components/ui/button';
+import { usePage, Head, router } from '@inertiajs/vue3';
 import PageHeader from '@/components/PageHeader.vue';
 import CreateActionButton from '@/components/CreateActionButton.vue';
 import CompanyTable from '@/components/CompanyTable.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+
+interface Company {
+    id: number;
+    nombre_empresa: string;
+    telefono: string;
+    descripcion_empresa: string;
+    direccion: string;
+    puede_eliminarse?: boolean;
+}
+
+const props = defineProps<{
+    maintenanceCompanies: Company[];
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Empresas de Mantenimiento',
-        href: maintenanceCompanyRoutes.index.url()
+        href: maintenanceCompanyRoutes.index.url(),
     },
 ];
 
 const page = usePage();
-const can = (permission: string) =>
-    (page.props.auth.user?.permissions ?? []).includes(permission);
 
-// TABLA DE EMPRESAS
-const props = defineProps<{
-    maintenanceCompanies: Array<{
-        id: number;
-        nombre_empresa: string;
-        telefono: string;
-        descripcion_empresa: string;
-        direccion: string;
-    }>;
-}>();
+const can = (permission: string): boolean => {
+    const auth = (page.props.auth as any) || {};
+    const permissions: string[] = auth.permissions || auth.user?.permissions || [];
+    return permissions.includes(permission);
+};
 
-// Función para eliminar con confirmación
-const deleteCompany = (id: number) => {
+const deleteCompany = (id: number): void => {
+    if (!can('empresas_mant.eliminar')) return;
+
     if (confirm('¿Estás seguro de eliminar esta empresa?')) {
-        // Usamos la ruta de Wayfinder directamente
         router.delete(maintenanceCompanyRoutes.destroy.url(id), {
             preserveScroll: true,
-            onSuccess: () => {
-                console.log("Eliminado con éxito");
-            },
             onError: (errors) => {
                 console.error("Error al eliminar:", errors);
             }
         });
     }
 };
-
 </script>
 
 <template>
@@ -69,6 +68,8 @@ const deleteCompany = (id: number) => {
 
             <CompanyTable
                 :maintenanceCompanies="maintenanceCompanies"
+                :can-edit="can('empresas_mant.editar')"
+                :can-delete="can('empresas_mant.eliminar')"
                 @delete="id => deleteCompany(id)"
             />
         </div>

@@ -6,16 +6,30 @@ import TableHeader from '@/components/table/TableHeader.vue';
 import TableAction from '@/components/table/TableAction.vue';
 import maintenanceCompanyRoutes from '@/routes/maintenanceCompanies';
 
-defineProps<{
-    maintenanceCompanies: any[];
-}>();
+withDefaults(
+    defineProps<{
+        maintenanceCompanies: any[];
+        canEdit?: boolean;
+        canDelete?: boolean;
+    }>(),
+    {
+        canEdit: false,
+        canDelete: false,
+    }
+);
 
-const emit = defineEmits(['delete']);
+defineEmits(['delete']);
 </script>
 
 <template>
     <BaseTable :items="maintenanceCompanies" emptyText="No hay empresas de mantenimiento registradas">
-        <TableHeader :columns="['NOMBRE', 'CONTACTO', 'UBICACIÓN / DIRECCIÓN', 'DESCRIPCIÓN', 'ACCIONES']" />
+        <TableHeader :columns="[
+            'NOMBRE',
+            'CONTACTO',
+            'UBICACIÓN / DIRECCIÓN',
+            'DESCRIPCIÓN',
+            ...(canEdit || canDelete ? ['ACCIONES'] : [])
+        ]" />
 
         <tbody class="divide-y divide-neutral-100 text-sm">
             <tr v-for="company in maintenanceCompanies" :key="company.id" class="hover:bg-neutral-50/50 transition-colors group">
@@ -52,9 +66,14 @@ const emit = defineEmits(['delete']);
                     </div>
                 </td>
 
-                <td class="p-4 pr-8 text-right">
+                <!-- Columna de Acciones protegida -->
+                <td v-if="canEdit || canDelete" class="p-4 pr-8 text-right">
                     <div class="flex justify-end gap-2">
-                        <Link :href="maintenanceCompanyRoutes.edit.url(company.id)">
+                        <!-- Editar Empresa -->
+                        <Link 
+                            v-if="canEdit" 
+                            :href="maintenanceCompanyRoutes.edit.url(company.id)"
+                        >
                             <TableAction
                                 :icon="SquarePen"
                                 variant="edit"
@@ -62,7 +81,9 @@ const emit = defineEmits(['delete']);
                             />
                         </Link>
 
+                        <!-- Eliminar Empresa -->
                         <TableAction
+                            v-if="canDelete"
                             :icon="Trash"
                             variant="delete"
                             :title="company.puede_eliminarse ? 'Eliminar empresa' : 'No se puede eliminar: tiene mantenimientos asociados'"

@@ -27,18 +27,18 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const page = usePage();
-// --- PERMISOS ---
-// Verifica que 'usuarios.crear' exista en tu base de datos.
-// Si quieres que aparezca siempre para probar, cambia esto a: return true;
+
+// --- PERMISOS ROBUSTOS ---
 const can = (permission: string) => {
-    const userPermissions = (page.props.auth.user as any)?.permissions ?? [];
-    return userPermissions.includes(permission);
+    const auth = (page.props.auth as any) || {};
+    const permissions: string[] = auth.permissions || auth.user?.permissions || [];
+    return permissions.includes(permission);
 };
 
 const activeTab = ref<'docentes' | 'auxiliares' | 'estudiantes'>('docentes');
 const openSubjectId = ref<number | null>(null);
 
-// Contadores corregidos
+// Contadores
 const countDocentes = computed(() => props.borrowers.filter(b => b.teacher !== null).length);
 const countAuxiliares = computed(() => props.borrowers.filter(b => b.assistant !== null).length);
 const countEstudiantes = computed(() => props.borrowers.filter(b => b.teacher === null && b.assistant === null).length);
@@ -53,23 +53,19 @@ const filteredUsers = computed(() => {
     return props.borrowers.filter(b => {
         if (activeTab.value === 'docentes') return b.teacher !== null;
         if (activeTab.value === 'auxiliares') return b.assistant !== null;
-        return b.teacher === null && b.assistant === null; // Caso estudiantes
+        return b.teacher === null && b.assistant === null;
     });
 });
 
-// Función para abrir/cerrar el dropdown de materias
 const toggleSubjects = (id: number) => {
     openSubjectId.value = openSubjectId.value === id ? null : id;
 };
 
-// Función auxiliar para obtener las materias del usuario actual
-// Reemplaza la función getSubjects completa
 const getSubjects = (borrower: any) => {
     if (borrower.teacher) {
         return borrower.teacher.subjects || [];
     }
     if (borrower.assistant) {
-        // Para auxiliares las materias vienen dentro de subjectTeachers[].subject
         return (borrower.assistant.subject_teachers || [])
             .map((st: any) => st.subject)
             .filter(Boolean);
@@ -77,7 +73,6 @@ const getSubjects = (borrower: any) => {
     return [];
 };
 
-// Cierra el popover si se hace clic fuera del contenedor
 const closePopovers = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
     if (!target.closest('.relative.inline-block')) {
@@ -85,7 +80,6 @@ const closePopovers = (e: MouseEvent) => {
     }
 };
 
-// Activar al entrar y desactivar al salir
 onMounted(() => window.addEventListener('click', closePopovers));
 onUnmounted(() => window.removeEventListener('click', closePopovers));
 
@@ -134,7 +128,6 @@ const submitImport = () => {
     });
 };
 
-// Columnas según tipo
 const columnasEjemplo = computed(() =>
     tipoImport.value === 'docente'
         ? ['cedula_identidad','nombres', 'apellido_paterno', 'apellido_materno', 'celular', 'titulo',  'categoria', 'materia_sigla', 'paralelo']
@@ -143,14 +136,13 @@ const columnasEjemplo = computed(() =>
 
 const formatDate = (dateString: string | null) => {
     if (!dateString) return '---';
-    // Si viene el formato largo "2026-05-10T04:00...", tomamos solo los primeros 10 caracteres
     return dateString.split('T')[0];
 };
 
 const toggleBorrowerStatus = (id: number) => {
     router.post(`/dashboard/borrowers/${id}/toggle`, {}, {
         preserveScroll: true,
-        preserveState: false,  // ← fuerza recarga de props para mostrar el cambio
+        preserveState: false,
     });
 };
 </script>
@@ -205,21 +197,13 @@ const toggleBorrowerStatus = (id: number) => {
                 <TableHeader :columns="[
                     ...(activeTab === 'docentes' || activeTab === 'auxiliares' ? ['CAT.'] : []),
                     'CÉDULA',
-                    // R.U. se muestra para Auxiliares y Estudiantes
                     ...(activeTab === 'estudiantes' ? ['R.U.'] : []),
-
                     'NOMBRE COMPLETO',
                     'CELULAR',
-
-                    // Materias solo para Docentes y Auxiliares (Los estudiantes suelen ser uso general)
                     ...(activeTab === 'docentes' || activeTab === 'auxiliares' ? ['MATERIAS'] : []),
-
-                    // Periodo solo para Auxiliares
                     ...(activeTab === 'auxiliares' ? ['FECHA INICIO', 'FECHA FIN'] : []),
-
                     'ESTADO',
-
-                    'ACCIONES'
+                    ...(can('prestatarios.toggle') || can('prestatarios.editar') ? ['ACCIONES'] : [])
                 ]" />
 
                 <tbody class="divide-y divide-neutral-100 text-sm">
@@ -291,8 +275,11 @@ const toggleBorrowerStatus = (id: number) => {
                             </span>
                         </td>
 
-                        <td class="p-2 flex items-center gap-2">
+                        <!-- Columna de Acciones protegida con can() -->
+                        <td v-if="can('prestatarios.toggle') || can('prestatarios.editar')" class="p-2 flex items-center gap-2">
+                            <!-- Botón Toggle de Estado -->
                             <button
+                                v-if="can('prestatarios.toggle')"
                                 @click="toggleBorrowerStatus(b.id)"
                                 :title="b.activo ? 'Deshabilitar responsable' : 'Habilitar responsable'"
                                 :class="[
@@ -306,8 +293,12 @@ const toggleBorrowerStatus = (id: number) => {
                                 <PowerOff v-else class="w-4 h-4" />
                             </button>
 
-                            <Link :href="borrowerRoutes.edit.url(b.id)" v-if="activeTab === 'auxiliares' || activeTab === 'docentes'"
-                                class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg inline-block transition-colors">
+                            <!-- Botón Editar -->
+                            <Link 
+                                v-if="can('prestatarios.editar') && (activeTab === 'auxiliares' || activeTab === 'docentes')"
+                                :href="borrowerRoutes.edit.url(b.id)"
+                                class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg inline-block transition-colors"
+                            >
                                 <SquarePen class="w-5 h-5"/>
                             </Link>
                         </td>
@@ -325,7 +316,6 @@ const toggleBorrowerStatus = (id: number) => {
             >
                 <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in duration-200">
 
-                    <!-- Header -->
                     <div class="flex items-center justify-between px-6 py-5 border-b border-neutral-100">
                         <div class="flex items-center gap-3">
                             <div :class="[
@@ -349,10 +339,7 @@ const toggleBorrowerStatus = (id: number) => {
                         </button>
                     </div>
 
-                    <!-- Cuerpo -->
                     <div class="px-6 py-5 space-y-5">
-
-                        <!-- Columnas requeridas -->
                         <div class="p-4 bg-neutral-50 rounded-2xl border border-neutral-200 space-y-2">
                             <p class="text-[11px] font-black text-neutral-500 uppercase tracking-widest">
                                 Columnas requeridas en el Excel
@@ -376,7 +363,6 @@ const toggleBorrowerStatus = (id: number) => {
                             </p>
                         </div>
 
-                        <!-- Zona de upload -->
                         <div>
                             <label class="block text-[11px] font-black text-neutral-500 uppercase tracking-widest mb-2">
                                 Seleccionar archivo
@@ -405,7 +391,6 @@ const toggleBorrowerStatus = (id: number) => {
                                 />
                             </label>
 
-                            <!-- Error -->
                             <div v-if="importForm.errors.archivo"
                                 class="flex items-start gap-2 mt-2 p-3 bg-red-50 border border-red-200 rounded-xl">
                                 <AlertCircle class="w-4 h-4 text-red-500 shrink-0 mt-0.5"/>
@@ -438,7 +423,6 @@ const toggleBorrowerStatus = (id: number) => {
                                 <Loader2 class="w-5 h-5 animate-spin mr-2" />
                                 Importando...
                             </template>
-
                             <template v-else>
                                 <Upload class="w-5 h-5 mr-2" />
                                 Importar

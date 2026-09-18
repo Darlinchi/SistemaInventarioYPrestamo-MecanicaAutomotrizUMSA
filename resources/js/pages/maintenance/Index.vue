@@ -2,8 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import maintenancesRoutes from '@/routes/maintenances';
 import { type BreadcrumbItem } from '@/types';
-import { usePage } from '@inertiajs/vue3';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { usePage, Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import PageHeader from '@/components/PageHeader.vue';
 import CreateActionButton from '@/components/CreateActionButton.vue';
@@ -23,7 +22,7 @@ interface Maintenance {
     fecha_mantenimiento: string;
     fecha_proximo_mantenimiento?: string;
     fecha_retorno?: string;
-    fecha_retorno_estimado?: string ;
+    fecha_retorno_estimado?: string;
     estado_mantenimiento: string;
     tipo_mantenimiento: string;
     hora_inicio: string;
@@ -32,18 +31,23 @@ interface Maintenance {
     actividad?: string;
     equipment: any;
     estado_final_equipo: string;
-    company?: any;   // Añade el signo ? para que sea opcional
+    company?: any;
     companies?: any[];
 }
 
 const props = defineProps<{
-    maintenances: Array<any>; // Recibidos del controlador
+    maintenances: Array<any>;
     auth_user: { id: number; name: string; username: string };
 }>();
 
 const page = usePage();
-const can = (permission: string) =>
-    (page.props.auth.user?.permissions ?? []).includes(permission);
+
+// --- PERMISOS ROBUSTOS ---
+const can = (permission: string) => {
+    const auth = (page.props.auth as any) || {};
+    const permissions: string[] = auth.permissions || auth.user?.permissions || [];
+    return permissions.includes(permission);
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -52,11 +56,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// --- ESTADO Y BUSQUEDA ---
+// --- ESTADO Y BÚSQUEDA ---
 const activeTab = ref<'proceso' | 'completados'>('proceso');
 const searchQuery = ref('');
 const selectedCompany = ref('');
-const filterDate = ref(''); // Para fecha exacta (YYYY-MM-DD)
+const filterDate = ref('');
 const filterMonth = ref('');
 
 // --- CONTADORES ---
@@ -66,13 +70,12 @@ const countEnProceso = computed(() =>
 const countCompletado = computed(() =>
     props.maintenances.filter(m => m.estado_mantenimiento === 'Completado').length
 );
-// En tu <script setup> de Index.vue
+
 const maintenancesTabs = computed(() => [
     { id: 'proceso', label: 'En Proceso', count: countEnProceso.value, icon: 'ClipboardPen' },
     { id: 'completados', label: 'Completados', count: countCompletado.value, icon: 'ClipboardList' }
 ]);
 
-// Meses para el filtro por meses
 const months = [
     { id: 1, name: 'Enero' },
     { id: 2, name: 'Febrero' },
@@ -88,28 +91,24 @@ const months = [
     { id: 12, name: 'Diciembre' }
 ];
 
-// 3. Filtrado unificado por Pestaña y Buscador
 const filteredMaintenances = computed(() => {
-    // Mapeo de tus términos simples a los de la Base de Datos
     const estadoMapa = {
         proceso: 'En Proceso',
         completados: 'Completado'
     };
 
     const estadoBusqueda = estadoMapa[activeTab.value];
-    // 1. Filtro por pestaña activa
     let filtered = (props.maintenances || []).filter(maint =>
         maint.estado_mantenimiento === estadoBusqueda
     );
 
-    // 2. Filtro por buscador (Empresa, Equipo, Serie o QR)
     if (searchQuery.value.trim() !== '') {
         const query = searchQuery.value.toLowerCase();
         filtered = filtered.filter(maint => {
-            const nombreEmpresa = maint.companies[0]?.nombre_empresa?.toLowerCase() || '';
-            const nombreEquipo = maint.equipment.nombre_equipo?.toLowerCase() || '';
-            const serieEquipo = maint.equipment.serie?.toLowerCase() || '';
-            const codigoQr = maint.equipment.codigo_qr?.toLowerCase() || '';
+            const nombreEmpresa = maint.companies?.[0]?.nombre_empresa?.toLowerCase() || '';
+            const nombreEquipo = maint.equipment?.nombre_equipo?.toLowerCase() || '';
+            const serieEquipo = maint.equipment?.serie?.toLowerCase() || '';
+            const codigoQr = maint.equipment?.codigo_qr?.toLowerCase() || '';
 
             return nombreEmpresa.includes(query) ||
                    nombreEquipo.includes(query) ||
@@ -118,20 +117,17 @@ const filteredMaintenances = computed(() => {
         });
     }
 
-    // Filtro por empresa
     if (selectedCompany.value !== '') {
-        filtered = filtered.filter(maint => maint.companies[0]?.nombre_empresa === selectedCompany.value);
+        filtered = filtered.filter(maint => maint.companies?.[0]?.nombre_empresa === selectedCompany.value);
     }
-    // Filtro por fecha
     if (filterDate.value !== '') {
-        // Importante: Asegúrate de que maint.fecha_mantenimiento venga como 'YYYY-MM-DD' de la DB
         filtered = filtered.filter(maint => maint.fecha_mantenimiento === filterDate.value);
     }
     if (filterMonth.value !== '') {
         filtered = filtered.filter(maint => {
-            const partes = maint.fecha_mantenimiento.split('-');
-            const mesMantenimiento = partes[1];
-            return parseInt(mesMantenimiento).toString() === filterMonth.value;
+            const partes = maint.fecha_mantenimiento?.split('-');
+            if (!partes || partes.length < 2) return false;
+            return parseInt(partes[1]).toString() === filterMonth.value;
         });
     }
 
@@ -141,35 +137,31 @@ const filteredMaintenances = computed(() => {
 const uniqueCompanies = computed(() => {
     const companiesMap = new Map();
     (props.maintenances || []).forEach(maint => {
-        // Accedemos a la primera empresa de la relación (o recorre si son varias)
-        const company = maint.companies[0];
+        const company = maint.companies?.[0];
         if (company) {
-            // Usamos el ID como llave para que no se repitan
             companiesMap.set(company.id, company.nombre_empresa);
         }
     });
-    // Retornamos array de objetos { id, nombre }
     return Array.from(companiesMap.entries()).map(([id, nombre]) => ({ id, nombre }));
 });
 
-// Actualizar hora del modal en tiempo real
+const isReturnModalOpen = ref(false);
+const selectedMaint = ref<any>(null);
+
+const currentTime = ref(new Date().toLocaleTimeString('es-BO', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+}));
+
 let timer: any;
 onMounted(() => {
     timer = setInterval(() => {
-        currentTime.value = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        currentTime.value = new Date().toLocaleTimeString('es-BO', { hour: '2-digit', minute: '2-digit', hour12: false });
     }, 10000);
 });
 onUnmounted(() => clearInterval(timer));
 
-const isReturnModalOpen = ref(false);
-const selectedMaint = ref<any>(null);
-// Esto es solo para mostrar en el modal (puedes dejarlo como está o ponerlo en 24h)
-const currentTime = ref(new Date().toLocaleTimeString('es-BO', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false // Cambiar a false ayuda a evitar confusiones
-}));
-// --- FORMULARIO DE FINALIZACIÓN ---
 const returnForm = useForm({
     fecha_proximo_mantenimiento: new Date().toISOString().split('T')[0],
     fecha_retorno: new Date().toISOString().split('T')[0],
@@ -178,28 +170,21 @@ const returnForm = useForm({
     observacion: '',
 });
 
-// Observador para calcular automáticamente 1 año después
 watch(() => returnForm.fecha_retorno, (newDate) => {
     if (newDate) {
         const date = new Date(newDate);
-        // Sumamos un año
         date.setFullYear(date.getFullYear() + 1);
-
-        // Formateamos a YYYY-MM-DD para el input date
-        const nextYear = date.toISOString().split('T')[0];
-
-        returnForm.fecha_proximo_mantenimiento = nextYear;
+        returnForm.fecha_proximo_mantenimiento = date.toISOString().split('T')[0];
     }
 });
 
-// Funcion para abrir el modal (preguntar si le gustaria si un accesorio esta mal el equipo completo marcarse como dañado)
-// --- FUNCIONES DEL MODAL ---
 const openReturnModal = (maint: any) => {
+    if (!can('mantenimientos.editar')) return;
+
     selectedMaint.value = maint;
     const now = new Date();
     const today = now.toISOString().split('T')[0];
 
-    // Calculamos el año siguiente para el valor inicial
     const nextYearDate = new Date();
     nextYearDate.setFullYear(nextYearDate.getFullYear() + 1);
     const nextYear = nextYearDate.toISOString().split('T')[0];
@@ -213,16 +198,13 @@ const openReturnModal = (maint: any) => {
 };
 
 const processReturn = () => {
-    // Generar la hora exacta
     const ahora = new Date();
-    const horaFormateada = ahora.toLocaleTimeString('es-BO', {
+    returnForm.hora_fin = ahora.toLocaleTimeString('es-BO', {
         hour12: false,
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
     });
-
-    returnForm.hora_fin = horaFormateada;
 
     returnForm.put(maintenancesRoutes.update.url(selectedMaint.value.id), {
         preserveScroll: true,
@@ -237,17 +219,14 @@ const processReturn = () => {
     });
 };
 
-// Para visualizar toda la informacion y hacer reporte
 const viewInformacion = ref(false);
 const maintenanceInformacion = ref<Maintenance | null>(null);
 
-// Abre el modal y guarda el item seleccionado
 const openViewInformacion = (maintenance: Maintenance) => {
     maintenanceInformacion.value = maintenance;
     viewInformacion.value = true;
 };
 
-// Cierra el modal y limpia el estado
 const closeViewInformacion = () => {
     viewInformacion.value = false;
     maintenanceInformacion.value = null;
@@ -256,7 +235,6 @@ const closeViewInformacion = () => {
 const handleGenerateReport = (id: number) => {
     window.open(`/dashboard/maintenances/${id}/report`, '_blank');
 };
-
 </script>
 
 <template>
@@ -264,9 +242,7 @@ const handleGenerateReport = (id: number) => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="p-6">
-            <PageHeader
-                description="Gestione el mantenimiento de equipos"
-            >
+            <PageHeader description="Gestione el mantenimiento de equipos">
                 <template #action>
                     <CreateActionButton
                         v-if="can('mantenimientos.crear')"
@@ -284,7 +260,7 @@ const handleGenerateReport = (id: number) => {
 
             <div class="flex flex-col md:flex-row items-center gap-3 mb-6 w-full">
                 <SearchInput v-model="searchQuery" placeholder="Buscar por empresa, equipo o serie..." class="md:w-[360px]" />
-                <SelectFilter v-model="selectedCompany" label="Empresas" :options="uniqueCompanies" option-value="sigla" option-label="nombre" icon="Building2" class="md:w-[210px]" />
+                <SelectFilter v-model="selectedCompany" label="Empresas" :options="uniqueCompanies" option-value="nombre" option-label="nombre" icon="Building2" class="md:w-[210px]" />
                 <SelectFilter v-model="filterMonth" label="Meses" :options="months" option-value="id" option-label="name" icon="CalendarDays" class="md:w-[180px]" />
                 <DateFilter v-model="filterDate" label="Fecha específica" class="md:w-[180px]" />
                 <ClearFiltersButton @clear="() => { filterDate=''; filterMonth=''; selectedCompany=''; searchQuery='' }" />
@@ -301,11 +277,10 @@ const handleGenerateReport = (id: number) => {
                         v-for="maint in filteredMaintenances"
                         :key="maint.id"
                         :maint="maint"
+                        :can-edit="can('mantenimientos.editar')"
                         @complete="openReturnModal"
                     />
                 </div>
-
-                <!--HOSTORIAL DE MANTENIMIENTOS COMPLETADOS-->
 
                 <div v-if="activeTab === 'completados' && filteredMaintenances.length > 0">
                     <MaintenanceTable
@@ -331,6 +306,5 @@ const handleGenerateReport = (id: number) => {
             :maint="maintenanceInformacion"
             @close="closeViewInformacion"
         />
-
     </AppLayout>
 </template>

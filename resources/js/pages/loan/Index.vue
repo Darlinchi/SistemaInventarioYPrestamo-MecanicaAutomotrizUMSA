@@ -32,18 +32,22 @@ interface Loan {
 
 const props = defineProps<{
     loans: Loan[];
-    auth_user: { id: number; name: string; username: string, apellidoPaterno: string };
+    auth_user: { id: number; name: string; username: string; apellidoPaterno: string };
 }>();
 
 const page = usePage();
-const can = (permission: string) =>
-    (page.props.auth.user?.permissions ?? []).includes(permission);
+
+// --- PERMISOS ROBUSTOS ---
+const can = (permission: string): boolean => {
+    const auth = (page.props.auth as any) || {};
+    const permissions: string[] = auth.permissions || auth.user?.permissions || [];
+    return permissions.includes(permission);
+};
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Préstamos', href: loanRoutes.index.url() },
 ];
 
-// --- NOTIFICACIONES FLASH ---
 const flashSuccess = computed(() => (page.props.flash as any)?.success);
 
 // --- FILTROS ---
@@ -53,7 +57,6 @@ const selectedSubject = ref('');
 const filterDate = ref('');
 const filterMonth = ref('');
 
-// LÓGICA DEL POPOVER DE ITEMS
 const openLoanId = ref<number | null>(null);
 const toggleItems = (id: number) => {
     openLoanId.value = openLoanId.value === id ? null : id;
@@ -61,7 +64,7 @@ const toggleItems = (id: number) => {
 
 const closePopovers = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
-    if (!target.closest('.relative.inline-block')) {
+    if (!target.closest('.relative.inline-block') && !target.closest('.relative')) {
         openLoanId.value = null;
     }
 };
@@ -69,7 +72,6 @@ const closePopovers = (e: MouseEvent) => {
 onMounted(() => window.addEventListener('click', closePopovers));
 onUnmounted(() => window.removeEventListener('click', closePopovers));
 
-// Meses para el filtro
 const months = [
     { id: 1, name: 'Enero' }, { id: 2, name: 'Febrero' }, { id: 3, name: 'Marzo' },
     { id: 4, name: 'Abril' }, { id: 5, name: 'Mayo' }, { id: 6, name: 'Junio' },
@@ -77,32 +79,30 @@ const months = [
     { id: 10, name: 'Octubre' }, { id: 11, name: 'Noviembre' }, { id: 12, name: 'Diciembre' }
 ];
 
-// Solo préstamos activos
 const filteredLoans = computed(() => {
     let filtered = props.loans.filter((loan: Loan) => loan.estado_prestamo === 'Activo');
 
     if (searchQuery.value.trim() !== '') {
         const query = searchQuery.value.toLowerCase();
         filtered = filtered.filter(loan => {
-
-            const nombreUsuario = `${loan.borrower.nombres} ${loan.borrower.apellidoPaterno} ${loan.borrower.apellidoMaterno ?? ''}`.toLowerCase();
-            const cedulaUsuario = `${loan.borrower.cedula_identidad}`;
+            const nombreUsuario = `${loan.borrower?.nombres ?? ''} ${loan.borrower?.apellidoPaterno ?? ''} ${loan.borrower?.apellidoMaterno ?? ''}`.toLowerCase();
+            const cedulaUsuario = `${loan.borrower?.cedula_identidad ?? ''}`;
             const coincideItem = (loan.all_items || []).some(item =>
-                item.nombre_mostrar.toLowerCase().includes(query) ||
+                item.nombre_mostrar?.toLowerCase().includes(query) ||
                 item.codigo_qr?.toLowerCase().includes(query)
             );
             const coincideMateria =
-                loan.subject.nombre_materia.toLowerCase().includes(query) ||
-                loan.subject.sigla.toLowerCase().includes(query);
-            return nombreUsuario.includes(query) || cedulaUsuario.includes(query) || coincideItem || coincideMateria;
+                loan.subject?.nombre_materia?.toLowerCase().includes(query) ||
+                loan.subject?.sigla?.toLowerCase().includes(query);
+            return nombreUsuario.includes(query) || cedulaUsuario.includes(query) || coincideItem || Boolean(coincideMateria);
         });
     }
 
     if (selectedBorrowerCI.value !== '') {
-        filtered = filtered.filter(loan => loan.borrower.cedula_identidad === selectedBorrowerCI.value);
+        filtered = filtered.filter(loan => loan.borrower?.cedula_identidad === selectedBorrowerCI.value);
     }
     if (selectedSubject.value !== '') {
-        filtered = filtered.filter(loan => loan.subject.sigla === selectedSubject.value);
+        filtered = filtered.filter(loan => loan.subject?.sigla === selectedSubject.value);
     }
     if (filterDate.value !== '') {
         filtered = filtered.filter(loan => loan.fecha_salida === filterDate.value);
@@ -150,11 +150,11 @@ const returnForm = useForm({
     observacion: '',
     fecha_retorno: new Date().toISOString().split('T')[0],
     hora_fin: '',
-    acuerdos: [] as any[],   // acuerdos de reposición del paso 2 del modal
+    acuerdos: [] as any[],
 });
 
 const openReturnModal = (loan: any) => {
-    if (!loan) return;
+    if (!loan || !can('prestamos.devolver')) return;
     selectedLoan.value = loan;
     returnForm.loan_id = loan.id;
     returnForm.observacion = '';
@@ -180,7 +180,6 @@ const openReturnModal = (loan: any) => {
 };
 
 const processReturn = (acuerdos: any[]) => {
-    // Inyectamos los acuerdos emitidos por el modal antes del POST
     returnForm.acuerdos = acuerdos;
     returnForm.post('/dashboard/loan-returns', {
         preserveScroll: true,
@@ -190,23 +189,10 @@ const processReturn = (acuerdos: any[]) => {
             returnForm.reset();
         },
         onError: (err) => {
-            console.log("Error detallado:", err);
+            console.error("Error al devolver:", err);
         }
     });
 };
-
-const currentTime = ref(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-let timer: any;
-watch(isReturnModalOpen, (isOpen) => {
-    if (isOpen) {
-        timer = setInterval(() => {
-            currentTime.value = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }, 60000);
-    } else {
-        clearInterval(timer);
-    }
-});
-
 </script>
 
 <template>

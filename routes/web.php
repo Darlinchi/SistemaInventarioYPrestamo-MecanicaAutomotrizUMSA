@@ -29,19 +29,18 @@ use Laravel\Fortify\Features;
 Route::get('/', function () {
     return redirect()->route('login');
 })->name('home');
+
+// Rutas protegidas: requieren login
 // Rutas protegidas: requieren login
 Route::middleware(['auth', 'verified'])
     ->prefix('dashboard')
     ->group(function () {
 
-        // Dashboard principal
-        // Route::get('/', fn() => Inertia::render('Dashboard'))->name('dashboard');
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-        // Todos los roles autenticados acceden al grupo
-        // Route::middleware(['role:super-admin|director|encargado'])->group(function () {
         Route::middleware(['auth', 'verified'])->group(function () {
 
+            // ── Roles ────────────────────────────────────────────────────────
             Route::get('/roles', [RoleController::class, 'index'])
                 ->middleware('permission:roles.ver')->name('roles.index');
             Route::post('/roles', [RoleController::class, 'store'])
@@ -51,40 +50,33 @@ Route::middleware(['auth', 'verified'])
             Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
                 ->middleware('permission:roles.eliminar')->name('roles.destroy');
 
+            // ── Cambio de contraseña ─────────────────────────────────────────
             Route::get('/cambiar-contrasena',  [ForcePasswordChangeController::class, 'show'])
                 ->name('password.change');
             Route::post('/cambiar-contrasena', [ForcePasswordChangeController::class, 'update'])
                 ->name('password.change.update');
 
-            // Usuarios — protegidas por permiso
+            // ── Usuarios ─────────────────────────────────────────────────────
             Route::get('/usuarios', [UserController::class, 'index'])
                 ->middleware('permission:usuarios.ver')->name('users.index');
-
             Route::get('/usuarios/create', [UserController::class, 'create'])
                 ->middleware('permission:usuarios.crear')->name('users.create');
-
             Route::post('/usuarios', [UserController::class, 'store'])
                 ->middleware('permission:usuarios.crear')->name('users.store');
-
             Route::get('/usuarios/{user}/edit', [UserController::class, 'edit'])
                 ->middleware('permission:usuarios.editar')->name('users.edit');
-
             Route::put('/usuarios/{user}', [UserController::class, 'update'])
                 ->middleware('permission:usuarios.editar')->name('users.update');
-
             Route::delete('/usuarios/{user}', [UserController::class, 'destroy'])
                 ->middleware('permission:usuarios.eliminar')->name('users.destroy');
-
             Route::post('/usuarios/{user}/toggle-status', [UserController::class, 'toggleStatus'])
                 ->middleware('permission:usuarios.editar')->name('users.toggle');
-
             Route::post('/usuarios/{user}/reset-password', [UserController::class, 'resetPassword'])
                 ->middleware('permission:usuarios.editar')->name('users.reset');
-
             Route::patch('/usuarios/{user}/password', [UserController::class, 'changePassword'])
                 ->middleware('permission:usuarios.editar')->name('users.password');
 
-            // Items
+            // ── Items ────────────────────────────────────────────────────────
             Route::get('items/{id}/pdf', [ItemController::class, 'generateFicha'])->name('items.pdf');
             Route::get('items', [ItemController::class, 'index'])->name('items.index');
             Route::get('items/create', [ItemController::class, 'create'])
@@ -101,13 +93,15 @@ Route::middleware(['auth', 'verified'])
             Route::delete('items/{item}', [ItemController::class, 'destroy'])
                 ->middleware('permission:equipos.eliminar|herramientas.eliminar')->name('items.destroy');
 
-            // Equipments
-            Route::get('equipments', [EquipmentController::class, 'index'])->name('equipments.index');
+            // ── Equipments ───────────────────────────────────────────────────
+            Route::get('equipments', [EquipmentController::class, 'index'])
+                ->middleware('permission:equipos.ver')->name('equipments.index');
             Route::get('equipments/create', [EquipmentController::class, 'create'])
                 ->middleware('permission:equipos.crear')->name('equipments.create');
             Route::post('equipments', [EquipmentController::class, 'store'])
                 ->middleware('permission:equipos.crear')->name('equipments.store');
-            Route::get('equipments/{equipment}', [EquipmentController::class, 'show'])->name('equipments.show');
+            Route::get('equipments/{equipment}', [EquipmentController::class, 'show'])
+                ->middleware('permission:equipos.ver')->name('equipments.show');
             Route::get('equipments/{equipment}/edit', [EquipmentController::class, 'edit'])
                 ->middleware('permission:equipos.editar')->name('equipments.edit');
             Route::put('equipments/{equipment}', [EquipmentController::class, 'update'])
@@ -117,13 +111,15 @@ Route::middleware(['auth', 'verified'])
             Route::delete('equipments/{equipment}', [EquipmentController::class, 'destroy'])
                 ->middleware('permission:equipos.eliminar')->name('equipments.destroy');
 
-            // Tools
-            Route::get('tools', [ToolController::class, 'index'])->name('tools.index');
+            // ── Tools ────────────────────────────────────────────────────────
+            Route::get('tools', [ToolController::class, 'index'])
+                ->middleware('permission:herramientas.ver')->name('tools.index');
             Route::get('tools/create', [ToolController::class, 'create'])
                 ->middleware('permission:herramientas.crear')->name('tools.create');
             Route::post('tools', [ToolController::class, 'store'])
                 ->middleware('permission:herramientas.crear')->name('tools.store');
-            Route::get('tools/{tool}', [ToolController::class, 'show'])->name('tools.show');
+            Route::get('tools/{tool}', [ToolController::class, 'show'])
+                ->middleware('permission:herramientas.ver')->name('tools.show');
             Route::get('tools/{tool}/edit', [ToolController::class, 'edit'])
                 ->middleware('permission:herramientas.editar')->name('tools.edit');
             Route::put('tools/{tool}', [ToolController::class, 'update'])
@@ -133,7 +129,7 @@ Route::middleware(['auth', 'verified'])
             Route::delete('tools/{tool}', [ToolController::class, 'destroy'])
                 ->middleware('permission:herramientas.eliminar')->name('tools.destroy');
 
-            // Loans
+            // ── Loans ────────────────────────────────────────────────────────
             Route::get('loans/{id}/report', [LoanController::class, 'generateReport'])->name('loans.report');
             Route::get('loans', [LoanController::class, 'index'])->name('loans.index');
             Route::get('loans/create', [LoanController::class, 'create'])
@@ -152,17 +148,17 @@ Route::middleware(['auth', 'verified'])
             Route::post('loans/{loan}/return', [LoanController::class, 'returnLoan'])
                 ->middleware('permission:prestamos.devolver')->name('loans.return');
 
-            // Rutas de Devoluciones (LoanReturn)
+            // ── Loan Returns ─────────────────────────────────────────────────
             Route::post('loan-returns', [LoanReturnController::class, 'store'])
-                ->middleware('permission:prestamos.devolver') // Reutilizamos el permiso de devolver
+                ->middleware('permission:prestamos.devolver')
                 ->name('loan-returns.store');
-
             Route::get('loan-returns', [LoanReturnController::class, 'index'])
                 ->name('loan-returns.index');
 
+            // ── Reposiciones ─────────────────────────────────────────────────
             Route::resource('repositions', RepositionController::class);
 
-            // Maintenances
+            // ── Maintenances ─────────────────────────────────────────────────
             Route::get('maintenances/{id}/report', [MaintenanceController::class, 'generateReport'])->name('maintenances.report');
             Route::get('maintenances', [MaintenanceController::class, 'index'])->name('maintenances.index');
             Route::get('maintenances/create', [MaintenanceController::class, 'create'])
@@ -179,7 +175,7 @@ Route::middleware(['auth', 'verified'])
             Route::delete('maintenances/{maintenance}', [MaintenanceController::class, 'destroy'])
                 ->middleware('permission:mantenimientos.eliminar')->name('maintenances.destroy');
 
-            // Maintenance companies
+            // ── Maintenance companies ────────────────────────────────────────
             Route::get('maintenanceCompanies', [MaintenanceCompanyController::class, 'index'])->name('maintenanceCompanies.index');
             Route::get('maintenanceCompanies/create', [MaintenanceCompanyController::class, 'create'])
                 ->middleware('permission:empresas_mant.crear')->name('maintenanceCompanies.create');
@@ -199,32 +195,31 @@ Route::middleware(['auth', 'verified'])
                 [MaintenanceController::class, 'equipmentHistoryPdf'])
                 ->name('maintenances.equipment.history');
 
-            // Borrowers ── orden importante: específicas antes de {borrower}
-            Route::get('borrowers', [BorrowerController::class, 'index'])->name('borrowers.index');
+            // ── Borrowers ────────────────────────────────────────────────────
+            Route::get('borrowers', [BorrowerController::class, 'index'])
+                ->middleware('permission:prestatarios.ver')->name('borrowers.index');
             Route::post('borrowers/import', [BorrowerController::class, 'import'])
-                ->middleware('permission:prestatarios.crear')->name('borrowers.import');
+                ->middleware('permission:prestatarios.importar')->name('borrowers.import');
             Route::get('borrowers/create', [BorrowerController::class, 'create'])
                 ->middleware('permission:prestatarios.crear')->name('borrowers.create');
             Route::post('borrowers', [BorrowerController::class, 'store'])
                 ->middleware('permission:prestatarios.crear')->name('borrowers.store');
 
-            // Acciones específicas — DEBEN ir antes de borrowers/{borrower}
-            Route::post('borrowers/{borrower}/toggle',
-                [BorrowerController::class, 'toggleStatus'])
+            // Toggle protegido con su permiso específico
+            Route::post('borrowers/{borrower}/toggle', [BorrowerController::class, 'toggleStatus'])
+                ->middleware('permission:prestatarios.toggle')
                 ->name('borrowers.toggle');
 
-            Route::delete('borrowers/{borrower}/subject-teacher',
-                [BorrowerController::class, 'removeSubjectTeacher'])
+            Route::delete('borrowers/{borrower}/subject-teacher', [BorrowerController::class, 'removeSubjectTeacher'])
                 ->middleware('permission:prestatarios.editar')
                 ->name('borrowers.subject-teacher.remove');
 
-            Route::delete('borrowers/{borrower}/subject-assistant',
-                [BorrowerController::class, 'removeSubjectAssistant'])
+            Route::delete('borrowers/{borrower}/subject-assistant', [BorrowerController::class, 'removeSubjectAssistant'])
                 ->middleware('permission:prestatarios.editar')
                 ->name('borrowers.subject-assistant.remove');
 
-            // CRUD estándar
-            Route::get('borrowers/{borrower}', [BorrowerController::class, 'show'])->name('borrowers.show');
+            Route::get('borrowers/{borrower}', [BorrowerController::class, 'show'])
+                ->middleware('permission:prestatarios.ver')->name('borrowers.show');
             Route::get('borrowers/{borrower}/edit', [BorrowerController::class, 'edit'])
                 ->middleware('permission:prestatarios.editar')->name('borrowers.edit');
             Route::put('borrowers/{borrower}', [BorrowerController::class, 'update'])
@@ -234,20 +229,20 @@ Route::middleware(['auth', 'verified'])
             Route::delete('borrowers/{borrower}', [BorrowerController::class, 'destroy'])
                 ->middleware('permission:prestatarios.eliminar')->name('borrowers.destroy');
 
-            // Materias (Subjects)
-            Route::get('subjects', [SubjectController::class, 'index'])->name('subjects.index');
-            Route::post('subjects/import', [SubjectController::class, 'import'])->name('subjects.import');
+            // ── Subjects ─────────────────────────────────────────────────────
+            Route::get('subjects', [SubjectController::class, 'index'])
+                ->middleware('permission:materias.ver')->name('subjects.index');
+            Route::post('subjects/import', [SubjectController::class, 'import'])
+                ->middleware('permission:materias.importar')->name('subjects.import');
+            Route::post('subjects/{subject}/toggle', [SubjectController::class, 'toggleStatus'])
+                ->middleware('permission:materias.toggle')->name('subjects.toggle');
 
-            // --- AÑADE ESTA LÍNEA AQUÍ ---
-            Route::post('subjects/{subject}/toggle', [SubjectController::class, 'toggleStatus'])->name('subjects.toggle');
-
-            // Reports
+            // ── Reports ──────────────────────────────────────────────────────
             Route::resource('reports', ReportController::class);
             Route::get('reports/inventory/pdf', [ReportController::class, 'exportInventory']);
             Route::get('reports/history/pdf', [ReportController::class, 'exportHistory'])->name('reports.history.pdf');
             Route::get('reports/issues/pdf', [ReportController::class, 'exportIssues'])->name('reports.issues.pdf');
         });
-
     });
 
 // ARCHIVOS DE CONFIGURACIÓN ADICIONALES

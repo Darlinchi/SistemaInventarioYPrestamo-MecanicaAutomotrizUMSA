@@ -35,8 +35,8 @@ interface Reposition {
     nombre_nuevo_item: string | null;
     registrado_por: string;
     created_at: string;
-    sin_acuerdo: boolean;  // true = creada automáticamente, tipo_reposicion aún null
-    equipo_padre: string | null;  // nombre del equipo al que pertenece el accesorio
+    sin_acuerdo: boolean;
+    equipo_padre: string | null;
 }
 
 const props = defineProps<{
@@ -44,8 +44,13 @@ const props = defineProps<{
 }>();
 
 const page = usePage();
-const can = (permission: string) =>
-    (page.props.auth.user?.permissions ?? []).includes(permission);
+
+// --- PERMISOS ROBUSTOS ---
+const can = (permission: string) => {
+    const auth = (page.props.auth as any) || {};
+    const permissions: string[] = auth.permissions || auth.user?.permissions || [];
+    return permissions.includes(permission);
+};
 
 const flashSuccess = computed(() => (page.props.flash as any)?.success);
 
@@ -65,10 +70,8 @@ const tabs = computed(() => [
 ]);
 
 // ── FILTROS ───────────────────────────────────────────────────────
-const searchQuery      = ref('');
-const filterTipo       = ref('');
-
-// tiposReposicion definido abajo con icon/color/desc (usado en filtro y modal)
+const searchQuery     = ref('');
+const filterTipo      = ref('');
 
 const repositionsFiltradas = computed(() => {
     let list = activeTab.value === 'Pendiente'
@@ -90,7 +93,6 @@ const repositionsFiltradas = computed(() => {
 });
 
 // ── HELPERS VISUALES ─────────────────────────────────────────────
-// Igual que ReturnLoanModal para consistencia visual
 const tiposReposicion = [
     { value: 'Reparacion', label: 'Reparación', desc: 'Ítem enviado a reparar',   icon: Wrench,
       color: 'border-purple-200 bg-purple-50 text-purple-700', active: 'border-purple-500 bg-purple-100 ring-2 ring-purple-200 text-purple-700' },
@@ -123,15 +125,15 @@ const acuerdoForm = useForm({
     fecha_cumplimiento: '' as string,
 });
 
-// Index.vue - Función corregida
 const abrirModalAcuerdo = (rep: Reposition, accionDirecta?: 'Cumplida' | 'Incumplida') => {
+    if (!can('prestamos.editar')) return;
+
     repSeleccionada.value = rep;
     acuerdoForm.estado          = accionDirecta ?? 'Pendiente';
     acuerdoForm.tipo_reposicion = rep.tipo_reposicion ?? '';
     acuerdoForm.fecha_limite    = rep.fecha_limite ?? '';
     acuerdoForm.observacion     = rep.observacion ?? '';
 
-    // CORRECCIÓN AQUÍ: Obtener la fecha local en formato YYYY-MM-DD
     if (accionDirecta === 'Cumplida') {
         const hoy = new Date();
         const offset = hoy.getTimezoneOffset();
@@ -157,12 +159,12 @@ const repForm = useForm({ estado: '', fecha_cumplimiento: '', observacion: '' })
 
 const marcarCumplida   = (rep: Reposition) => abrirModalAcuerdo(rep, 'Cumplida');
 const marcarIncumplida = (rep: Reposition) => {
+    if (!can('prestamos.editar')) return;
     if (!confirm(`¿Marcar la reposición de "${rep.nombre_origen}" como Incumplida?`)) return;
     repForm.estado = 'Incumplida';
     repForm.patch(`/dashboard/repositions/${rep.id}`, { preserveScroll: true });
 };
 const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
-
 </script>
 
 <template>
@@ -255,7 +257,6 @@ const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
             >
                 <div class="bg-white w-full max-w-lg rounded-4xl shadow-2xl overflow-hidden flex flex-col max-h-[88vh] animate-in zoom-in duration-300">
 
-                    <!-- Header — igual al ReturnLoanModal -->
                     <div class="px-8 py-5 border-b border-neutral-100 flex justify-between items-center bg-white shrink-0">
                         <div class="flex items-center gap-3">
                             <div class="p-2 rounded-xl" :class="acuerdoForm.estado === 'Cumplida' ? 'bg-green-100' : 'bg-amber-100'">
@@ -274,10 +275,7 @@ const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
                         </button>
                     </div>
 
-                    <!-- Cuerpo scrollable -->
                     <div class="p-7 pt-5 overflow-y-auto space-y-5 flex-1 bg-neutral-50/30">
-
-                        <!-- Card del ítem — igual al paso 2 del ReturnLoanModal -->
                         <div v-if="repSeleccionada" class="p-4 bg-white rounded-2xl border-2 border-amber-200 shadow-sm">
                             <div class="flex items-center justify-between gap-3">
                                 <div class="flex flex-col gap-1">
@@ -302,7 +300,6 @@ const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
                             </div>
                         </div>
 
-                        <!-- Tipo de acuerdo — mismos botones del ReturnLoanModal -->
                         <div>
                             <p class="text-[11px] font-black text-neutral-600 uppercase tracking-widest mb-3">Tipo de acuerdo</p>
                             <div class="grid grid-cols-3 gap-3">
@@ -323,7 +320,6 @@ const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
                             </div>
                         </div>
 
-                        <!-- Fecha límite + Observación — igual al paso 2 -->
                         <div v-if="acuerdoForm.tipo_reposicion && acuerdoForm.estado !== 'Cumplida'"
                             class="grid grid-cols-2 gap-4">
                             <div>
@@ -345,7 +341,6 @@ const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
                             </div>
                         </div>
 
-                        <!-- Fecha cumplimiento + Observación — si es Cumplida -->
                         <div v-if="acuerdoForm.estado === 'Cumplida'" class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[11px] font-black text-neutral-600 uppercase tracking-widest mb-1.5">
@@ -364,7 +359,6 @@ const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
                             </div>
                         </div>
 
-                        <!-- Responsable -->
                         <div v-if="repSeleccionada"
                             class="flex items-center gap-2 p-3 bg-neutral-100 rounded-xl border border-neutral-200">
                             <User class="w-4 h-4 text-neutral-400 shrink-0"/>
@@ -375,7 +369,6 @@ const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
                         </div>
                     </div>
 
-                    <!-- Footer — mismo estilo que ReturnLoanModal -->
                     <div class="px-7 py-4 grid grid-cols-1 md:grid-cols-2 gap-4 w-full pt-4 shrink-0">
                         <button
                             type="button"
@@ -400,7 +393,6 @@ const definirAcuerdo = (rep: Reposition) => abrirModalAcuerdo(rep);
                                 <Loader2 class="w-5 h-5 animate-spin mr-2" />
                                 Procesando...
                             </template>
-
                             <template v-else>
                                 <CheckCircle class="w-5 h-5 mr-2"/>
                                 {{ acuerdoForm.estado === 'Cumplida' ? 'Marcar Cumplida' : 'Guardar acuerdo' }}

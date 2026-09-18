@@ -4,9 +4,15 @@ import {
     CalendarCheck2, Clock, ClockAlert, CheckCircle
 } from 'lucide-vue-next';
 
-defineProps<{
-    maint: any;
-}>();
+withDefaults(
+    defineProps<{
+        maint: any;
+        canEdit?: boolean;
+    }>(),
+    {
+        canEdit: true,
+    }
+);
 
 defineEmits(['complete']);
 
@@ -24,7 +30,6 @@ const formatFecha = (fecha: string | null | undefined): string => {
         year:  'numeric'
     });
 };
-
 </script>
 
 <template>
@@ -66,7 +71,7 @@ const formatFecha = (fecha: string | null | undefined): string => {
                 <div class="flex gap-4">
                     <div class="w-16 h-16 rounded-2xl bg-white border border-neutral-100 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform overflow-hidden">
                         <img
-                            v-if="maint.equipment.foto_equipo"
+                            v-if="maint.equipment?.foto_equipo"
                             :src="'/storage/' + maint.equipment.foto_equipo"
                             class="w-full h-full object-cover"
                             alt="Foto del equipo"
@@ -81,7 +86,7 @@ const formatFecha = (fecha: string | null | undefined): string => {
                                 <span>Equipo</span>
                             </p>
                             <p class="flex items-center gap-2 text-[14px] font-bold text-neutral-800 leading-tight">
-                                {{ maint.equipment.nombre_equipo }}
+                                {{ maint.equipment?.nombre_equipo }}
                             </p>
                         </div>
 
@@ -91,11 +96,10 @@ const formatFecha = (fecha: string | null | undefined): string => {
                                 <span>Registrado por:</span>
                             </p>
                             <p class="flex items-center gap-2 text-[14px] font-bold text-neutral-800 leading-tight">
-                                {{ maint.user.name }} {{ maint.user.apellidoPaterno }} {{ maint.user.apellidoMaterno }}
+                                {{ maint.user?.name }} {{ maint.user?.apellidoPaterno }} {{ maint.user?.apellidoMaterno }}
                             </p>
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -106,7 +110,7 @@ const formatFecha = (fecha: string | null | undefined): string => {
                         <span>Empresa Encargada</span>
                     </p>
                     <p class="flex items-center gap-2 text-[14px] font-bold text-neutral-800 leading-tight">
-                        {{ maint.companies[0]?.nombre_empresa || 'Empresa No Registrada' }}
+                        {{ maint.companies?.[0]?.nombre_empresa || 'Empresa No Registrada' }}
                     </p>
                 </div>
                 <div class="space-y-1">
@@ -122,7 +126,8 @@ const formatFecha = (fecha: string | null | undefined): string => {
 
         </div>
 
-        <div class="flex flex-col gap-2 mt-6 md:mt-0 md:ml-8 w-full md:w-auto">
+        <!-- Botón Completar condicionado al permiso de editar -->
+        <div v-if="canEdit" class="flex flex-col gap-2 mt-6 md:mt-0 md:ml-8 w-full md:w-auto">
             <button
                 @click="$emit('complete', maint)"
                 class="flex items-center justify-center gap-2 bg-[#1a3a5a] border border-[#1a3a5a] px-6 py-3 rounded-xl text-xs font-black text-white hover:bg-[#122a42] transition shadow-md uppercase tracking-wider active:scale-95 whitespace-nowrap"

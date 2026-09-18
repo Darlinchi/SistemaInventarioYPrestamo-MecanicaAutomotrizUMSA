@@ -26,9 +26,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 // ── Flash messages ────────────────────────────────────────────────
 const page = usePage();
 const flashSuccess = computed(() => (page.props.flash as any)?.success);
-const can = (permission: string) =>
-    (page.props.auth.user?.permissions ?? []).includes(permission);
 
+// --- PERMISOS ROBUSTOS ---
+const can = (permission: string) => {
+    const auth = (page.props.auth as any) || {};
+    const permissions: string[] = auth.permissions || auth.user?.permissions || [];
+    return permissions.includes(permission);
+};
 
 // ── Modal de importación Excel ────────────────────────────────────
 const modalImport = ref(false);
@@ -56,7 +60,6 @@ const cerrarImport = () => {
 };
 
 const toggleSubjectStatus = (id: number) => {
-    // Usamos router.post o router.put según tu preferencia
     router.post(`/dashboard/subjects/${id}/toggle`, {}, {
         preserveScroll: true,
     });
@@ -97,7 +100,14 @@ const columnasEjemplo = ['sigla', 'nombre_materia', 'semestre*', 'estado', 'pens
             </PageHeader>
 
             <BaseTable :items="subjects" emptyText="No hay materias registradas en el catálogo.">
-                <TableHeader :columns="['SIGLA', 'NOMBRE DE LA MATERIA', 'SEMESTRE', 'PENSUM', 'ACTIVO', 'ACCIONES']" />
+                <TableHeader :columns="[
+                    'SIGLA',
+                    'NOMBRE DE LA MATERIA',
+                    'SEMESTRE',
+                    'PENSUM',
+                    'ACTIVO',
+                    ...(can('materias.toggle') ? ['ACCIONES'] : [])
+                ]" />
 
                 <tbody class="divide-y divide-neutral-100 text-sm">
                     <tr v-for="subject in subjects" :key="subject.id" class="hover:bg-neutral-50/50 transition-colors">
@@ -134,7 +144,7 @@ const columnasEjemplo = ['sigla', 'nombre_materia', 'semestre*', 'estado', 'pens
                             </span>
                         </td>
 
-                        <td class="p-4">
+                        <td v-if="can('materias.toggle')" class="p-4">
                             <button
                                 @click="toggleSubjectStatus(subject.id)"
                                 :title="subject.activo ? 'Deshabilitar materia' : 'Habilitar materia'"
@@ -216,7 +226,6 @@ const columnasEjemplo = ['sigla', 'nombre_materia', 'semestre*', 'estado', 'pens
                                 <Loader2 class="w-5 h-5 animate-spin mr-2" />
                                 Importando...
                             </template>
-
                             <template v-else>
                                 <Upload class="w-5 h-5 mr-2" />
                                 Importar
